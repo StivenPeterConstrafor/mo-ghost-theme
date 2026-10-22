@@ -3,7 +3,7 @@
 {{> "faith-received/_tfr-rail"}}
 {{#contentFor "moHead"}}
 <title>Commentary decks | The Faith Received | Mere Orthodoxy</title>
-<meta name="description" content="Lombard's Sentences, Aquinas's Summa, the Reformed disputations, Vitringa's aphorisms, Gerhard's loci, the Decretals, Gratian's Decretum and the systems of theology, place by place: the text and its commentators, or the systems, read side by side, each with his own questions and articles and their pages." />
+<meta name="description" content="Lombard's Sentences, Aquinas's Summa, Suárez's Metaphysical Disputations, Voetius's problems, Vitringa's aphorisms, Quenstedt's questions, the Decretals and Gratian's Decretum, place by place: the text and its commentators or systems, read side by side, each with his own questions and articles and their pages." />
 <link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
 <link rel=stylesheet href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Source+Serif+Pro:ital,wght@0,400;0,600;1,400&display=swap">
 <style>
@@ -21,8 +21,11 @@
 .tfr-tool .wrap{max-width:96rem;margin:0 auto;padding:1.4rem 1.2rem 3rem}
 .tfr-tool h1{font:500 2rem/1.2 var(--font-display);margin:.1rem 0 .4rem;text-wrap:balance}
 .tfr-tool .lede{max-width:72ch;color:var(--muted);margin:0 0 1.1rem;text-wrap:pretty}
-.tfr-tool .tabs{display:flex;flex-wrap:wrap;gap:0 1.6rem;border-bottom:1px solid var(--border);margin:0 0 .9rem}
-.tfr-tool .tabs button{appearance:none;border:0;background:none;padding:.6rem 0;margin-bottom:-1px;font:500 1.25rem/1.2 var(--font-display);color:var(--muted);border-bottom:2px solid transparent;cursor:pointer}
+.tfr-tool .tabs{display:flex;flex-wrap:wrap;align-items:flex-end;gap:.35rem 1.8rem;border-bottom:1px solid var(--border);margin:0 0 .9rem}
+.tfr-tool .tgrp{display:flex;flex-direction:column;min-width:0}
+.tfr-tool .tgk{margin:.2rem 0 -.1rem;font:600 .75rem/1.2 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tfr-tool .tgb{display:flex;flex-wrap:wrap;gap:0 1.1rem}
+.tfr-tool .tabs button{appearance:none;border:0;background:none;padding:.45rem 0 .55rem;margin-bottom:-1px;font:500 1.1875rem/1.2 var(--font-display);color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
 .tfr-tool .tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--fg)}
 .tfr-tool .bar{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;margin:0 0 .8rem}
 .tfr-tool .parts{display:flex;gap:.4rem;flex-wrap:wrap;margin-right:auto}
@@ -38,6 +41,13 @@
 .tfr-tool .stepper button{border:1px solid var(--border);background:var(--card-bg);border-radius:8px;padding:.45rem .8rem;cursor:pointer;font:500 1rem/1.2 var(--font-display);min-height:2.25rem}
 .tfr-tool .stepper button:disabled{opacity:.4;cursor:default}
 .tfr-tool .stepper #pick{min-width:12rem;text-align:center}
+.tfr-tool .bar .parts{margin-right:0}
+.tfr-tool .bar #lanes{margin-left:auto}
+.tfr-tool .gfind{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .9rem;margin:0 0 .3rem}
+.tfr-tool .gq{flex:1 1 14rem;min-width:0;border:1px solid var(--border);border-radius:8px;background:var(--bg);padding:.45rem .65rem;font:.9375rem/1.3 var(--sans);min-height:2.25rem;color:var(--fg)}
+.tfr-tool .gq::placeholder{color:var(--muted)}
+.tfr-tool .gct{font:.875rem/1.3 var(--sans);color:var(--muted);font-variant-numeric:tabular-nums}
+.tfr-tool .grid [hidden]{display:none}
 .tfr-tool .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(3.4rem,1fr));gap:.35rem;margin:0 0 1rem;padding:.8rem;border:1px solid var(--border);border-radius:10px;background:var(--card-bg)}
 .tfr-tool .grid[hidden]{display:none}
 .tfr-tool .grid button{display:flex;flex-direction:column;align-items:center;gap:.1rem;padding:.4rem .2rem;border:1px solid var(--border);background:var(--bg);border-radius:6px;cursor:pointer;font:500 1rem/1 var(--font-display)}
@@ -45,7 +55,7 @@
 .tfr-tool .grid button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
 .tfr-tool .grid button[aria-pressed="true"] small{color:var(--bg)}
 .tfr-tool .grid button.empty{opacity:.45}
-.tfr-tool :is(.tabs button,.tfr-tool .chip,.tfr-tool .seg button,.tfr-tool .grid button,.tfr-tool .stepper button,.tfr-tool .c-read,.tfr-tool .toc button,.tfr-tool .back,.tfr-tool .pane select,.tfr-tool .find,.tfr-tool .absent>summary,.tfr-tool .toc summary,.tfr-tool .near a,.tfr-tool .abs-note a):focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.tfr-tool :is(.tabs button,.tfr-tool .chip,.tfr-tool .seg button,.tfr-tool .grid button,.tfr-tool .stepper button,.tfr-tool .c-read,.tfr-tool .toc button,.tfr-tool .back,.tfr-tool .pane select,.tfr-tool .find,.tfr-tool .absent>summary,.tfr-tool .c-toc,.tfr-tool .also-r,.tfr-tool .c-acts a,.tfr-tool .near a,.tfr-tool .abs-note a):focus-visible{outline:2px solid var(--fg);outline-offset:2px}
 .tfr-tool .switch{display:none}
 .tfr-tool .desk{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1rem;align-items:start}
 .tfr-tool .pane{position:sticky;top:var(--sticky);height:calc(100vh - var(--sticky) - 1rem);height:calc(100dvh - var(--sticky) - 1rem);display:flex;flex-direction:column;min-width:0;background:var(--card-bg);border:1px solid var(--border);border-radius:12px;overflow:hidden}
@@ -87,7 +97,7 @@
 .tfr-tool .find::placeholder{color:var(--muted)}
 .tfr-tool .count{margin:0;color:var(--muted);font-size:.875rem}
 .tfr-tool .trad{margin:1rem 0 .1rem;padding-bottom:.3rem;border-bottom:1px solid var(--border);font:500 1rem/1.3 var(--font-display);color:var(--muted)}
-.tfr-tool .trad span{font:.8125rem/1 var(--sans);margin-left:.3rem}
+.tfr-tool .trad span{font:.8125rem/1 var(--sans)}
 .tfr-tool .dir{list-style:none;margin:0;padding:0}
 .tfr-tool .c{border-bottom:1px solid var(--border);padding:.15rem 0 .35rem}
 .tfr-tool .c-top{display:flex;align-items:flex-start;gap:.6rem}
@@ -97,9 +107,15 @@
 .tfr-tool .who small{font:.75rem/1 var(--sans);color:var(--muted);margin-left:.35rem}
 .tfr-tool .work{color:var(--muted);font-size:.875rem;line-height:1.35}
 .tfr-tool .sum{font-size:.8125rem;color:var(--muted);font-variant-numeric:tabular-nums}
-.tfr-tool .c .ext{flex:none;margin-top:.6rem;font:600 .75rem/1.2 var(--sans);white-space:nowrap}
+.tfr-tool .c .ext{flex:none;font:600 .75rem/1.2 var(--sans);white-space:nowrap;padding:.3rem 0}
 .tfr-tool .toc{margin:0 0 .2rem}
-.tfr-tool .toc summary{cursor:pointer;font:600 .75rem/1.2 var(--sans);color:var(--muted);padding:.25rem 0;width:max-content}
+.tfr-tool .toc[hidden]{display:none}
+.tfr-tool .c-acts{display:flex;flex-wrap:wrap;align-items:center;gap:.15rem 1rem;margin:0 0 .3rem}
+.tfr-tool .c-acts .ext{margin:0}
+.tfr-tool .c-toc{appearance:none;border:0;background:none;padding:.3rem 0;font:600 .75rem/1.2 var(--sans);color:var(--fg);cursor:pointer;text-decoration:underline;text-decoration-color:var(--border);text-underline-offset:3px}
+.tfr-tool .c-toc[aria-expanded="true"]{text-decoration-color:currentColor}
+.tfr-tool .also{margin:.1rem 0 .4rem;font:.8125rem/1.5 var(--sans);color:var(--muted)}
+.tfr-tool .also-r{appearance:none;border:0;background:none;padding:0;font:inherit;color:var(--fg);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .tfr-tool .toc ol{list-style:none;margin:.2rem 0 .5rem;padding:0;display:grid;gap:.05rem}
 .tfr-tool .toc li{display:flex;align-items:baseline;gap:.6rem}
 .tfr-tool .toc li button{appearance:none;border:0;background:none;padding:.2rem .3rem;margin:0 -.3rem;border-radius:5px;text-align:left;cursor:pointer;font:.875rem/1.35 var(--font-body);flex:1;min-width:0}
@@ -116,11 +132,13 @@
 .tfr-tool .absent>summary::before{content:"+";display:inline-block;width:1.1rem;font:400 1rem/1 var(--sans)}
 .tfr-tool .absent[open]>summary::before{content:"\2212"}
 .tfr-tool .absent>summary span{font:.8125rem/1 var(--sans);margin-left:.35rem}
-.tfr-tool .absent>.count{margin:.1rem 0 .2rem}
+.tfr-tool .absent>.grp:first-of-type .trad{margin-top:.4rem}
 .tfr-tool .c-who{display:grid;gap:.1rem;padding:.5rem 0}
 .tfr-tool .near{font-size:.8125rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .tfr-tool .c-many .vols{list-style:none;margin:.15rem 0 .2rem;padding:0 0 0 1rem}
 .tfr-tool .c-many .vols li{display:grid;gap:.05rem;padding:.3rem 0;font-size:.9rem}
+.tfr-tool .c-many .vols li+li{border-top:1px solid var(--border)}
+.tfr-tool .c-many .vols .c-read{padding:.35rem .45rem}
 .tfr-tool .c-many>.c-who{padding-bottom:.1rem}
 .tfr-tool .near a{color:var(--fg);text-underline-offset:2px}
 .tfr-tool .abs-note{max-width:62ch;margin:1.1rem 0}
@@ -142,9 +160,9 @@
 @media (max-width:640px){.tfr-tool .wrap{padding:1rem 1rem 3rem}
 .tfr-tool h1{font-size:1.6rem}
 .tfr-tool .lede{display:none}
-.tfr-tool .tabs{gap:1.1rem;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
-.tfr-tool .tabs::-webkit-scrollbar{display:none}
-.tfr-tool .tabs button{white-space:nowrap;flex:none}
+.tfr-tool .tabs{gap:.2rem 1.4rem}
+.tfr-tool .tgb{gap:0 1rem}
+.tfr-tool .tabs button{font-size:1.0625rem;padding:.35rem 0 .45rem}
 .tfr-tool .stepper{width:100%}
 .tfr-tool .stepper #pick{min-width:0;flex:1}
 .tfr-tool .ph{padding:.7rem .9rem}
@@ -343,6 +361,8 @@
 .tfr-tool .mv-src{margin:.55rem 0 0;font:.8125rem/1.5 var(--sans);color:var(--muted)}
 .tfr-tool .mv-open{color:var(--fg);text-underline-offset:3px}
 .tfr-tool :is(.mv-open,.pr-pg)[aria-pressed="true"]{background:var(--highlight);border-radius:3px}
+.tfr-tool a.adv{text-decoration:none}
+.tfr-tool a.adv:hover{border-color:var(--fg)}
 .tfr-tool .adv{display:inline;white-space:nowrap;padding:.1rem .5rem;border:1px solid var(--border);border-radius:999px;background:var(--card-bg);color:var(--fg);font:.8125rem/1.55 var(--sans);-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .tfr-tool .adv .dot{display:inline-block;width:.55rem;height:.55rem;margin-right:.3rem;border-radius:50%;background:var(--sc,var(--s-other));vertical-align:.02em}
 .tfr-tool .adv-p{color:var(--muted)}
@@ -360,6 +380,72 @@
 .tfr-tool :is(.ptog,.pr-t,.pr-n,.mv-open,.pr-pg,.pfind,.ob-pg>a):focus-visible{outline:2px solid var(--fg);outline-offset:2px}
 @media (prefers-reduced-motion:no-preference){.tfr-tool .ptog,.tfr-tool .pr-t{transition:background .15s var(--ease),color .15s var(--ease),border-color .15s var(--ease)}
 }
+.tfr-tool .dlede{max-width:72ch;margin:-.35rem 0 1.05rem;font:1rem/1.55 var(--font-body);color:var(--muted);text-wrap:pretty}
+.tfr-tool .psum{margin:.75rem 0 .15rem;max-width:72ch;font:1rem/1.6 var(--font-body);color:var(--fg);text-wrap:pretty}
+.tfr-tool .pg-schools{--tg-gf:var(--s-thomist);--tg-pl:var(--s-scotist);--tg-po:var(--s-nominalist);--tg-md:var(--s-jesuit);--tg-lu:var(--s-augustinian);--tg-x:var(--s-other)}
+.tfr-tool .pg-wide{flex:1 0 100%;min-width:0;margin:0 0 .4rem}
+.tfr-tool .pg-schools .tg-plot{height:6.5rem}
+.tfr-tool .pg-note{margin:.15rem 0 0;font:.8125rem/1.45 var(--sans);color:var(--muted)}
+.tfr-tool .pf-k{align-self:center;margin-right:.3rem;font:600 .8125rem/1.2 var(--sans);color:var(--muted)}
+.tfr-tool .ptog.mtog{padding:.2rem .6rem}
+.tfr-tool .ptog.mtog[aria-pressed="true"]{background:var(--card-bg);border-color:var(--border);color:var(--fg)}
+.tfr-tool .ptog.mtog[aria-pressed="true"] small{color:var(--muted)}
+.tfr-tool .ptog.mtog[aria-pressed="false"]{background:transparent;color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}
+.tfr-tool .mtog .tg-sw{width:.6rem;height:.6rem}
+.tfr-tool .mtog[aria-pressed="false"] .tg-sw{background:transparent;box-shadow:inset 0 0 0 1.5px var(--c)}
+.tfr-tool .mtog[aria-pressed="false"] .sv{color:var(--muted)}
+.tfr-tool .sv{display:inline-flex;align-items:center;padding:.02rem .5rem;border:1px solid currentColor;border-radius:999px;font:600 .75rem/1.5 var(--sans);white-space:nowrap}
+.tfr-tool .sv-accepts{color:var(--affirms)}
+.tfr-tool .sv-rejects{color:var(--denies)}
+.tfr-tool .sv-qualifies,.tfr-tool .sv-refines{color:var(--fg)}
+.tfr-tool .sec-at{margin:.3rem 0 0;font:.875rem/1.6 var(--sans);color:var(--muted)}
+.tfr-tool .sec-at i{font:italic .9375rem/1.5 var(--font-body)}
+.tfr-tool .sec-at>a{color:var(--muted);text-underline-offset:3px}
+.tfr-tool .ops{list-style:none;margin:.65rem 0 0;padding:0}
+.tfr-tool .op{padding:.6rem 0 .65rem;border-top:1px solid var(--border)}
+.tfr-tool .op[data-dim],.tfr-tool .pth-rows>li[data-dim]{opacity:.42}
+.tfr-tool .op-h{margin:0;font:.9375rem/1.75 var(--sans)}
+.tfr-tool .op-l{margin-right:.35rem;font:500 1.0625rem/1.4 var(--font-display);color:var(--fg)}
+.tfr-tool .hg{white-space:normal}
+.tfr-tool .hg-k{margin:0 .25rem 0 .2rem;font:600 .75rem/1 var(--sans);color:var(--muted)}
+.tfr-tool .op-p{margin:.2rem 0 0;font:.9375rem/1.55 var(--font-body);text-wrap:pretty}
+.tfr-tool .op-v{margin:.35rem 0 0;font:.8125rem/1.8 var(--sans);color:var(--muted)}
+.tfr-tool .op-ad{font:italic .875rem/1.5 var(--font-body);color:var(--fg)}
+.tfr-tool .op-pg>a{color:var(--muted);text-underline-offset:3px}
+.tfr-tool .res{margin:.75rem 0 0;padding:.75rem .95rem .8rem;border:1px solid var(--border);border-radius:10px;background:var(--tint)}
+.tfr-tool .res-h{margin:0;font:.875rem/1.5 var(--sans);color:var(--fg)}
+.tfr-tool .res-h b{font-weight:600}
+.tfr-tool .res-of{appearance:none;border:0;background:none;padding:0;color:var(--fg);font:inherit;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;cursor:pointer}
+.tfr-tool .res-t{margin:.3rem 0 0;font:1rem/1.55 var(--font-body);text-wrap:pretty}
+.tfr-tool .intras[hidden],.tfr-tool .pths[hidden]{display:none}
+.tfr-tool .intras,.tfr-tool .pths{margin:.6rem 0 0}
+.tfr-tool .in-h{margin:.7rem 0 .2rem;font:500 1.0625rem/1.3 var(--font-display)}
+.tfr-tool .in-p{margin:0;font:.9375rem/1.5 var(--font-body);color:var(--muted);text-wrap:pretty}
+.tfr-tool .in-sides{list-style:none;margin:.45rem 0 0;padding:0;display:grid;gap:.55rem}
+.tfr-tool .in-who{margin:0;font:.8125rem/1.9 var(--sans)}
+.tfr-tool .in-v{margin:.15rem 0 0;font:.9375rem/1.5 var(--font-body);text-wrap:pretty}
+.tfr-tool .pth-rows{list-style:none;margin:0;padding:0}
+.tfr-tool .pth-rows>li{display:grid;grid-template-columns:minmax(8rem,11rem) minmax(0,1fr) auto;gap:.2rem 1.1rem;align-items:baseline;padding:.65rem 0;border-top:1px solid var(--border)}
+.tfr-tool .pth-rows>li:first-child{border-top:0}
+.tfr-tool .pth-who{margin:0;font:500 1rem/1.3 var(--font-display);text-wrap:balance;overflow-wrap:anywhere}
+.tfr-tool .pth-who .sw{display:inline-block;width:.55rem;height:.55rem;margin-right:.4rem;border-radius:50%;background:var(--c)}
+.tfr-tool .pth-who small{display:block;margin-top:.15rem;color:var(--muted);font:400 .8125rem/1.45 var(--sans)}
+.tfr-tool .pth-b>p{margin:0;max-width:68ch;font:.9375rem/1.55 var(--font-body);text-wrap:pretty}
+.tfr-tool .pth-b>.pth-q{margin:.35rem 0 0 1.1rem;font-style:italic}
+.tfr-tool .pth-b>.pth-src{margin-top:.3rem;color:var(--muted);font:.8125rem/1.5 var(--sans)}
+.tfr-tool .pth-pg{margin:0;font:.8125rem/1.6 var(--sans);white-space:nowrap}
+.tfr-tool .pth-pg>a{color:var(--fg);text-underline-offset:3px}
+.tfr-tool .pth-rows>li>.tg-pvw{grid-column:1/-1}
+.tfr-tool .sec-links{margin:.75rem 0 0;font:.8125rem/1.8 var(--sans);color:var(--muted)}
+.tfr-tool .sec-links a{color:var(--fg);text-underline-offset:3px}
+.tfr-tool .sec-lk{font-weight:600}
+.tfr-tool .pr-where{margin:.45rem 0 0;font:.8125rem/1.6 var(--sans);color:var(--muted)}
+.tfr-tool .pth-more{margin:.4rem 0 0;font:.8125rem/1.5 var(--sans);color:var(--muted)}
+@container (max-width:40rem){.tfr-tool .pth-rows>li{grid-template-columns:minmax(0,1fr)}
+.tfr-tool .pth-who small{display:inline}
+.tfr-tool .pth-who small::before{content:" · "}
+}
+.tfr-tool :is(.res-of,.sec-links a,.op-pg>a,.pth-pg>a,a.hol):focus-visible{outline:2px solid var(--fg);outline-offset:2px}
 .tfr-tool{background:transparent}
 .tfr-tool .wrap{padding-top:1.2rem}
 .tfr-tool{--sticky:9rem}
@@ -371,25 +457,40 @@
   <div class="bhero-inner container">
     <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> Commentary decks</p>
     <h1 class="bhero-title">The commented texts, with their commentators</h1>
-    <p class="bhero-lede">Read a distinction of Lombard's Sentences, a question of Aquinas's Summa, a title of the Decretals or a distinction or causa of Gratian's Decretum beside any commentator the library holds on it, each with his own questions and articles; a disputation of Voetius beside the other Reformed disputations, a chapter of Vitringa's aphorisms with Martin Vitringa's notes, or a locus of Gerhard (or Calov) beside the Lutheran systems; or a place of theology (God, Christ, justification, the Church) across the systems of theology. Either pane can hold a commentator or a system, so two can be compared.</p>
+    <p class="bhero-lede">Read a distinction of Lombard's Sentences, a question of Aquinas's Summa, a title of the Decretals or a distinction or causa of Gratian's Decretum beside any commentator the library holds on it, each with his own questions and articles; Suárez's Metaphysical Disputations as a course in the schools' differences; Voetius's problems or Vitringa's aphorisms beside the Reformed systems and disputations, and Quenstedt's questions beside the Lutheran systems. Either pane can hold a commentator or a system, so two can be compared.</p>
   </div>
 </section>
 <script src="{{asset "js/page/faith-tfr-rail.js"}}" defer></script>
 <main class="tfr-tool"><div class="wrap">
   <div class="tabs" role="tablist" aria-label="Commented text">
-    <button type="button" role="tab" aria-selected="true" data-deck="sentences">Lombard's Sentences</button>
-    <button type="button" role="tab" aria-selected="false" data-deck="summa">Aquinas's Summa</button>
-    <button type="button" role="tab" aria-selected="false" data-deck="reformed">Reformed disputations</button>
-    <button type="button" role="tab" aria-selected="false" data-deck="vitringa">Vitringa's Aphorisms</button>
-    <button type="button" role="tab" aria-selected="false" data-deck="lutheran">Lutheran loci</button>
-    <button type="button" role="tab" aria-selected="false" data-deck="decretals">The Decretals</button>
-    <button type="button" role="tab" aria-selected="false" data-deck="decretum">Gratian's Decretum</button>
-    <button type="button" role="tab" aria-selected="false" data-deck="systems">Systems of theology</button>
+    <div class="tgrp" role="presentation"><span class="tgk" aria-hidden="true">Scholastic</span><div class="tgb" role="presentation">
+      <button type="button" role="tab" aria-selected="true" data-deck="sentences">Lombard's Sentences</button>
+      <button type="button" role="tab" aria-selected="false" data-deck="summa">Aquinas's Summa</button>
+      <button type="button" role="tab" aria-selected="false" data-deck="metaphysics">Metaphysics with Suárez</button></div></div>
+    <div class="tgrp" role="presentation"><span class="tgk" aria-hidden="true">Reformed</span><div class="tgb" role="presentation">
+      <button type="button" role="tab" aria-selected="false" data-deck="reformed">Voetius's problems</button>
+      <button type="button" role="tab" aria-selected="false" data-deck="vitringa">Vitringa's aphorisms</button></div></div>
+    <div class="tgrp" role="presentation"><span class="tgk" aria-hidden="true">Lutheran</span><div class="tgb" role="presentation">
+      <button type="button" role="tab" aria-selected="false" data-deck="lutheran">Quenstedt's questions</button></div></div>
+    <div class="tgrp" role="presentation"><span class="tgk" aria-hidden="true">Canon law</span><div class="tgb" role="presentation">
+      <button type="button" role="tab" aria-selected="false" data-deck="decretals">The Decretals</button>
+      <button type="button" role="tab" aria-selected="false" data-deck="decretum">Gratian's Decretum</button></div></div>
   </div>
+  <p class="dlede" id="dlede" hidden></p>
+    <div class="tgrp" role="presentation"><span class="tgk" aria-hidden="true">Reformed</span><div class="tgb" role="presentation">
+      <button type="button" role="tab" aria-selected="false" data-deck="reformed">Voetius's problems</button>
+      <button type="button" role="tab" aria-selected="false" data-deck="vitringa">Vitringa's aphorisms</button></div></div>
+    <div class="tgrp" role="presentation"><span class="tgk" aria-hidden="true">Lutheran</span><div class="tgb" role="presentation">
+      <button type="button" role="tab" aria-selected="false" data-deck="lutheran">Quenstedt's questions</button></div></div>
+    <div class="tgrp" role="presentation"><span class="tgk" aria-hidden="true">Canon law</span><div class="tgb" role="presentation">
+      <button type="button" role="tab" aria-selected="false" data-deck="decretals">The Decretals</button>
+      <button type="button" role="tab" aria-selected="false" data-deck="decretum">Gratian's Decretum</button></div></div>
+  </div>
+  <p class="dlede" id="dlede" hidden></p>
   <div class="bar">
     <div class="parts" id="parts" role="group" aria-label="Book or part"></div>
+    <nav class="stepper" aria-label="Places"><button type="button" id="pick" aria-expanded="false" aria-controls="grid">Choose a place</button><button type="button" id="prev" aria-label="Previous place">‹</button><button type="button" id="next" aria-label="Next place">›</button></nav>
     <div class="seg" id="lanes" role="group" aria-label="Language"><button type="button" data-lane="en">English</button><button type="button" data-lane="la">Latin</button><button type="button" data-lane="both">Both</button></div>
-    <nav class="stepper" aria-label="Places"><button type="button" id="prev" aria-label="Previous place">‹</button><button type="button" id="pick" aria-expanded="false" aria-controls="grid">Choose a place</button><button type="button" id="next" aria-label="Next place">›</button></nav>
   </div>
   <div class="grid" id="grid" role="group" aria-label="Places" hidden></div>
   <div class="switch"><div class="seg" role="group" aria-label="Pane"><button type="button" data-show="a" aria-pressed="true" id="showA">Text</button><button type="button" data-show="b" aria-pressed="false" id="showB">Commentators</button></div></div>
@@ -401,4 +502,4 @@
 </div></main>
 <link rel="stylesheet" href="{{asset "css/port/work-hub.css"}}&amp;frv=0374a552e8452478"><script src="{{asset "js/port/page-window.js"}}&amp;frv=2023bacb69cf7ee4"></script>
 <link rel="stylesheet" href="{{asset "css/port/tradition-graphics.css"}}&amp;frv=cc8cf6f7c7831d99"><script src="{{asset "js/port/tradition-graphics.js"}}&amp;frv=3780efc0f7559ddf"></script>
-<script src="{{asset "js/faith-decks.js"}}&amp;frv=323224b74ea59004"></script>
+<script src="{{asset "js/faith-decks.js"}}&amp;frv=6b11f868755af73d"></script>
