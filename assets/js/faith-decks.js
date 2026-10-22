@@ -2,6 +2,7 @@
 window.__FR_BLOB_BASE__=window.__FR_BLOB_BASE__||"https://mo-tfr-library.mo-podcast-feed.workers.dev";
 window.__FR_READER_PATH__=window.__FR_READER_PATH__||"/the-faith-received/read/";
 window.__FR_LEXICON_PATH__=window.__FR_LEXICON_PATH__||"/the-faith-received/lexicon/";
+window.__FR_DECKS_TEXT__=window.__FR_DECKS_TEXT__==null?"":window.__FR_DECKS_TEXT__;
 const BLOB=(window.__FR_BLOB_BASE__||"").replace(/\/$/,"");
 const VER=window.__FR_VER?(`?v=${window.__FR_VER}`):"";
 const $=s=>document.querySelector(s);
@@ -264,11 +265,22 @@ const capsy=t=>{const L=t.replace(/[^A-Za-z]/g,'');return L.length>5&&L.replace(
 const headish=t=>t.length<150&&(HEADLIKE.test(t)||(t.length<100&&capsy(t)));
 function matches(item,t){const b=fold(t);if(b.length<3)return false;
   return [item[3],item[0],...String(item[3]||'').split(/\s+\u2014\s+/)].some(x=>{const a=fold(x),k=Math.min(28,a.length,b.length);return k>=5&&a.slice(0,k)===b.slice(0,k);});}
+// A HEADING AS THE READING GUIDE SHOWS IT (10-22, owner: no Latin in the reading guide): a head given as "English \u2014 Latin" shows its
+// English, the Latin in its title (in the Latin lane the other way about); a head in Latin alone stays as printed (the Fathers in
+// Migne have no meta.json, so no structure to name them in English) until the data gives it in English
+// (the part after the dash is taken as Latin only when it reads as Latin: "Question I, Chapter I \u2014 Whether the doctrine of theology is a
+// science" is English on both sides and is shown whole)
+const LA_W=/^(?:de|et|est|ad|cum|quae|quod|qui|quo|quam|quibus|sit|sint|sunt|esse|ex|per|non|ut|sive|seu|vel|an|utrum|ejus|eius|atque|ac|nec|neque|ab|apud|inter|super|sub|contra|propter|pro|quomodo|quid|quis|cap|caput|capitulum|dist|distinctio|quaest|quaestio|articulus|liber|lib|pars|sectio|tractatus|disputatio|dei|christi|domini|deo|deum|fide|fidei|gratia|gratiae|ecclesia|ecclesiae)$/;
+const EN_W=/^(?:the|of|and|on|whether|is|to|that|which|with|by|from|as|are|be|what|how|his|its|their|concerning|chapter|question|article|book|part|god|faith)$/;
+const latinish=t=>{let la=0,en=0;for(const w of String(t).toLowerCase().match(/[a-zæœ]+/g)||[]){if(LA_W.test(w))la++;else if(EN_W.test(w))en++;}return la>en;};
+const headSplit=h=>{const s=String(h||''),m=/\s+\u2014\s+/.exec(s);if(!m||!m.index)return {en:s,la:''};const en=s.slice(0,m.index).trim(),la=s.slice(m.index+m[0].length).trim();return latinish(la)&&!latinish(en)?{en,la}:{en:s,la:''};};
+const headHTML=(h,lane)=>{const p=headSplit(h);if(!p.la)return esc(p.en);return lane==='la'?`<span title="${esc(p.en)}">${esc(p.la)}</span>`:`<span title="${esc(p.la)}">${esc(p.en)}</span>`;};
+const headTitle=h=>{const p=headSplit(h);return p.la?` title="${esc(p.la)}"`:'';};
 function linesHTML(blocks,lane,marks,after){
   return blocks.map((b,bi)=>{const id=marks.get(bi),{t} = b,h=b.h===1||b.h===true||id!=null||(b.h!==2&&headish(t));
     const tail=((after&&after.get(bi))||[]).map(x=>`<span class="anc" id="${x}" data-item="${x}"></span>`).join('');
     if(b.h===2)return `<p class="cap" lang="${lane}">${esc(t)}</p>${tail}`;
-    return (h?`<h3 class="hd${capsy(t)?' sc':''}" lang="${lane}"${id!=null?` id="${id}" data-item="${id}"`:''}>${esc(t)}</h3>`:`<p lang="${lane}">${esc(t)}</p>`)+tail;}).join('');
+    return (h?`<h3 class="hd${capsy(t)?' sc':''}" lang="${lane}"${id!=null?` id="${id}" data-item="${id}"`:''}>${headHTML(t,lane)}</h3>`:`<p lang="${lane}">${esc(t)}</p>`)+tail;}).join('');
 }
 // one page: its number (a link into the reader at that page), then its lines in one language or both
 function pageHTML(side,slug,n,cols,items,colLabel){
@@ -663,6 +675,19 @@ document.addEventListener('scroll',()=>{
     if(b.getBoundingClientRect().top-limit<600)b.click();
   });
 },true);
+// the Scripture page's reader of the Fathers in Migne and the EEBO books (commentary-pane.js, its pane off), fetched the first time one
+// is opened; Mere Orthodoxy's port leaves it out (window.__FR_DECKS_TEXT__ = '') and those works open in the reader
+const CP_JS=window.__FR_DECKS_TEXT__!=null?window.__FR_DECKS_TEXT__:'/commentary-pane.js?v=__RESEARCH_V__';
+let CPT=null;
+const commentaryText=()=>CPT||(CPT=!CP_JS?Promise.resolve(null):window.FRCommentaryText?Promise.resolve(window.FRCommentaryText):new Promise(res=>{
+  window.FR_COMMENTARY_PANE=false;const sc=document.createElement('script');sc.src=CP_JS;
+  sc.onload=()=>res(window.FRCommentaryText||null);sc.onerror=()=>res(null);document.head.appendChild(sc);}));
+// on a phone the panes take turns: a work opened from the list is shown from its top, not wherever the list had been scrolled to
+function keepInView(side){
+  if(!isPhone())return;
+  const {top} = PANE[side].getBoundingClientRect(),st=(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sticky'))||.75)*16+52;
+  if(top<0||top>innerHeight*.6)window.scrollTo({top:Math.max(0,window.scrollY+top-st)});
+}
 // A COMMENTATOR'S PLACE, page after page, with his divisions of it as the pane's contents
 async function paneWork(side,slug,focus){
   const host=PANE[side],cs=commentators(true),c=cs.find(x=>x.slug===slug),token=++RUN[side];
@@ -672,7 +697,7 @@ async function paneWork(side,slug,focus){
       <h2>${esc(w[0]||slug)}${born({y:w[4]||9999})}</h2>${w[1]?`<p class="what">${workLine({t:w[1],vol:w[2]||'',y:w[4]||9999})}</p>`:''}</header><div class="scroll">${absentNote(slug,side)}</div>`;return;}
   const {items} = c;
   if(focus==null&&S.deck==='summa'&&S.art){const k=items.findIndex(x=>String(x[4]||'')===String(S.art));if(k>=0)focus=k;}
-  const toc=items.length>1?`<select data-toc="${side}" aria-label="${esc(c.a)}'s divisions of this ${noun()}">${items.map((x,k)=>`<option value="${k}"${k===focus?' selected':''}>${' '.repeat(Math.max(0,Math.min(3,x[2])-1))}${esc(x[0].slice(0,110))} · p. ${esc(x[1])}</option>`).join('')}</select>`:'';
+  const toc=items.length>1?`<select data-toc="${side}" aria-label="${esc(c.a)}'s divisions of this ${noun()}">${items.map((x,k)=>`<option value="${k}"${k===focus?' selected':''}${headTitle(x[0])}>${' '.repeat(Math.max(0,Math.min(3,x[2])-1))}${esc(headSplit(x[0]).en.slice(0,110))} · ${atw(slug)} ${esc(x[1])}</option>`).join('')}</select>`:'';
   const cur=items[focus!=null?focus:0]||items[0];
   const head=`<header class="ph"><div class="ph-row">${sourceSelect(side,cs,slug)}<a class="open" data-open="${side}" href="${read(slug,cur[1],cur[3])}">Open in the reader ↗</a></div>
     ${side==='b'?`<button type="button" class="back" data-back>← All ${WHO()}</button>`:''}
@@ -686,19 +711,38 @@ async function paneWork(side,slug,focus){
   const pagesEl=host.querySelector('.pages'),last=Math.min(c.to,start+MAXP-1),lanes=LANE==='both'?['la','en']:[LANE];
   if(start>c.from)pagesEl.insertAdjacentHTML('beforebegin',`<p class="end" style="border:0;margin:.6rem 0 0;padding:0">${esc(c.a)} begins this ${noun()} at p. ${esc(c.from)}. <a href="${read(slug,c.from,items[0][3])}">Read it from there in the reader ↗</a></p>`);
   let drawn=0,landed=focus==null;host.dataset.moved='';
-  for(let n=start;n<=last;n++){
-    const cols={};for(const l of lanes)cols[l]=await blocksOf(slug,l,n);
-    if(token!==RUN[side])return;
-    if(lanes.every(l=>cols[l]==null)){if(n===start){pagesEl.innerHTML=`<p class="note">These pages could not be loaded. <a href="${read(slug,c.from,items[0][3])}">Open them in the reader ↗</a></p>`;host.querySelector('.sk').remove();return;}break;}
-    const on=items.map((x,k)=>({x,k})).filter(o=>+o.x[1]===n);
-    pagesEl.insertAdjacentHTML('beforeend',pageHTML(side,slug,n,cols,on,'page'));drawn=n;
-    if(!landed&&+items[focus][1]<=n){landed=true;if(!host.dataset.moved){const go2=()=>{if(!host.dataset.moved&&token===RUN[side])scrollToEl(side,document.getElementById(`${side}-i${focus}`),false);};
+  // a Father in Migne or an EEBO book has no work folder (its meta.json is not there, so blocksOf finds no pages): it is read as the
+  // Scripture page reads it (FRCommentaryText, commentary-pane.js, two columns a step in Migne); where that reader is not on the site,
+  // the pane says so and links the reader at the page
+  const fam=isFam(slug),T=fam?await commentaryText():null;
+  if(token!==RUN[side])return;
+  const famNote=()=>{pagesEl.innerHTML=`<p class="note">This work's pages open in the reader. <a href="${read(slug,start,cur[3])}">Open ${atw(slug)} ${esc(start)} in the reader ↗</a></p>`;host.querySelector('.sk')?.remove();};
+  if(fam&&!T){famNote();keepInView(side);return;}
+  const unit=/^(?:pld|pg)-/.test(slug)?'column':'page',step=fam&&T.stride?T.stride(slug):1;
+  let first=false;
+  for(let n=start;n<=last;n+=step){
+    const cols={};let at=n;
+    if(fam){
+      let g=null;try{g=await T.page(slug,n);}catch(_){g=null;}
+      if(token!==RUN[side])return;
+      if(!g||!g.p){if(n===start){famNote();keepInView(side);return;}break;}
+      at=+g.p.n||n;n=at;
+      for(const l of lanes)cols[l]=String((l==='en'?g.p.en:g.p.la)||'').split(/\n+/).map(x=>x.trim()).filter(Boolean).map(x=>({t:x,h:false}));
+    }else{
+      for(const l of lanes)cols[l]=await blocksOf(slug,l,n);
+      if(token!==RUN[side])return;
+      if(lanes.every(l=>cols[l]==null)){if(n===start){pagesEl.innerHTML=`<p class="note">These pages could not be loaded. <a href="${read(slug,c.from,items[0][3])}">Open them in the reader ↗</a></p>`;host.querySelector('.sk').remove();return;}break;}
+    }
+    const on=items.map((x,k)=>({x,k})).filter(o=>+o.x[1]>=at&&+o.x[1]<at+step);
+    pagesEl.insertAdjacentHTML('beforeend',pageHTML(side,slug,at,cols,on,unit));drawn=at+step-1;
+    if(!first){first=true;keepInView(side);}
+    if(!landed&&+items[focus][1]<=drawn){landed=true;if(!host.dataset.moved){const go2=()=>{if(!host.dataset.moved&&token===RUN[side])scrollToEl(side,document.getElementById(`${side}-i${focus}`),false);};
       scrollToEl(side,document.getElementById(`${side}-i${focus}`),true);if(document.fonts)document.fonts.ready.then(go2);setTimeout(go2,400);}}
   }
   if(token!==RUN[side])return;
   host.querySelector('.sk')?.remove();
   const end=host.querySelector('.end');end.hidden=false;
-  end.innerHTML=drawn<c.to?`${esc(c.a)} goes on to p. ${esc(c.to)} on this ${noun()}. <a href="${read(slug,drawn+1)}">Read on in the reader from p. ${esc(drawn+1)} ↗</a>`:`End of ${esc(c.a)} on this ${noun()}. <a href="${read(slug,c.to)}">Read on in the reader ↗</a>`;
+  end.innerHTML=drawn<c.to?`${esc(c.a)} goes on to ${atw(slug)} ${esc(c.to)} on this ${noun()}. <a href="${read(slug,drawn+1)}">Read on in the reader from ${atw(slug)} ${esc(drawn+1)} ↗</a>`:`End of ${esc(c.a)} on this ${noun()}. <a href="${read(slug,c.to)}">Read on in the reader ↗</a>`;
   spy(side);
 }
 // the contents follow the reading: the division last passed is the one shown, and "Open in the reader" opens it
@@ -730,7 +774,7 @@ function paneDir(side){
     return `<li class="c" data-slug="${esc(c.slug)}"><div class="c-top"><button type="button" class="c-read" data-read="${esc(c.slug)}"${k>0?` data-i="${k}"`:''}>
       <span class="who">${esc(c.a||'Unknown')}${born(c)}</span><span class="work">${workLine(c)}</span>
       <span class="sum">${esc(summary(c.items))} · ${esc(pp(c))}</span></button><a class="ext" href="${read(c.slug,f[1],f[3])}" aria-label="Open ${esc(c.a)} in the reader">Open ↗</a></div>
-      ${PV&&PV.has(c.slug)?`<p class="pv">${esc(PV.get(c.slug))}</p>`:''}${c.items.length>1?`<details class="toc"><summary>Contents</summary><ol>${c.items.map((x,k)=>`<li class="d${Math.max(1,Math.min(3,x[2]))}"><button type="button" data-read="${esc(c.slug)}" data-i="${k}">${esc(x[0])}</button><a href="${read(c.slug,x[1],x[3])}" title="Open in the reader">p. ${esc(x[1])}</a></li>`).join('')}</ol></details>`:''}</li>`;};
+      ${PV&&PV.has(c.slug)?`<p class="pv">${esc(PV.get(c.slug))}</p>`:''}${c.items.length>1?`<details class="toc"><summary>Contents</summary><ol>${c.items.map((x,k)=>`<li class="d${Math.max(1,Math.min(3,x[2]))}"><button type="button" data-read="${esc(c.slug)}" data-i="${k}"${headTitle(x[0])}>${esc(headSplit(x[0]).en)}</button><a href="${read(c.slug,x[1],x[3])}" title="Open in the reader">p. ${esc(x[1])}</a></li>`).join('')}</ol></details>`:''}</li>`;};
   const byTrad=byGroup;
   const groups=byTrad(cs);
   // the deck's other commentators, not on this place: folded under the list, each with the nearest place he treats
