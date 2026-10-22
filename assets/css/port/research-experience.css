@@ -416,3 +416,114 @@ body.research-page .pinb{min-height:0;min-width:0;font:500 12.5px/1.2 var(--sans
 @media (pointer:coarse){
   body.research-page .rx-work-actions .pinb-work{min-height:44px;display:inline-flex;align-items:center}
 }
+
+/* ══ THE COMPARE PASS (2026-10-22, owner: "a pass for the controversies, topics, compare, and commentary decks") ══
+   The order of the desk is the order of the task: the authors, what the library says of the pair (compare-notes.js, in
+   #cd-notes-slot), the topic, its strip through time, the view and its filters, the columns. Every rule is scoped to the desk
+   (.cd) or the page (.research-compare); the folds, panes and buttons the desk shares with rooms, topics and the web are not
+   touched. Type is the site's two families only (the desk's counts and markers had fallen back to the system sans). */
+.cd .cd-head,.cd .cd-group>summary::before,.cd .cd-tail>summary::before,.cd .cd-work>summary::before,.cd .cd-sec>summary::before,.cd .cd-dis-group h4 small{font-family:var(--body)}
+/* the authors' notes: a fold a note, a row a point, the two sides side by side, oldest first */
+.cd-notes-slot:empty{display:none}
+.research-compare .cn-notes{margin:14px 0 26px}
+.research-compare .cn-top{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 18px;padding:0 0 4px}
+.research-compare .cn-title{margin:0;font:500 22px/1.3 var(--display);text-wrap:balance}
+.research-compare .cn-ai{margin:0;max-width:75ch;font:13px/1.55 var(--body);color:var(--muted);text-wrap:pretty}
+.research-compare .cn-notes>.cn-fold:first-of-type{border-top:1px solid var(--border)}
+.research-compare .cn-fold>summary{min-height:56px;padding:12px 0;gap:12px}
+.research-compare .cn-fold>summary strong{font-size:20px;line-height:1.3}
+.research-compare .cn-fold>summary small{white-space:normal;font-size:13px;font-variant-numeric:tabular-nums}
+.research-compare .cn-fold[open]>summary{padding-bottom:10px}
+.research-compare .cn-fold-b{padding:0 0 8px}
+.research-compare .cn-fold-b>.cn-points:last-child>li:last-child{border-bottom:0}
+.research-compare .cn-summary{max-width:75ch;margin:0 0 12px;font:16px/1.65 var(--body);text-wrap:pretty}
+.research-compare .cn-points{display:block;list-style:none;margin:0;padding:0;border-top:1px solid var(--border)}
+.research-compare .cn-points>li{border-bottom:1px solid var(--border)}
+.research-compare .cn-point>summary{display:grid;grid-template-columns:14px minmax(0,1fr) auto;align-items:baseline;gap:2px 14px;min-height:44px;padding:11px 0;list-style:none;cursor:pointer}
+.research-compare .cn-point>summary::-webkit-details-marker{display:none}
+.research-compare .cn-point>summary::before{content:"+";color:var(--muted);font:400 16px/1 var(--body);text-align:center}
+.research-compare .cn-point[open]>summary::before{content:"\2212"}
+.research-compare .cn-q{color:var(--fg);font:500 16px/1.45 var(--body);text-wrap:pretty}
+.research-compare .cn-point>summary:hover .cn-q{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+.research-compare .cn-point>summary:focus-visible,.research-compare .cn-fold>summary:focus-visible,.cd summary:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.research-compare .cn-point>summary .cn-kind{display:inline;margin:0;color:var(--muted);font:13px/1.4 var(--body);white-space:nowrap}
+.research-compare .cn-point[open]>summary .cn-q{font-weight:600}
+.research-compare .cn-point-b{padding:0 0 18px 28px}
+.research-compare .cn-sides{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 32px;align-items:start}
+.research-compare .cn-side{min-width:0}
+.research-compare .cn-side>p{margin:0 0 6px;max-width:62ch;font:15px/1.65 var(--body);overflow-wrap:anywhere}
+.research-compare .cn-side>p>strong{display:block;margin-bottom:2px;font:500 17px/1.3 var(--display)}
+.research-compare .cn-joint{max-width:75ch;margin:0 0 10px;font:15px/1.65 var(--body)}
+.research-compare .cn-joint em{margin-right:8px;font-style:normal;font-weight:600}
+.research-compare .cn-door{margin:6px 0 0;font:14px/1.5 var(--body)}
+.research-compare .cn-door a,.research-compare .cn-summary a{color:var(--fg);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+@media (max-width:760px){
+ .research-compare .cn-sides{grid-template-columns:minmax(0,1fr);gap:14px}
+ .research-compare .cn-point-b{padding-left:0}
+ .research-compare .cn-point>summary{grid-template-columns:14px minmax(0,1fr)}
+ .research-compare .cn-point>summary .cn-kind{grid-column:2;white-space:normal}
+}
+/* the topic list: heads in the display face, not a tracked capital; tiles keep their place and lose their box until pointed at */
+.cd .cd-head{font:500 16px/1.3 var(--display);letter-spacing:0;text-transform:none;color:var(--fg)}
+.cd .cd-legend{font-size:13px;gap:4px 18px}
+.cd .cd-legend .cd-key{display:inline-flex;align-items:center;margin-right:12px;white-space:nowrap}
+.cd .cd-cell small,.cd .cd-tile .cd-cell small{font-size:12.5px}
+.cd .cd-tile{border-color:transparent;transition:border-color .16s cubic-bezier(.22,1,.36,1),background-color .16s cubic-bezier(.22,1,.36,1)}
+.cd .cd-tile:hover{border-color:var(--border)}
+.cd .cd-tile.on{border-color:var(--fg);box-shadow:inset 0 0 0 1px var(--fg);background:var(--card)}
+.cd .cd-tile-label{font-size:14px}
+/* one width a tile, so a bar's length is the same scale in every tile (a wider tile drew a longer bar for nothing) */
+.cd .cd-mosaic{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:6px}
+.cd .cd-mosaic>.cd-tile{max-width:none}
+.cd .cd-mosaic-tail{grid-template-columns:repeat(auto-fill,minmax(132px,1fr))}
+.cd .cd-tile-sm .cd-tile-label{font-size:13px}
+/* the topic's head: its name, the counts in column order, the doors with room between them */
+.cd .cd-topic-head{margin:22px 0 6px}
+.cd .cd-topic-head h3{margin:0 0 6px;font:500 28px/1.2 var(--display);text-wrap:balance}
+.cd .cd-topic-counts{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 20px;margin:0;font:14px/1.6 var(--body);color:var(--fg)}
+.cd .cd-topic-counts b{font-weight:600;font-variant-numeric:tabular-nums}
+.cd .cd-topic-counts .cd-unit{color:var(--muted)}
+.cd .cd-topic-head .cd-topic-links{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 24px;max-width:none;margin:0}
+.cd .cd-topic-links .cd-includes{flex-basis:100%;margin-top:4px;color:var(--muted)}
+/* through time: the module's strip, lower, under the topic's head */
+.cd .cd-time{margin:10px 0 22px}
+.cd .cd-time[hidden]{display:none}
+.cd .cd-time-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 10px;margin:0 0 6px;font:500 18px/1.3 var(--display);color:var(--fg)}
+.cd .cd-time-h .tg-ct{margin:0}
+.cd .cd-time .tg-plot{height:6.5rem}
+.cd .cd-time .tg-mk{max-width:100%}
+.cd .cd-time .tg-mk b{min-width:0;overflow:hidden;text-overflow:ellipsis}
+/* the view and its filters, then the two actions together */
+.cd .cd-actions{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}
+.cd .cd-tools>.cd-actions .rx-button{min-height:44px}
+.cd .cd-tools>label:not(.rx-search){flex:0 1 auto}
+.cd .cd-tools>label:not(.rx-search) select{width:auto;max-width:100%}
+.cd .cd-meet-tools>label{flex:0 1 auto}
+.cd .cd-meet-tools select{width:auto;min-width:14rem;max-width:100%}
+/* the empty desk: a ruled list of pairs, not a grid of cards */
+.research-compare .cd-suggest{max-width:920px;margin:32px 0 8px}
+.research-compare .cd-suggest h2{margin:0 0 8px;font:500 22px/1.3 var(--display)}
+.research-compare .cd-suggest ul{display:block;border-top:1px solid var(--border)}
+.research-compare .cd-suggest li{border-bottom:1px solid var(--border)}
+.research-compare .cd-suggest a{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,16rem) 9rem;align-items:baseline;gap:2px 24px;min-height:52px;padding:12px 2px;border:0;border-radius:0;background:none;color:var(--fg)}
+.research-compare .cd-suggest a:hover,.research-compare .cd-suggest a:focus-visible{background:var(--card)}
+.research-compare .cd-suggest a:hover .cd-sg-who{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
+.research-compare .cd-sg-who{font:500 19px/1.35 var(--display);text-wrap:balance}
+.research-compare .cd-sg-and{color:var(--muted);font-style:italic}
+.research-compare .cd-sg-on{font:15px/1.45 var(--body)}
+.research-compare .cd-sg-when{color:var(--muted);font:13px/1.45 var(--body);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.research-compare .rx-loci-head{font:500 22px/1.3 var(--display);letter-spacing:0;text-transform:none;color:var(--fg);align-items:baseline}
+.research-compare .rx-loci-head small{font:14px/1.4 var(--body);color:var(--muted)}
+/* the one note on method, at the foot */
+.research-compare .cd-method{margin:40px 0 0;padding-top:14px;border-top:1px solid var(--border)}
+.research-compare:not(:has(.cd-columns)) .cd-method{display:none}
+@media (max-width:640px){
+ .research-compare .cd-suggest a{grid-template-columns:minmax(0,1fr) auto;gap:2px 14px}
+ .research-compare .cd-sg-who{grid-column:1/-1}
+ .cd .cd-topic-head h3{font-size:24px}
+ .cd .cd-topic-head .cd-topic-links{gap:0 18px}
+ .cd .rx-note,.research-compare .cn-ai{font-size:13px}
+ .cd .cd-time .tg-plot{height:5.5rem}
+ .cd .cd-tools>label:not(.rx-search){flex:1 1 44%}
+ .cd .cd-tools>label:not(.rx-search) select{width:100%}
+}
