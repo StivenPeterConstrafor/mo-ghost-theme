@@ -48,18 +48,70 @@
   const REG = new Map();
   const uid = (p) => `${p}-${(++SEQ).toString(36)}`;
 
-  /* RUNS. items [{y, t}] (y a year, missing or 0 when undated; t a tradition or a shelf code) become {size, b, u, n}: for each
-     shelf the run of its bins from the first to the last that holds anyone, [first bin, n, n, …] (bin = year / size), and the
-     undated counted apart. v1/enrich/topic_graphics.json stores each topic in the same shape (size 50). */
+  /* AUTHOR DATES (2026-10-22, owner: "date authors please"). v1/enrich/author_dates.json (tools/topic_graphics/
+     build_author_dates.py) gives a year for every author the library can date, keyed by the names the surfaces spell, with
+     his other spellings as aliases: y (the year to draw him at, by the catalogue's rule: his birth, else his floruit, else his
+     death), born, died, circa, fl, prec ("century"), dates (the line of text), basis. The module loads it once, on the first
+     item that comes without a year but with a name ({y, t, name}, or the author's own {a} or {author}), and consults it
+     wherever an item has no year: bin() for the strips, a holder's dates beside his name and his place in a position's order.
+     A strip drawn before the key arrives is drawn again when it does; dates.ready resolves when the key is in (true) or
+     cannot be had (false), so a page may wait for it before drawing. A name the library cannot date stays undated. */
+  const BLOB = 'https://0ss8v4l06kodnhp0.public.blob.vercel-storage.com';
+  const DATES = { by: null, fold: null, ready: null, done: false };
+  const fold = (t) => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+  const goodYear = (y) => { const v = Number(y); return v > 0 && v < 2100 ? v : 0; };
+  const nameOf = (it) => (it ? it.name || it.author || it.a || '' : '');
+  function loadDates() {
+    if (DATES.ready) return DATES.ready;
+    const w = typeof window !== 'undefined' ? window : null;
+    if (!w || typeof fetch !== 'function') {
+      DATES.done = true;
+      DATES.ready = Promise.resolve(false);
+      return DATES.ready;
+    }
+    const base = String(w.__FR_BLOB_BASE__ || BLOB).replace(/\/$/, '');
+    DATES.ready = fetch(`${base}/v1/enrich/author_dates.json?v=${encodeURIComponent(w.__FR_VER || '1')}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const all = d && d.authors;
+        if (!all) return false;
+        const f = new Map();
+        for (const [n, r] of Object.entries(all)) for (const x of [n].concat(r.aliases || [])) { const k = fold(x); if (k && !f.has(k)) f.set(k, r); }
+        DATES.by = all;
+        DATES.fold = f;
+        return true;
+      })
+      .catch(() => false)
+      .then((ok) => { DATES.done = true; if (ok) redraw(); return ok; });
+    return DATES.ready;
+  }
+  /* the key's record for a name: the name as the page spells it, else the same letters without accents or stops, else an alias */
+  function dateOf(name) {
+    if (!name) return null;
+    if (!DATES.by) { loadDates(); return null; }
+    return DATES.by[name] || DATES.fold.get(fold(name)) || null;
+  }
+  /* an item's year: its own, else the key's for its name (0 when neither dates it) */
+  const yearOf = (it) => goodYear(it && it.y) || goodYear((dateOf(nameOf(it)) || {}).y);
+
+  /* RUNS. items [{y, t, name}] (y a year, missing or 0 when undated; t a tradition or a shelf code; name the author's, by which
+     the author dates give a year the item lacks) become {size, b, u, n}: for each shelf the run of its bins from the first to
+     the last that holds anyone, [first bin, n, n, …] (bin = year / size), and the undated counted apart.
+     v1/enrich/topic_graphics.json stores each topic in the same shape (size 50). */
   function bin(items, size = 25) {
     const by = new Map();
     const u = {};
     let n = 0;
+    let wait = false;
     for (const it of items || []) {
       const k = key(it.t);
-      const y = Number(it.y);
+      const y = yearOf(it);
       n += 1;
-      if (!(y > 0 && y < 2100)) { u[k] = (u[k] || 0) + 1; continue; }
+      if (!(y > 0 && y < 2100)) {
+        if (!DATES.done && nameOf(it)) wait = true;
+        u[k] = (u[k] || 0) + 1;
+        continue;
+      }
       if (!by.has(k)) by.set(k, new Map());
       const m = by.get(k);
       const b = Math.floor(y / size);
@@ -72,7 +124,32 @@
       b[k] = [lo];
       for (let i = lo; i <= hi; i += 1) b[k].push(m.get(i) || 0);
     }
-    return { size, b, u, n };
+    const data = { size, b, u, n };
+    /* the items wait, out of sight, for the author dates still on their way: the strip drawn from them is drawn again on arrival */
+    if (wait) {
+      Object.defineProperty(data, 'items', { value: items, enumerable: false });
+      Object.defineProperty(data, 'wait', { value: true, enumerable: false, writable: true });
+    }
+    return data;
+  }
+  /* a strip drawn before the author dates came is drawn again, in place, with them (the same figure, its legend reset) */
+  function redraw() {
+    if (typeof document === 'undefined') return;
+    for (const [id, r] of [...REG]) {
+      if (r.kind !== 'era' || !r.data || !r.data.wait) continue;
+      r.data.wait = false;
+      const fig = document.getElementById(id);
+      if (!fig) { REG.delete(id); continue; }
+      const data = bin(r.data.items, r.data.size || 25);
+      const und = (d) => Object.values(d.u || {}).reduce((s, v) => s + v, 0);
+      if (und(data) === und(r.data)) continue;
+      const tmp = document.createElement('div');
+      tmp.innerHTML = eraStrip(data, { ...r.opts, _id: id });
+      const next = tmp.firstElementChild;
+      if (!next) continue;
+      fig.replaceWith(next);
+      layout(next.parentElement || next);
+    }
   }
   const at = (run, i) => (run && i >= run[0] && i < run[0] + run.length - 1 ? run[i - run[0] + 1] : 0);
   const runTotal = (run) => (run ? run.slice(1).reduce((s, v) => s + v, 0) : 0);
@@ -143,7 +220,7 @@
     const hi = Math.max(...keys.map((k) => (data.b[k][0] + data.b[k].length - 1) * size));
     const from = Math.max(0, Math.floor(lo / 100) * 100);
     const to = Math.min(2100, Math.ceil((hi + size) / 100) * 100);
-    const id = uid('tg-era');
+    const id = opts._id || uid('tg-era');
     const name = namer(opts.labels);
     const r = { kind: 'era', data, from, to, off: new Set(), opts, name };
     REG.set(id, r);
@@ -270,7 +347,7 @@
   }
 
   /* ── (b) THE POSITION BLOCK ─────────────────────────────────────────────────────────────────────────────────────────── */
-  const yrOf = (h) => h.dates || (Number(h.y) > 0 && Number(h.y) < 9999 ? String(h.y) : '');
+  const yrOf = (h) => h.dates || (Number(h.y) > 0 && Number(h.y) < 9999 ? String(h.y) : '') || ((dateOf(nameOf(h)) || {}).dates || '');
   const citedOf = (h) => h.cited || (h.cite ? [h.cite] : []);
   const SHOWN = 6;
   function byTradition(hs) {
@@ -281,7 +358,7 @@
       by.get(k).push(h);
     }
     return [...by.entries()].sort((a, z) => z[1].length - a[1].length || ORDER.indexOf(a[0]) - ORDER.indexOf(z[0]))
-      .map(([k, xs]) => [k, xs.slice().sort((a, z) => (Number(a.y) || 9999) - (Number(z.y) || 9999))]);
+      .map(([k, xs]) => [k, xs.slice().sort((a, z) => (yearOf(a) || 9999) - (yearOf(z) || 9999))]);
   }
   /* the pages an answer stands on, a line a work; each opens the reader, and the line's Preview opens its first page here */
   function pagesHTML(cited, o) {
@@ -750,5 +827,15 @@
     return rootEl;
   }
 
-  return { TRADITIONS, ERAS, CANON, key, colour, label: (k, labels) => namer(labels)(key(k)), bin, eraStrip, eraMini, miniAxis, positionBlock, positionRows, questionMap, scriptureBand, preview, mount, layout, esc, fmt, ord };
+  /* the author dates for a page's own use: dates.ready (a promise: true once the key is in), dates.get(name) (his record or null),
+     dates.year(name) (the year to draw him at, 0 when undated), dates.label(name) (his dates as a line of text); year(item) is an
+     item's own year, else the key's for its name */
+  const dates = {
+    get ready() { return loadDates(); },
+    get: (name) => dateOf(name),
+    year: (name) => goodYear((dateOf(name) || {}).y),
+    label: (name) => (dateOf(name) || {}).dates || '',
+  };
+
+  return { TRADITIONS, ERAS, CANON, key, colour, label: (k, labels) => namer(labels)(key(k)), bin, year: yearOf, dates, eraStrip, eraMini, miniAxis, positionBlock, positionRows, questionMap, scriptureBand, preview, mount, layout, esc, fmt, ord };
 });

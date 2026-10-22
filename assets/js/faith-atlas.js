@@ -185,13 +185,16 @@ function positionsHTML(m,d){
 /* the question's split: the bar, then each answer named with its count */
 const splitHTML=ps=>ps.length?`${barHTML(ps,'split')}<p class="split-n">${ps.map(x=>`<span><i class="sw${x.pale?' pale':''}" style="--c:${x.c}" aria-hidden="true"></i>${esc(x.l)}<span class="ct">${x.n}</span></span>`).join('')}</p>`:'';
 const mapOf=id=>{if(!MAPPED.has(id))return Promise.resolve(null);if(!MAPQ.has(id))MAPQ.set(id,J(`/v1/maps/q/${encodeURIComponent(id)}.json`));return MAPQ.get(id);};
-const yearOf=a=>{const y=Number(a.y);return y>0&&y<9999?y:null;};
+/* an answer's year: its own, else the author dates' for its author (v1/enrich/author_dates.json, owner 2026-10-22 "date authors please";
+   the module loads the key and the question waits for it); an author the library cannot date stays in the lane's undated count */
+const yearOf=a=>{const y=Number(a.y);return y>0&&y<9999?y:(TG&&TG.dates&&TG.dates.year(a.author))||null;};
+const datesOf=a=>a.dates||(TG&&TG.dates?TG.dates.label(a.author):'');
 /* one question's figures: the split of its answers, the era strip's lanes (one an answer, each author at his year in his tradition),
    the traditions by answer, and its map's positions */
 function modelOf(d,m){
   const A=answersOf(d),keys=A.map(([k])=>k);
   const split=A.map(([k,l])=>({k,l,n:d.answers.filter(a=>a.answer===k).length})).filter(x=>x.n);
-  const lanes=A.map(([k,l])=>({k,l,dots:d.answers.filter(a=>a.answer===k).map(a=>({author:a.author,y:yearOf(a),dates:a.dates||'',tradition:a.tradition||''}))})).filter(x=>x.dots.length);
+  const lanes=A.map(([k,l])=>({k,l,dots:d.answers.filter(a=>a.answer===k).map(a=>({author:a.author,y:yearOf(a),dates:datesOf(a),tradition:a.tradition||''}))})).filter(x=>x.dots.length);
   const byT=new Map();for(const a of d.answers){const t=tkey(a.tradition);if(!byT.has(t))byT.set(t,{t,name:tname(a.tradition),c:tcol(a.tradition),r:new Map()});const g=byT.get(t);g.r.set(a.answer,(g.r.get(a.answer)||0)+1);}
   const traditions=[...byT.values()].map(g=>({t:g.t,name:g.name,c:g.c,n:[...g.r.values()].reduce((s,x)=>s+x,0),cells:keys.map(k=>[k,g.r.get(k)||0])})).sort((a,b)=>b.n-a.n||a.name.localeCompare(b.name));
   const total=m?(m.n||m.positions.reduce((s,p)=>s+p.holders.length,0)+(m.unplaced||[]).length):0;
@@ -211,7 +214,7 @@ function pagesHTML(list){
 // one row: who (name; dates and tradition) | his answer, and the work it stands in | the pages, at the right
 function rowHTML(a,k,fold){
   const list=a.cited&&a.cited.length?a.cited:(a.pages||[]).slice(0,3),works=[...new Set(list.map(x=>x[2]||x[0]))];
-  const sub=[a.dates,a.tradition].filter(Boolean).join(' · ');
+  const sub=[datesOf(a),a.tradition].filter(Boolean).join(' · ');
   return `<li class="hr"${fold&&k>=SHOWN?' hidden':''}><span class="h-who">${esc(a.author)}${sub?`<small>${esc(sub)}</small>`:''}</span><span class="h-line">${esc(a.line)}${works.length?`<small class="h-src">${works.map(esc).join('; ')}</small>`:''}</span><span class="h-pg">${pagesHTML(list)}</span></li>`;
 }
 /* THE QUESTION (2026-10-22, the atlas in the maps' language): its head and its split; when its answers were given, a lane an answer;
@@ -256,7 +259,7 @@ async function showQ(id,write){
   CUR=id;FILTER=null;AL.off.clear();document.querySelectorAll('#loci [data-q]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.q===id)));
   keepInView(document.querySelector(`#loci [data-q="${CSS.escape(id)}"]`));
   /* a question chosen while another was loading wins: the older answer is dropped; its map comes with it where it has one */
-  const [got,map]=await Promise.all([J(`/v1/atlas/q/${encodeURIComponent(id)}.json`),mapOf(id)]);if(CUR!==id)return;DATA=got;
+  const [got,map]=await Promise.all([J(`/v1/atlas/q/${encodeURIComponent(id)}.json`),mapOf(id),TG&&TG.dates?TG.dates.ready:null]);if(CUR!==id)return;DATA=got;
   if(!DATA){$('#q').innerHTML='<p class="muted">This question could not be loaded. Choose it again to retry.</p>';return;}
   MODEL=modelOf(DATA,map&&Array.isArray(map.positions)?map:null);
   renderQ();if(write)history.replaceState(null,'',`#${id}`);

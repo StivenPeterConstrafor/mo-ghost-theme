@@ -6,6 +6,24 @@ const $=s=>document.querySelector(s),esc=v=>String(v==null?'':v).replace(/[&<>"'
 const J=u=>fetch(u).then(r=>r.ok?r.json():null).catch(()=>null);
 const READER=(window.__FR_READER_PATH__||'/read');
 const read=(w,p)=>`${READER}?w=${encodeURIComponent(w)}#b${encodeURIComponent(p)}-0`;
+/* AUTHOR DATES (2026-10-22, owner: "date authors please"). v1/enrich/author_dates.json (tools/topic_graphics/build_author_dates.py) gives
+   a year for every author the library can date, keyed by the names the pages spell and their other spellings. A holder the map leaves
+   undated (y 9999) takes his year and dates from it when his question loads, so his row says when he wrote, his tradition's list runs in
+   order, and the diagram places him at his year instead of in the undated row. Without the key the map draws as before. */
+const DATES_P=J(`${BASE}/v1/enrich/author_dates.json?v=${encodeURIComponent(window.__FR_VER||'1')}`).then(k=>{
+  const by=(k&&k.authors)||{},fold=t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,''),f=new Map();
+  for(const [n,r] of Object.entries(by))for(const x of [n].concat(r.aliases||[])){const key=fold(x);if(key&&!f.has(key))f.set(key,r);}
+  return n=>by[n]||f.get(fold(n))||null;
+});
+function fillDates(d,dateOf){
+  if(!d||!dateOf)return d;
+  for(const h of [...(d.positions||[]).flatMap(p=>[...(p.holders||[]),...(p.first?[p.first]:[])]),...(d.unplaced||[])]){
+    const y=Number(h.y);if(y>0&&y<9999)continue;
+    const r=dateOf(h.author);if(!r||!(Number(r.y)>0))continue;
+    h.y=Number(r.y);if(!h.dates)h.dates=r.dates||String(r.y);
+  }
+  return d;
+}
 /* THE PAGE PREVIEW (2026-10-22, owner: "make it easy to preview things in the controversies, indices, etc"). A page reference keeps
    its link to the reader and gains a Preview that opens the page itself under its row: the page window (page-window.js) shows the
    cited page with the passage marked, the page before and after, and English, the source text or both. A Father in Migne or an
@@ -291,8 +309,8 @@ function show(id,push){
   document.querySelectorAll('.loci li button').forEach(b=>b.setAttribute('aria-current',String(b.dataset.id===id)));
   keepInView(document.querySelector(`.loci button[data-id="${CSS.escape(id)}"]`));
   $('#m').innerHTML='<p class="muted">Drawing the map…</p>';
-  Promise.all([J(`${BASE}/v1/maps/q/${encodeURIComponent(id)}.json`),PATHS_P]).then(([d])=>{
-    if(!d||CUR!==id)return;D=d;TRAD=new Set();FOLD=0;RING=true;
+  Promise.all([J(`${BASE}/v1/maps/q/${encodeURIComponent(id)}.json`),PATHS_P,DATES_P]).then(([d,,dateOf])=>{
+    if(!d||CUR!==id)return;D=fillDates(d,dateOf);TRAD=new Set();FOLD=0;RING=true;
     /* the Reformed and Lutheran metaphysicians on this question: placed, and the placed and dated drawn as rings (one a man a position,
        and none for a man the map already places there) */
     PL=placePaths(d);RINGS=[];
