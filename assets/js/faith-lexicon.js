@@ -53,7 +53,7 @@ async function showTerm(id,write){
   if(hl&&!SIBS.has(hk)){const lr=await J(`/v1/lexicon/letters/${encodeURIComponent(hl)}.json`);if(lr){const by=new Map();lr.forEach(x=>{const k=String(x[1]).toLowerCase();if(!by.has(k))by.set(k,[]);by.get(k).push(x);});by.forEach((v,k)=>{v.sort((a,b)=>(b[2]||0)-(a[2]||0));if(!SIBS.has(k))SIBS.set(k,v);});}}
   const sib=(SIBS.get(hk)||[]).filter(x=>x[0]!==id);
   const also=sib.length?`<p class="also">Also filed as ${sib.map(x=>`<button type="button" class="lnk" data-id="${esc(x[0])}">${esc([x[3],x[4]].filter(Boolean).join(' · ')||x[1])}<small> ${esc(x[2]||'')} ${x[2]===1?'work':'works'}</small></button>`).join(', ')}</p>`:'';
-  $('#entry').innerHTML=`<h2>${esc(t.headword)}</h2>${forms?`<p class="forms">${esc(forms)}</p>`:''}${also}<p class="muted">The senses below come from up to thirty of the works that define it; every work that does is listed under How the library defines it.</p>${
+  $('#entry').innerHTML=`<h2>${esc(t.headword)}</h2>${forms?`<p class="forms">${esc(forms)}</p>`:''}${also}<p class="muted">The senses below are drawn from the works that define it; every work that does is listed under How the library defines it.</p>${
     (t.senses||[]).map((s,i)=>`<section class="sense"><p><strong>${i+1}.</strong> ${esc(s.gloss)}</p><ol>${(s.src||[]).slice(0,12).map(([w,p,a,ti])=>`<li>${esc(a||'')}${a?', ':''}<a href="${read(w,p)}">${esc(ti||w)}, p. ${esc(p)}</a></li>`).join('')}${(s.src||[]).length>12?`<li>and ${(s.src||[]).length-12} more</li>`:''}</ol></section>`).join('')}<section class="hist" id="hist" aria-labelledby="hist-h"></section>`;
   showHistory(id);
   if(write)history.replaceState(null,'',`#${encodeURIComponent(id)}`);

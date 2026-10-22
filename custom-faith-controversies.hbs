@@ -104,8 +104,21 @@
 .tfr-tool .side :is(h3,h5).long{font-size:1rem;line-height:1.4}
 .tfr-tool .side h4,.tfr-tool .lbl{font:600 .8rem/1.4 var(--sans);color:var(--muted);margin:1rem 0 .3rem;display:flex;gap:.4rem;align-items:baseline}
 .tfr-tool .side .pos{margin:0;text-wrap:pretty}
+.tfr-tool .ops{margin:1.4rem 0 1rem;border-top:1px solid var(--fg)}
+.tfr-tool .op{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:.2rem 1.6rem;padding:1rem 0 .8rem;border-bottom:1px solid var(--border)}
+.tfr-tool .op h3{font:500 1.25rem/1.3 var(--font-display);margin:0 0 .25rem;text-wrap:balance;overflow-wrap:anywhere}
+.tfr-tool .op h3.long{font-size:1rem;line-height:1.4}
+.tfr-tool .op-n{margin:0 0 .1rem;font:600 .8rem/1.4 var(--sans);color:var(--muted)}
+.tfr-tool .op h4{font:600 .8rem/1.4 var(--sans);color:var(--muted);margin:.8rem 0 .3rem;display:flex;gap:.4rem;align-items:baseline}
+.tfr-tool .op-r>h4:first-child{margin-top:.1rem}
+.tfr-tool .op .pos{margin:0;text-wrap:pretty}
+.tfr-tool .res{margin:.2rem 0 .8rem;padding:.6rem .8rem;border:1px solid var(--border);border-radius:6px;background:var(--card-bg)}
+.tfr-tool .res .lbl{margin:0 0 .2rem;color:var(--fg);display:block}
+.tfr-tool .res .pos{margin:0;text-wrap:pretty}
+.tfr-tool .judgment .lbl{margin:1rem 0 .3rem}
 .tfr-tool p.who{margin:0 0 .35rem;font:600 1rem/1.4 var(--font-body);overflow-wrap:anywhere}
 .tfr-tool p.who a{text-decoration-thickness:1px;text-underline-offset:3px}
+.tfr-tool .side .pos+.who,.tfr-tool .side .own+.who{margin-top:.9rem}
 .tfr-tool ol.args{counter-reset:arg}
 .tfr-tool ol.args>li{grid-template-columns:1rem minmax(0,1fr) auto;column-gap:.6rem}
 .tfr-tool ol.args>li::before{counter-increment:arg;content:counter(arg);color:var(--muted);font:600 .8rem/1.6 var(--sans);font-variant-numeric:tabular-nums}
@@ -161,17 +174,81 @@
 .tfr-tool .plr-t a:hover{text-decoration-color:currentColor}
 .tfr-tool .plr-t .ct{margin-left:.4rem}
 .tfr-tool .plr-n{margin:0 0 .25rem;font-size:.8rem;line-height:1.45;color:var(--muted);text-wrap:pretty}
-.tfr-tool details.wk{margin:1.1rem 0 0;border-top:1px solid var(--fg)}
-.tfr-tool details.wk>summary{cursor:pointer;list-style:none;display:grid;grid-template-columns:1rem minmax(0,1fr) auto;gap:.4rem;align-items:baseline;padding:.6rem 0 .3rem;font:500 1rem/1.35 var(--font-display)}
-.tfr-tool details.wk>summary::-webkit-details-marker{display:none}
-.tfr-tool details.wk>summary::before{content:"+";color:var(--muted);font:400 1rem/1 var(--sans)}
-.tfr-tool details.wk[open]>summary::before{content:"\2212"}
-.tfr-tool details.wk .sides{margin:.6rem 0 .4rem}
-.tfr-tool .cl{margin:0 0 .6rem}
-.tfr-tool .cl>li{display:block}
-.tfr-tool .cl a{text-decoration:none}
-.tfr-tool .cl a:hover{text-decoration:underline}
-.tfr-tool .cl small{display:block;color:var(--muted);font-size:.8rem}
+.tfr-tool p.argued{margin:.1rem 0 0;max-width:72ch;text-wrap:pretty}
+.tfr-tool p.argued a,.tfr-tool .pg-src a{text-decoration-color:var(--border);text-decoration-thickness:1px;text-underline-offset:3px}
+.tfr-tool p.argued a:hover,.tfr-tool .pg-src a:hover{text-decoration-color:currentColor}
+.tfr-tool .pg-src{margin:.35rem 0 .2rem;font-size:.8rem;line-height:1.55;color:var(--muted);text-wrap:pretty}
+.tfr-tool .pg-src a{color:var(--fg)}
+.tfr-tool .pg-src a[aria-current="page"]{font-weight:600;text-decoration-color:currentColor;text-decoration-thickness:2px}
+.tfr-tool .tabs{display:flex;gap:1.6rem;margin:1.2rem 0 1.2rem;border-bottom:1px solid var(--border)}
+.tfr-tool .tabs [role="tab"]{margin:0 0 -1px;padding:.45rem 0;border:0;border-bottom:2px solid transparent;background:none;color:var(--muted);font:500 1.25rem/1.3 var(--font-display);cursor:pointer}
+.tfr-tool .tabs [role="tab"]:hover{color:var(--fg)}
+.tfr-tool .tabs [role="tab"][aria-selected="true"]{color:var(--fg);border-bottom-color:var(--fg)}
+.tfr-tool details.lu{margin:0 0 1.4rem;border-bottom:1px solid var(--border)}
+.tfr-tool details.lu>summary{cursor:pointer;list-style:none;display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem 1.1rem;padding:.2rem 0 .7rem;font:500 1.25rem/1.3 var(--font-display)}
+.tfr-tool details.lu>summary::-webkit-details-marker{display:none}
+.tfr-tool details.lu>summary::before{content:"+";width:.8rem;color:var(--muted);font:400 1rem/1 var(--sans)}
+.tfr-tool details.lu[open]>summary::before{content:"\2212"}
+.tfr-tool .lu-dig{display:flex;flex-wrap:wrap;gap:.1rem .9rem;color:var(--muted);font:400 .8rem/1.5 var(--sans)}
+.tfr-tool .lu-dig .dot{margin-right:.3rem}
+.tfr-tool details.lu .schools{margin:0 0 1.2rem}
+.tfr-tool .qf{display:flex;flex-wrap:wrap;gap:.4rem;margin:0 0 .8rem}
+.tfr-tool .qf select{min-width:0;max-width:100%;padding:.3rem .5rem;border:1px solid var(--border);border-radius:6px;background:var(--card-bg);color:var(--fg);font:.8rem/1.3 var(--sans)}
+.tfr-tool .tgl{display:inline-flex;align-items:center;border:1px solid var(--border);background:var(--card-bg);color:var(--fg);padding:.25rem .65rem;border-radius:999px;font:600 .8rem/1.2 var(--sans);cursor:pointer}
+.tfr-tool .tgl .ct{margin-left:.35rem}
+.tfr-tool .tgl[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.tfr-tool .tgl[aria-pressed="true"] .ct{color:inherit}
+.tfr-tool :is(.qf select,.tgl):focus-visible,.tfr-tool .tabs [role="tab"]:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.tfr-tool .qw{margin:1.4rem 0 0}
+.tfr-tool .qw-h{display:flex;justify-content:space-between;align-items:baseline;gap:.8rem;margin:0;padding:.55rem 0 .35rem;border-top:1px solid var(--fg);font:500 1.25rem/1.3 var(--font-display);text-wrap:balance}
+.tfr-tool .qw-h a{text-decoration-color:var(--border);text-decoration-thickness:1px;text-underline-offset:4px}
+.tfr-tool .qw-h a:hover{text-decoration-color:currentColor}
+.tfr-tool ol.qis{list-style:none;margin:0;padding:0}
+.tfr-tool ol.qis>li{border-top:1px solid var(--border)}
+.tfr-tool details.qi>summary{cursor:pointer;list-style:none;display:grid;grid-template-columns:1rem minmax(0,1fr);column-gap:.4rem;padding:.55rem 0}
+.tfr-tool details.qi>summary::-webkit-details-marker{display:none}
+.tfr-tool details.qi>summary::before{content:"+";grid-row:1/span 2;color:var(--muted);font:400 1rem/1.45 var(--sans)}
+.tfr-tool details.qi[open]>summary::before{content:"\2212"}
+.tfr-tool .qi-q{text-wrap:pretty}
+.tfr-tool details.qi>summary small{grid-column:2;color:var(--muted);font:.8rem/1.45 var(--sans)}
+.tfr-tool .qi-b{padding:0 0 1rem 1.4rem}
+.tfr-tool .qi-src{display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem .8rem;margin:0 0 .2rem;font-size:.8rem;color:var(--muted)}
+.tfr-tool .qi-src>span:first-child{flex:1 1 14rem;min-width:0}
+.tfr-tool .qi-open{white-space:nowrap}
+.tfr-tool .qi-b .sides{margin:.6rem 0 .6rem}
+.tfr-tool .qi-b .side .lbl{margin:.5rem 0 .2rem}
+/* THE PAGE PREVIEW (2026-10-22, owner: "make it easy to preview things in the controversies, indices, etc"): a page reference's
+   Preview opens the page itself under its row, in the page window (page-window.js; its look is work-hub.css). The same block on the
+   controversies, the maps, the atlas, the shared questions and the set indexes. Here the cited page is named in its head rather than
+   marked by a stripe, every page reads at full strength, the passage is marked in a tint of the ink, and Both stacks the two texts
+   when the column is narrow (a side's preview sits in its side). */
+.tfr-tool .pgs{display:inline-flex;flex:none;align-items:baseline;white-space:nowrap}
+.tfr-tool .pvb{position:relative;display:inline-flex;align-items:center;margin-left:.45rem;padding:.1rem .55rem;border:1px solid var(--border);border-radius:999px;background:var(--card-bg);color:var(--fg);font:600 .8rem/1.2 var(--sans,var(--font-body));text-decoration:none;white-space:nowrap;cursor:pointer}
+.tfr-tool .pvb:hover{border-color:var(--fg)}
+.tfr-tool .pvb[aria-expanded="true"]{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.tfr-tool a.pvl[aria-expanded="true"]{background:var(--fg);color:var(--bg);text-decoration:none;border-radius:2px;box-shadow:0 0 0 2px var(--fg)}
+.tfr-tool .pvb:focus-visible,.tfr-tool .pvl:focus-visible,.tfr-tool .pvw :is(a,button):focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+@media (pointer:coarse){.tfr-tool .pvb::after{content:"";position:absolute;inset:-.55rem -.2rem}}
+.tfr-tool .pvw{grid-column:1/-1;flex:1 0 100%;margin:.6rem 0 .8rem;border:1px solid var(--border);border-radius:6px;background:var(--card-bg);overflow:hidden;container-type:inline-size;text-align:left;white-space:normal;font-style:normal;font-size:1rem;--accent:var(--fg);--accent-soft:color-mix(in srgb,var(--fg) 20%,var(--card-bg));--body:var(--font-body)}
+.tfr-tool .pvw-head{display:flex;flex-wrap:wrap;align-items:center;gap:.1rem 1rem;padding:.2rem .75rem;background:var(--bg);font:.8rem/1.3 var(--font-body)}
+.tfr-tool .pvw-at{margin-right:auto;font-weight:600;font-variant-numeric:tabular-nums}
+.tfr-tool .pvw-head a,.tfr-tool .pvw-x{display:inline-flex;align-items:center;min-height:2rem;padding:0;border:0;background:none;color:var(--fg);font:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.tfr-tool .pvw-pp{display:flex;flex-wrap:wrap;gap:.25rem}
+@container (max-width:30rem){.tfr-tool .pvw-pp{order:3;flex-basis:100%;padding-bottom:.3rem}}
+.tfr-tool .pvw-pp button{min-width:2rem;min-height:1.75rem;padding:0 .45rem;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--fg);font:inherit;font-variant-numeric:tabular-nums;cursor:pointer}
+.tfr-tool .pvw-pp button[aria-pressed="true"]{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.tfr-tool .pvw .pw-page h4{display:block;margin:0 0 6px;padding:0;border:0;font:600 .8rem/1.3 var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tfr-tool .pvw .pw-col h5{margin:.4em 0 .6em;padding:0;border:0;font:600 1rem/1.4 var(--body);text-align:center;text-wrap:balance;color:var(--fg)}
+.tfr-tool .pvw .pw-col p{margin:0 0 .7em;max-width:70ch;font:1rem/1.65 var(--body);color:var(--fg);white-space:pre-line}
+.tfr-tool .pvw .pw-col p:last-child{margin-bottom:0}
+.tfr-tool .pvw .pw-col .pw-none{color:var(--muted);font-style:italic;font-size:.8rem}
+.tfr-tool .pvw .pw-cited{border-left:0;padding-left:0;margin-left:0}
+.tfr-tool .pvw .pw-page:not(.pw-cited){opacity:1}
+.tfr-tool .pvw .pw-wait a{color:var(--fg)}
+@container (max-width:36rem){.tfr-tool .pvw .pw-two{grid-template-columns:minmax(0,1fr);gap:.8rem}}
+@media (prefers-reduced-motion:no-preference){.tfr-tool .pvw{animation:pvw-in .18s cubic-bezier(.22,1,.36,1)}}
+@keyframes pvw-in{from{opacity:0;transform:translateY(-3px)}}
+.tfr-tool .ap-who .pgs{margin-left:.3rem}
 @media (max-width:900px){.tfr-tool .schools{grid-template-columns:repeat(2,minmax(0,1fr))}
 .tfr-tool ol.plr>li{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 .tfr-tool .plr-t{grid-column:1/-1}}
@@ -182,6 +259,8 @@
 .tfr-tool .nav{position:static;max-height:none;overflow:visible}
 .tfr-tool .books{max-height:min(55vh,24rem);overflow:auto;overscroll-behavior:contain;border-bottom:1px solid var(--border)}
 .tfr-tool .sides{grid-template-columns:1fr}
+.tfr-tool .op{grid-template-columns:minmax(0,1fr)}
+.tfr-tool .op-r>h4:first-child{margin-top:.8rem}
 .tfr-tool .lab{grid-template-columns:1fr;gap:0}
 .tfr-tool .lab dd{margin-bottom:.35rem}
 .tfr-tool .across-pos li{grid-template-columns:1fr 2.5rem}
@@ -189,17 +268,19 @@
 .tfr-tool .next{flex-direction:column}
 .tfr-tool .next button+button,.tfr-tool .next span+button{text-align:left}
 .tfr-tool .schools{gap:1.2rem 1.2rem}
-.tfr-tool ol.plr>li{grid-template-columns:minmax(0,1fr)}}
+.tfr-tool ol.plr>li{grid-template-columns:minmax(0,1fr)}
+.tfr-tool .qi-b{padding-left:0}
+.tfr-tool .tabs{gap:1.2rem}}
 @media (max-width:360px){.tfr-tool .schools{grid-template-columns:minmax(0,1fr)}}
 </style>
 {{/contentFor}}
 {{!-- /the-faith-received/controversies/: the controversies, as The Faith Received has them (tools/prdl_reader_prototype/controversies.html, 2026-10-22):
-     the works of controversy under the debate each names (Thomists and Scotists, Rome and the Reformation, the Reformed and their adversaries,
-     the Lutherans and the Socinians). A debate's view (#debate/<debate>) lines its authors up by school, or side by side, and gathers its
-     controversies under the classic question each answers, each side in its authors' own words; a work's view (#<pair>, #<controversy id>)
-     reads its controversies one by one: each side's position and arguments with the work's page, its judgment, and each side in his own
-     words from the pages of his works (v1/enrich/controversies on the library worker). The hero is the theme's; the body and
-     faith-controversies.js the library's. --}}
+     the debates (index.json names them; a controversy's debate is the adversary it names, so a work argues in several), each opening on its
+     questions (#debate/<debate>, one question #debate/<debate>/<question id>, from v1/enrich/controversies/debates/<debate>.json): every
+     work's controversies on the question, each side in its authors' own words, then the classic question across the tradition. The works
+     are its sources: the By work tab (#debate/<debate>/works) and each work's own view (#<pair>, #<controversy id>), which reads its
+     controversies one by one and links each up to its debate's question (v1/enrich/controversies on the library worker). The hero is the
+     theme's; the body and faith-controversies.js the library's. --}}
 <section class="bhero bhero--tool">
   <div class="bhero-inner container">
     <p class="bhero-kicker"><a href="/the-faith-received/">The Faith Received</a> <span aria-hidden="true">&middot;</span> Controversies</p>
@@ -225,4 +306,5 @@
   </div>
   <p class="note" id="note"></p>
 </div></main>
-<script src="{{asset "js/faith-controversies.js"}}&amp;frv=db3216d10399ae17"></script>
+<link rel="stylesheet" href="{{asset "css/port/work-hub.css"}}&amp;frv=0374a552e8452478"><script src="{{asset "js/port/page-window.js"}}&amp;frv=2023bacb69cf7ee4"></script>
+<script src="{{asset "js/faith-controversies.js"}}&amp;frv=674d61d7ec08e365"></script>

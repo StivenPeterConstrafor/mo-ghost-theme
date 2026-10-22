@@ -146,6 +146,37 @@
 .tfr-tool .next{flex-direction:column}
 .tfr-tool .next span+button,.tfr-tool .next button+button{text-align:left}}
 @media (prefers-reduced-motion:no-preference){.tfr-tool svg.map .dot circle{transition:r .12s ease-out}}
+/* THE PAGE PREVIEW (2026-10-22, owner: "make it easy to preview things in the controversies, indices, etc"): a page reference's
+   Preview opens the page itself under its row, in the page window (page-window.js; its look is work-hub.css). The same block on the
+   controversies, the maps, the atlas, the shared questions and the set indexes. Here the cited page is named in its head rather than
+   marked by a stripe, every page reads at full strength, the passage is marked in a tint of the ink, and Both stacks the two texts
+   when the column is narrow (a side's preview sits in its side). */
+.tfr-tool .pgs{display:inline-flex;flex:none;align-items:baseline;white-space:nowrap}
+.tfr-tool .pvb{position:relative;display:inline-flex;align-items:center;margin-left:.45rem;padding:.1rem .55rem;border:1px solid var(--border);border-radius:999px;background:var(--card-bg);color:var(--fg);font:600 .8rem/1.2 var(--sans,var(--font-body));text-decoration:none;white-space:nowrap;cursor:pointer}
+.tfr-tool .pvb:hover{border-color:var(--fg)}
+.tfr-tool .pvb[aria-expanded="true"]{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.tfr-tool a.pvl[aria-expanded="true"]{background:var(--fg);color:var(--bg);text-decoration:none;border-radius:2px;box-shadow:0 0 0 2px var(--fg)}
+.tfr-tool .pvb:focus-visible,.tfr-tool .pvl:focus-visible,.tfr-tool .pvw :is(a,button):focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+@media (pointer:coarse){.tfr-tool .pvb::after{content:"";position:absolute;inset:-.55rem -.2rem}}
+.tfr-tool .pvw{grid-column:1/-1;flex:1 0 100%;margin:.6rem 0 .8rem;border:1px solid var(--border);border-radius:6px;background:var(--card-bg);overflow:hidden;container-type:inline-size;text-align:left;white-space:normal;font-style:normal;font-size:1rem;--accent:var(--fg);--accent-soft:color-mix(in srgb,var(--fg) 20%,var(--card-bg));--body:var(--font-body)}
+.tfr-tool .pvw-head{display:flex;flex-wrap:wrap;align-items:center;gap:.1rem 1rem;padding:.2rem .75rem;background:var(--bg);font:.8rem/1.3 var(--font-body)}
+.tfr-tool .pvw-at{margin-right:auto;font-weight:600;font-variant-numeric:tabular-nums}
+.tfr-tool .pvw-head a,.tfr-tool .pvw-x{display:inline-flex;align-items:center;min-height:2rem;padding:0;border:0;background:none;color:var(--fg);font:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.tfr-tool .pvw-pp{display:flex;flex-wrap:wrap;gap:.25rem}
+@container (max-width:30rem){.tfr-tool .pvw-pp{order:3;flex-basis:100%;padding-bottom:.3rem}}
+.tfr-tool .pvw-pp button{min-width:2rem;min-height:1.75rem;padding:0 .45rem;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--fg);font:inherit;font-variant-numeric:tabular-nums;cursor:pointer}
+.tfr-tool .pvw-pp button[aria-pressed="true"]{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.tfr-tool .pvw .pw-page h4{display:block;margin:0 0 6px;padding:0;border:0;font:600 .8rem/1.3 var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tfr-tool .pvw .pw-col h5{margin:.4em 0 .6em;padding:0;border:0;font:600 1rem/1.4 var(--body);text-align:center;text-wrap:balance;color:var(--fg)}
+.tfr-tool .pvw .pw-col p{margin:0 0 .7em;max-width:70ch;font:1rem/1.65 var(--body);color:var(--fg);white-space:pre-line}
+.tfr-tool .pvw .pw-col p:last-child{margin-bottom:0}
+.tfr-tool .pvw .pw-col .pw-none{color:var(--muted);font-style:italic;font-size:.8rem}
+.tfr-tool .pvw .pw-cited{border-left:0;padding-left:0;margin-left:0}
+.tfr-tool .pvw .pw-page:not(.pw-cited){opacity:1}
+.tfr-tool .pvw .pw-wait a{color:var(--fg)}
+@container (max-width:36rem){.tfr-tool .pvw .pw-two{grid-template-columns:minmax(0,1fr);gap:.8rem}}
+@media (prefers-reduced-motion:no-preference){.tfr-tool .pvw{animation:pvw-in .18s cubic-bezier(.22,1,.36,1)}}
+@keyframes pvw-in{from{opacity:0;transform:translateY(-3px)}}
 </style>
 {{/contentFor}}
 {{!-- /the-faith-received/maps/: Maps of the tradition, as The Faith Received has them (tools/prdl_reader_prototype/maps.html, 2026-10-21): for each
@@ -170,4 +201,5 @@
   </div>
   <p class="note" id="note"></p>
 </div></main>
-<script src="{{asset "js/faith-maps.js"}}&amp;frv=82f109de8630161c"></script>
+<link rel="stylesheet" href="{{asset "css/port/work-hub.css"}}&amp;frv=0374a552e8452478"><script src="{{asset "js/port/page-window.js"}}&amp;frv=2023bacb69cf7ee4"></script>
+<script src="{{asset "js/faith-maps.js"}}&amp;frv=c65e04e1d0e30757"></script>

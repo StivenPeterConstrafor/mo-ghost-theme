@@ -9,18 +9,102 @@ const J=u=>fetch(BLOB+u).then(r=>r.ok?r.json():null).catch(()=>null);
 // MereO hosts the same page with its own reader path (window.__FR_READER_PATH__ = '/the-faith-received/read/') and data address
 const READER=(window.__FR_READER_PATH__||'/read');
 const read=(w,p)=>`${READER}?w=${encodeURIComponent(w)}#b${encodeURIComponent(p)}-0`;
+/* THE PAGE PREVIEW (2026-10-22, owner: "make it easy to preview things in the controversies, indices, etc"). A page reference keeps
+   its link to the reader and gains a Preview that opens the page itself under its row: the page window (page-window.js) shows the
+   cited page with the passage marked, the page before and after, and English, the source text or both. A Father in Migne or an
+   EEBO book, which the page window cannot read, is read by the Scripture page's reader of them (FRCommentaryText, commentary-pane.js,
+   loaded on the first such preview with its pane left off), in the same markup. Failing both, the button turns into the reader link;
+   never the reader in a frame. One preview a column (cfg.col): opening another there closes it; Escape closes it. The same block on
+   the controversies, the maps, the atlas, the shared questions and the set indexes, and in Mere Orthodoxy's ports of them (where
+   cfg.text is empty, so a Father in Migne opens the reader). */
+const PVW=(cfg=>{
+  const FAMILY=/^(?:pld|pg|po|eebo)-\d+$/,NONE=new Set(),OPEN=[];
+  let seq=0,text=null;
+  const at=(w,p)=>`${/^(?:pld|pg)-/.test(w)?'col.':'p.'} ${p}`;
+  const can=w=>!FAMILY.test(w)||!!cfg.text;
+  const reader=()=>text||(text=window.FRCommentaryText?Promise.resolve(window.FRCommentaryText):new Promise(res=>{
+    window.FR_COMMENTARY_PANE=false;const s=document.createElement('script');s.src=cfg.text;
+    s.onload=()=>res(window.FRCommentaryText||null);s.onerror=()=>res(null);document.head.appendChild(s);}));
+  async function fill(el,w,p,hl){
+    try{
+      if(FAMILY.test(w)){const T=cfg.text?await reader():null;return T?await T.fill(el,{slug:w,page:p}):false;}
+      return window.FRPageWindow?await window.FRPageWindow.fill(el,{slug:w,page:p,hl}):false;
+    }catch(_){return false;}
+  }
+  const link=(w,p)=>`<a class="pvb" href="${esc(cfg.read(w,p))}" target="_blank" rel="noopener">Open in the reader</a>`;
+  /* the button after a page link: w the work, p the page, hl the passage's own words to mark, ps every page the row cites there */
+  function btn(w,p,hl,ps){
+    if(!w||p==null||p==='')return '';
+    if(!can(w)||NONE.has(`${w}|${p}`))return link(w,p);
+    return `<button type="button" class="pvb" data-pv="${esc(w)}|${esc(p)}"${hl?` data-pv-hl="${esc(String(hl).slice(0,400))}"`:''}${ps&&ps.length>1?` data-pv-pages="${esc(ps.join(','))}"`:''} aria-expanded="false" aria-label="Preview ${esc(at(w,p))}">Preview</button>`;
+  }
+  /* an index's page number: the number itself opens its page here; with a modifier key it opens the reader, as a link does */
+  function loc(w,p){
+    const href=esc(cfg.read(w,p));
+    return can(w)&&!NONE.has(`${w}|${p}`)?`<a class="pvl" href="${href}" data-pv="${esc(w)}|${esc(p)}" aria-expanded="false">${esc(p)}</a>`:`<a href="${href}">${esc(p)}</a>`;
+  }
+  function close(box,focus){
+    if(!box)return false;
+    const i=OPEN.indexOf(box);if(i>=0)OPEN.splice(i,1);
+    const t=box._t,was=box.isConnected;box.remove();
+    if(t&&t.isConnected){
+      t.removeAttribute('aria-controls');
+      if(t.dataset.pv)t.setAttribute('aria-expanded','false');else t.removeAttribute('aria-expanded');
+      if(focus)t.focus();
+    }
+    return was;
+  }
+  async function show(box,w,p){
+    const t=box._t,hl=((t.closest('[data-pv-hl]')||{}).dataset||{}).pvHl||'',body=document.createElement('div');
+    body.className='pvw-body';body.innerHTML='<p class="pw-wait" role="status">Loading the page…</p>';
+    box.querySelector('.pvw-body').replaceWith(body);
+    box.querySelector('.pvw-at').textContent=at(w,p);box.querySelector('.pvw-open').href=cfg.read(w,p);
+    box.querySelectorAll('[data-pv-page]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.pvPage===String(p))));
+    const ok=await fill(body,w,p,hl);
+    if(!body.isConnected)return;
+    if(ok){box.scrollIntoView({block:'nearest'});return;}
+    NONE.add(`${w}|${p}`);
+    if(t.tagName==='BUTTON'&&!box.querySelector('[data-pv-page]')){
+      const a=document.createElement('a'),had=box.contains(document.activeElement)||document.activeElement===t;
+      a.className='pvb';a.href=cfg.read(w,p);a.target='_blank';a.rel='noopener';a.textContent='Open in the reader';
+      close(box,false);t.replaceWith(a);if(had)a.focus();return;
+    }
+    if(t.tagName==='A')t.removeAttribute('data-pv');
+    body.innerHTML=`<p class="pw-wait">This page cannot be shown here. <a href="${esc(cfg.read(w,p))}" target="_blank" rel="noopener">Open ${esc(at(w,p))} in the reader ↗</a></p>`;
+  }
+  function open(t){
+    const [w,p]=t.dataset.pv.split('|'),host=t.closest(cfg.host)||t.closest('div,section,article,li,figure')||t.parentElement,col=t.closest(cfg.col);
+    const was=OPEN.some(b=>b.isConnected&&b._t===t);
+    for(const b of OPEN.slice())if(!b.isConnected||b.closest(cfg.col)===col)close(b,false);
+    if(was)return;
+    const ps=(t.dataset.pvPages||'').split(',').filter(Boolean),box=document.createElement('div');
+    box.className='pvw';box.id=`pvw-${++seq}`;box._t=t;box.setAttribute('aria-live','off');
+    box.innerHTML=`<div class="pvw-head"><span class="pvw-at"></span>${ps.length>1?`<span class="pvw-pp" role="group" aria-label="The pages cited">${ps.map(x=>`<button type="button" data-pv-page="${esc(x)}" aria-pressed="false">${esc(x)}</button>`).join('')}</span>`:''}<a class="pvw-open" target="_blank" rel="noopener">Open in the reader ↗</a><button type="button" class="pvw-x" data-pv-close>Close preview</button></div><div class="pvw-body"></div>`;
+    host.appendChild(box);t.setAttribute('aria-expanded','true');t.setAttribute('aria-controls',box.id);OPEN.push(box);
+    show(box,w,p);
+  }
+  document.addEventListener('click',e=>{
+    const x=e.target.closest('[data-pv-close]');if(x){close(x.closest('.pvw'),true);return;}
+    const n=e.target.closest('[data-pv-page]');if(n){const box=n.closest('.pvw');if(box&&box._t&&box._t.dataset.pv)show(box,box._t.dataset.pv.split('|')[0],n.dataset.pvPage);return;}
+    const t=e.target.closest('[data-pv]');
+    if(!t||(t.tagName==='A'&&(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button!==0)))return;
+    e.preventDefault();open(t);
+  });
+  return {btn,loc,can,escape(){const a=document.activeElement,box=(a&&a.closest&&a.closest('.pvw'))||OPEN.filter(b=>b.isConnected).pop();return close(box,true);}};
+})({read,col:'#q',host:'.hr',text:''});
 const MAPS='/the-faith-received/maps/';
 const ANS=[['affirms','Affirm'],['denies','Deny'],['distinguishes','Distinguish'],['reports only','Report others only'],['unclear','Unclear']];
 const SHOWN=6;
 let CUR=null,FILTER=null,DATA=null,FOLD=0;
 // an open question ("For whom Christ died") carries the positions the schools took, in place of affirm and deny
 const answersOf=d=>d.options?[...d.options.map(o=>[o,o]),['reports only','Report others only'],['unclear','Unclear']]:ANS;
-// the pages an answer stands on, a line a work: "p. 446", or "pp. 361, 373, 375"; each opens the reader in a new tab, as on the maps
+// the pages an answer stands on, a line a work: "p. 446", or "pp. 361, 373, 375"; each opens the reader in a new tab, as on the maps,
+// and the line's Preview opens its first page here (the others are in the preview's head)
 function pagesHTML(list){
   const by=new Map();for(const [w,p,t] of list){if(!by.has(w))by.set(w,{t:t||w,ps:[]});const g=by.get(w);if(!g.ps.includes(p))g.ps.push(p);}
   return [...by.entries()].map(([w,{t,ps}])=>ps.length===1
-    ?`<span class="pp"><a class="pg" href="${read(w,ps[0])}" target="_blank" rel="noopener" title="${esc(t)}" aria-label="${esc(t)}, page ${esc(ps[0])}, opens the reader">p. ${esc(ps[0])}</a></span>`
-    :`<span class="pp" title="${esc(t)}">pp. ${ps.map(p=>`<a class="pg" href="${read(w,p)}" target="_blank" rel="noopener" aria-label="${esc(t)}, page ${esc(p)}, opens the reader">${esc(p)}</a>`).join(', ')}</span>`).join('');
+    ?`<span class="pp"><a class="pg" href="${read(w,ps[0])}" target="_blank" rel="noopener" title="${esc(t)}" aria-label="${esc(t)}, page ${esc(ps[0])}, opens the reader">p. ${esc(ps[0])}</a>${PVW.btn(w,ps[0])}</span>`
+    :`<span class="pp" title="${esc(t)}">pp. ${ps.map(p=>`<a class="pg" href="${read(w,p)}" target="_blank" rel="noopener" aria-label="${esc(t)}, page ${esc(p)}, opens the reader">${esc(p)}</a>`).join(', ')}${PVW.btn(w,ps[0],'',ps)}</span>`).join('');
 }
 // one row: who (name; dates and tradition) | his answer, and the work it stands in | the pages, at the right
 function rowHTML(a,k,fold){
@@ -61,6 +145,7 @@ document.addEventListener('click',e=>{
     [...ol.children].forEach((li,k)=>{if(k>=SHOWN)li.hidden=!open;});more.setAttribute('aria-expanded',String(open));more.textContent=open?'Show fewer':`Show all ${more.dataset.n}`;
     if(!open&&more.getBoundingClientRect().top<0)ol.scrollIntoView({block:'start'});}
 });
+addEventListener('keydown',e=>{if(e.key==='Escape'&&PVW.escape())e.preventDefault();});
 J('/v1/atlas/index.json').then(d=>{
   if(!d){$('#loci').innerHTML='<p class="muted">The atlas could not be loaded. Reload the page to try again.</p>';return;}
   const by=new Map();for(const x of d.questions){if(!by.has(x.locus))by.set(x.locus,[]);by.get(x.locus).push(x);}
