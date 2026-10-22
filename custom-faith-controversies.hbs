@@ -8,7 +8,7 @@
 <link rel=stylesheet href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Source+Serif+Pro:ital,wght@0,400;0,600;1,400&display=swap">
 <style>
 .tfr-tool{--bg:var(--color-bg,#F0F0ED);--fg:var(--color-dark,#1C1C1A);--muted:var(--color-muted,#5A5A56);--border:var(--color-rule,#D8D8D3);--card-bg:var(--color-card,#FFFFFF);--highlight:var(--color-highlight,#E7E7E2);--accent:var(--color-accent,#8A3B2E);--sel:var(--card-bg);--font-display:"EB Garamond",Georgia,serif;--font-body:"Source Serif Pro",Georgia,serif;--sans:"Source Serif Pro",Georgia,serif;--ease:cubic-bezier(.22,1,.36,1);
-  --s-thomist:#2F5E99;--s-scotist:#7A4E9B;--s-nominalist:#A87420;--s-jesuit:#1F7A80;--s-augustinian:#94506E;--s-other:#7A7A76}
+  --s-thomist:#2F5E99;--s-scotist:#7A4E9B;--s-nominalist:#A87420;--s-jesuit:#1F7A80;--s-augustinian:#94506E;--s-other:#7A7A76;--s-bonaventurian:#66702E}
 /* THE CONTROVERSIES (2026-10-21, owner: "as comprehensive and deep as possible, like being able to see differences between Thomas vs
    Scotus (like Juan de Rada shows) and more"). v1/enrich/controversies (runs/minimax_1019/controversies): a pair's controversies as the
    library's own controversy literature argued them, question by question, each side in his own words.
@@ -40,7 +40,18 @@
 .tfr-tool .sc-jesuit{--sc:var(--s-jesuit)}
 .tfr-tool .sc-augustinian{--sc:var(--s-augustinian)}
 .tfr-tool .sc-othermedieval{--sc:var(--s-other)}
+.tfr-tool .sc-bonaventurian,.tfr-tool .sc-bonaventurians{--sc:var(--s-bonaventurian)}
+.tfr-tool .pt-orthodox,.tfr-tool .pt-voetian{--sc:var(--s-thomist)}
+.tfr-tool .pt-cocceian{--sc:var(--s-bonaventurian)}
+.tfr-tool .pt-antinomian{--sc:var(--s-nominalist)}
+.tfr-tool .pt-baxterian,.tfr-tool .pt-neonomian{--sc:var(--s-jesuit)}
+.tfr-tool .pt-amyraldian,.tfr-tool .pt-arminian{--sc:var(--s-augustinian)}
+.tfr-tool .pt-baptist{--sc:var(--s-scotist)}
+.tfr-tool .pt-lutheran,.tfr-tool .pt-papist,.tfr-tool .pt-socinian{--sc:var(--muted)}
+.tfr-tool .pt-other{--sc:var(--s-other)}
 .tfr-tool .dot{display:inline-block;flex:none;width:.6rem;height:.6rem;margin-right:.45rem;border-radius:50%;background:var(--sc,var(--s-other));vertical-align:.08em}
+.tfr-tool .pty{display:inline-flex;align-items:center;margin-left:.5rem;padding:0 .5rem 0 .4rem;border:1px solid var(--border);border-radius:999px;color:var(--fg);font:600 .8rem/1.5 var(--sans);white-space:nowrap;vertical-align:.15em}
+.tfr-tool .pty .dot{width:.5rem;height:.5rem;margin-right:.3rem;vertical-align:0}
 .tfr-tool .sch{color:var(--muted);font-weight:400}
 .tfr-tool .pairs{margin:0 0 1.8rem;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
 .tfr-tool .pairs>summary{cursor:pointer;list-style:none;display:flex;align-items:baseline;gap:.6rem;padding:.65rem .1rem;font:500 1rem/1.3 var(--font-display)}
@@ -221,6 +232,44 @@
 .tfr-tool .qi-open{white-space:nowrap}
 .tfr-tool .qi-b .sides{margin:.7rem 0 .7rem}
 .tfr-tool .qi-b .side .lbl{margin:.5rem 0 .2rem}
+.tfr-tool .deb-sub{max-width:72ch;margin:-.2rem 0 .55rem;color:var(--muted);text-wrap:pretty}
+.tfr-tool #dnet{margin-top:1.3rem}
+.tfr-tool .pmw{margin:0 0 .3rem}
+.tfr-tool .pm-top{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:.3rem 2rem;margin:0 0 .7rem}
+.tfr-tool .pm-key{max-width:84ch;margin:0;color:var(--tg-muted,var(--muted));font:400 .8rem/1.55 var(--sans);text-wrap:pretty}
+.tfr-tool .pm-lg{display:flex;flex-wrap:wrap;align-items:center;gap:.1rem .7rem;margin:0;color:var(--tg-muted,var(--muted));font:400 .8rem/1.55 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tfr-tool .pm-lg>span{display:inline-flex;align-items:center;gap:.3rem}
+.tfr-tool .pm-lg i{display:inline-block;width:.9rem;height:.9rem;border-radius:2px;box-shadow:inset 0 0 0 1px var(--tg-line,var(--border));background:var(--pm-c)}
+.tfr-tool .pm-1{--pm-c:color-mix(in srgb,var(--tg-ink,var(--fg)) 5%,var(--tg-sheet,var(--card-bg)))}
+.tfr-tool .pm-2{--pm-c:color-mix(in srgb,var(--tg-ink,var(--fg)) 11%,var(--tg-sheet,var(--card-bg)))}
+.tfr-tool .pm-3{--pm-c:color-mix(in srgb,var(--tg-ink,var(--fg)) 17%,var(--tg-sheet,var(--card-bg)))}
+.tfr-tool .pm-4{--pm-c:color-mix(in srgb,var(--tg-ink,var(--fg)) 23%,var(--tg-sheet,var(--card-bg)))}
+.tfr-tool .pm-5{--pm-c:color-mix(in srgb,var(--tg-ink,var(--fg)) 30%,var(--tg-sheet,var(--card-bg)))}
+.tfr-tool .pm-box{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;border:1px solid var(--tg-line,var(--border));border-radius:6px;background:var(--tg-sheet,var(--card-bg))}
+.tfr-tool table.pm{border-collapse:separate;border-spacing:0;margin:0;color:var(--tg-ink,var(--fg));font:400 .8rem/1 var(--sans);font-variant-numeric:tabular-nums}
+.tfr-tool .pm thead th{vertical-align:bottom;padding:.7rem 0 .45rem;font-weight:400;text-align:center}
+.tfr-tool .pm-ch{display:inline-block;writing-mode:vertical-rl;transform:rotate(180deg);max-height:10.5rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.75rem;text-align:left}
+.tfr-tool .pm th[scope="row"],.tfr-tool .pm .pm-corner{position:sticky;left:0;z-index:1;background:var(--tg-sheet,var(--card-bg))}
+.tfr-tool .pm th[scope="row"]{padding:0 .9rem 0 .8rem;text-align:left;white-space:nowrap;font:500 1rem/1.2 var(--font-display);box-shadow:inset -1px 0 0 var(--tg-line,var(--border))}
+.tfr-tool .pm th[scope="row"] small{margin-left:.45rem;color:var(--tg-muted,var(--muted));font:400 .8rem/1 var(--sans)}
+.tfr-tool .pm td{width:1.75rem;min-width:1.75rem;height:1.75rem;padding:0;text-align:center;box-shadow:inset 1px 1px 0 var(--tg-grid,var(--highlight))}
+.tfr-tool .pm td>button{display:block;width:100%;height:1.75rem;padding:0;border:0;border-radius:0;background:var(--pm-c);color:var(--tg-ink,var(--fg));font:600 .8rem/1 var(--sans);font-variant-numeric:tabular-nums;cursor:pointer}
+.tfr-tool .pm td>button:hover{box-shadow:inset 0 0 0 1.5px var(--tg-ink,var(--fg))}
+.tfr-tool .pm td>button[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--tg-ink,var(--fg))}
+.tfr-tool .pm td>button:focus-visible{outline:2px solid var(--tg-ink,var(--fg));outline-offset:-2px}
+.tfr-tool .pm td.pm-self{background:linear-gradient(to top right,transparent calc(50% - .5px),var(--tg-line,var(--border)) 50%,transparent calc(50% + .5px))}
+.tfr-tool .pm .is-on{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+.tfr-tool .pm-short{display:none}
+.tfr-tool .pm-sel{margin:.8rem 0 0;padding:.7rem .9rem .5rem;border:1px solid var(--tg-line,var(--border));border-radius:6px;background:var(--tg-sheet,var(--card-bg))}
+.tfr-tool .pm-sh{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:.2rem 1rem}
+.tfr-tool .pm-h{margin:0;font:500 1.25rem/1.3 var(--font-display);text-wrap:balance}
+.tfr-tool .pm-h .ct{margin-left:.45rem}
+.tfr-tool .pm-x{display:inline-flex;align-items:center;min-height:2rem;padding:0;border:0;background:none;color:var(--fg);font:.8rem/1.3 var(--sans);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.tfr-tool ol.pm-list{list-style:none;margin:.35rem 0 0;padding:0;max-height:22rem;overflow:auto;overscroll-behavior:contain}
+.tfr-tool ol.pm-list>li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.1rem 1rem;align-items:baseline;padding:.5rem 0;border-top:1px solid var(--border)}
+.tfr-tool ol.pm-list>li>a:first-child{max-width:70ch;text-decoration-thickness:1px;text-underline-offset:3px;text-wrap:pretty}
+.tfr-tool ol.pm-list small{grid-column:1;color:var(--muted);font:.8rem/1.45 var(--sans)}
+.tfr-tool ol.pm-list .qi-open{grid-column:2;grid-row:1;font-size:.8rem}
 .tfr-tool .pth-rows{list-style:none;margin:0;padding:0}
 .tfr-tool .pth-rows>li{display:grid;grid-template-columns:minmax(8rem,11rem) minmax(0,1fr) auto;gap:.2rem 1.2rem;align-items:baseline;padding:.7rem 0;border-top:1px solid var(--border)}
 .tfr-tool .pth-rows>li:first-child{border-top:0}
@@ -288,7 +337,13 @@
 .tfr-tool .pth-who small+small::before{content:", "}
 .tfr-tool .tabs{gap:1.2rem}
 .tfr-tool .dbl{grid-template-columns:minmax(0,1fr)}
-.tfr-tool .pairs:not([open])>summary>.ct{display:none}}
+.tfr-tool .pairs:not([open])>summary>.ct{display:none}
+.tfr-tool .pm th[scope="row"]{padding:0 .6rem 0 .55rem}
+.tfr-tool .pm th[scope="row"] small,.tfr-tool .pm .pm-full{display:none}
+.tfr-tool .pm .pm-short{display:inline}
+.tfr-tool .pm-ch{max-height:7.5rem}
+.tfr-tool ol.pm-list>li{grid-template-columns:minmax(0,1fr)}
+.tfr-tool ol.pm-list .qi-open{grid-column:1;grid-row:auto;justify-self:start}}
 </style>
 {{/contentFor}}
 {{!-- /the-faith-received/controversies/: the controversies, as The Faith Received has them (tools/prdl_reader_prototype/controversies.html, 2026-10-22):
@@ -324,4 +379,5 @@
   <p class="note" id="note"></p>
 </div></main>
 <link rel="stylesheet" href="{{asset "css/port/work-hub.css"}}&amp;frv=0374a552e8452478"><script src="{{asset "js/port/page-window.js"}}&amp;frv=2023bacb69cf7ee4"></script>
-<script src="{{asset "js/faith-controversies.js"}}&amp;frv=d5f00477e01fb097"></script>
+<link rel="stylesheet" href="{{asset "css/port/tradition-graphics.css"}}&amp;frv=cc8cf6f7c7831d99"><link rel="stylesheet" href="{{asset "css/port/tradition-graphics-mereo.css"}}&amp;frv=955e734d9c489647"><script src="{{asset "js/port/tradition-graphics.js"}}&amp;frv=3780efc0f7559ddf"></script>
+<script src="{{asset "js/faith-controversies.js"}}&amp;frv=bf7e4e1b9953b215"></script>
