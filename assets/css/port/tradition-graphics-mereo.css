@@ -1,0 +1,10 @@
+/* TRADITION GRAPHICS ON MERE ORTHODOXY (2026-10-22). tradition-graphics.css beside this file is a byte-for-byte copy of The Faith
+   Received's module and stays one. That module lifts its ten shelf colours (--tg-*) to lighter values for a dark page in two
+   places: when the system is dark and the page has not said data-theme="light", and when the page says data-theme="dark". The
+   Faith Received's tools on this site have no dark mode: they stay light under every system theme (faith-site-theme.js holds
+   data-theme at "light" on them once it runs), so the lifted colours would land on a light ground, before that script runs or
+   wherever it does not. This file puts the light values back under the same two selectors. Link it right after the module's
+   sheet in every template that loads the module: equal specificity, later in the cascade, so these win. The module's dark
+   blocks change these ten tokens and nothing else; its other colours come from the page's own tokens. */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]):not([data-theme="sepia"]){--tg-gf:#2E6E8E;--tg-pl:#7A4E9B;--tg-po:#5E8C61;--tg-md:#B07B2A;--tg-rc:#A63D5A;--tg-lu:#C1593C;--tg-rf:#2F7D4F;--tg-ed:#3B5BA5;--tg-hl:#8C7B5C;--tg-x:#7A7A76}}
+:root[data-theme="dark"]{--tg-gf:#2E6E8E;--tg-pl:#7A4E9B;--tg-po:#5E8C61;--tg-md:#B07B2A;--tg-rc:#A63D5A;--tg-lu:#C1593C;--tg-rf:#2F7D4F;--tg-ed:#3B5BA5;--tg-hl:#8C7B5C;--tg-x:#7A7A76}

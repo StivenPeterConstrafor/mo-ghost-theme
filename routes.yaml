@@ -501,6 +501,10 @@ routes:
     template: custom-faith-lexicon
   /the-faith-received/set-index/:
     template: custom-faith-set-index
+  # Shared questions (2026-10-22): the questions three or more works of the library ask, by topic and part, each with every work
+  # and page that asks it; the part's askers by century and tradition, and a disputed question's positions. #<topic>/<part>/<n>.
+  /the-faith-received/shared-questions/:
+    template: custom-faith-questions
   # The full ~190-topic layer (v1/mine/topic2-all/) underneath the 13
   # curated topic pages below. One route, two states via ?s=<slug>  - 
   # same pattern as /the-faith-received/author/?a=.
