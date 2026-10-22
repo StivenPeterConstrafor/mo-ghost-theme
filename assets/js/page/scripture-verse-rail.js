@@ -190,12 +190,33 @@
   };
   let dirSeq = 0;
 
-  // the model: [{key, name, works: [{key, main, vols}]}] by tradition, and the works citing the chapter apart
+  /* THE DIRECTORY BY KIND, IN CURATED ORDER (10-22, owner: "make sure we collect everything rank it properly"). Five groups, each shut
+   * with its count: the key commentaries on the book (rank.json `books`, the curated keys, in their order); the other commentaries on
+   * the book (curated standing, rank.json, then the order they wrote); the sets on the whole Bible (their curated order, then date); the
+   * homilies and sermons on the passage, by period (the Reception view's periods, by the author's working years), those with a sermon
+   * on the verse in view first, then standing; the works on other books that cite the chapter. One row an author with his works and
+   * volumes nested, his tradition said on the row. A series of homilies through the book (Chrysostom on Matthew, Augustine's Tractates
+   * on John) is a commentary, as the pane weighs it: only what the host marks c.kd "sermons" is filed with the sermons; any work may
+   * carry its sermons on the passage (c.ser), listed under its row.
+   * rows: the pane's list; cfg.keyOrder: the book's curated key slugs in order. */
+  const ERA_SPANS = [["fathers", 600], ["early-medieval", 1100], ["scholastic", 1500], ["reformation", 1600], ["17th", 1700], ["18th", 1800], ["modern", 1e9]];
+  const ERA_LABEL = { ...ERA_NAME, undated: "Undated" };
+  const eraOfYear = (y) => (y && y < 9000 ? (ERA_SPANS.find(([, end]) => y < end) || ERA_SPANS[ERA_SPANS.length - 1])[0] : "undated");
+  // the periods in order, the undated last
+  const eraIndex = (k) => { const i = ERA_SPANS.findIndex(([x]) => x === k); return i < 0 ? ERA_SPANS.length : i; };
+  const kindOf = (c) => (c.wb === 2 ? "cited" : c.kd === "sermons" ? "sermons" : c.wb === 1 ? "whole" : "book");
+  // the sermons of a work on the passage, the one on the verse first
+  const sermonsOf = (c, v) => (c.ser || []).slice().sort((p, q) => (onVerse(q, v) ? 1 : 0) - (onVerse(p, v) ? 1 : 0) || Number(p.p) - Number(q.p));
+  const onVerse = (x, v) => !!(v && x.v1 && !x.vul && x.v1 <= v && v <= (x.v2 || x.v1));
+  // what the sermons are called by their own headings: "Homily I …" a homily, "Tractate …" a tractate; else a sermon
+  const SER_WORDS = [["homil", "homily", "homilies"], ["tract", "tractate", "tractates"], ["discourse", "discourse", "discourses"], ["lecture", "lecture", "lectures"], ["oration", "oration", "orations"]];
+  const serWord = (xs, many) => {
+    const w = SER_WORDS.find(([k]) => xs.length && xs.every((x) => String(x.t || "").toLowerCase().startsWith(k)));
+    return w ? (many ? w[2] : w[1]) : many ? "sermons" : "sermon";
+  };
   function directoryModel(rows, cfg) {
-    const v = cfg.verse || 0, by = new Map();
-    // the volumes of a set that only cite the chapter are a work of their own in "Cited in commentaries on other books" (10-22): folded
-    // under the set's own volume they were offered as its "5 volumes", four of them pages on other books
-    for (const c of rows || []) { const k = `${workKey(c)}${c.wb === 2 ? "|cited" : ""}`; if (!by.has(k)) by.set(k, { key: k, vols: [] }); by.get(k).vols.push(c); }
+    const v = cfg.verse || 0, by = new Map(), keyAt = new Map((cfg.keyOrder || []).map((s, i) => [s, i]));
+    for (const c of rows || []) { const kd = kindOf(c), k = `${workKey(c)}|${kd}`; if (!by.has(k)) by.set(k, { key: k, vols: [], kind: kd }); by.get(k).vols.push(c); }
     const ws = [...by.values()];
     const has = (c) => (Object.keys(c.notes || {}).length ? 1 : 0);
     for (const w of ws) {
@@ -204,29 +225,49 @@
       w.vols.sort((p, q) => backTo(p, v) - backTo(q, v) || (q.open != null ? 1 : 0) - (p.open != null ? 1 : 0) || has(q) - has(p) || (q.score || 0) - (p.score || 0));
       w.main = w.vols[0];
       w.wb = Math.min(...w.vols.map((c) => (c.wb == null ? 0 : c.wb)));
+      w.keyAt = Math.min(...w.vols.map((c) => (keyAt.has(c.slug) ? keyAt.get(c.slug) : Infinity)));
+      // a curated key is a key whatever else it is (a series of homilies, a set on the whole Bible); never a work on another book
+      if (w.keyAt < Infinity && w.kind !== "cited") w.kind = "keys";
+      w.onV = w.vols.some((c) => notedOn(c, v) || (c.ser || []).some((x) => onVerse(x, v)));
     }
     const authors = (list) => {
       const am = new Map();
       for (const w of list) { const k = authorKey(w.main.a) || w.main.slug; if (!am.has(k)) am.set(k, { key: k, name: properName(w.main.a) || w.main.t, works: [] }); am.get(k).works.push(w); }
       for (const au of am.values()) {
-        au.works.sort((p, q) => (notedOn(q.main, v) ? 1 : 0) - (notedOn(p.main, v) ? 1 : 0) || (q.main.score || 0) - (p.main.score || 0) || String(p.main.t).localeCompare(String(q.main.t)));
-        // an author is filed once: under the tradition most of his works are filed under, a named one before "Other"
+        au.works.sort((p, q) => (notedOn(q.main, v) ? 1 : 0) - (notedOn(p.main, v) ? 1 : 0) || p.keyAt - q.keyAt || (q.main.score || 0) - (p.main.score || 0) || String(p.main.t).localeCompare(String(q.main.t)));
+        // an author is said once to be of the tradition most of his works are filed under, a named one before "Other"
         const n = new Map();
         for (const w of au.works) { const t = cfg.tradOf(w.main) || "x"; n.set(t, (n.get(t) || 0) + (t === "x" ? 0.5 : 1)); }
         au.trad = [...n.entries()].sort((p, q) => q[1] - p[1] || tradIndex(p[0]) - tradIndex(q[0]))[0][0];
         au.when = Math.min(...au.works.map((w) => cfg.when(w.main) || 9999));
         au.rank = Math.min(...au.works.map((w) => cfg.rankOf(w.main.slug, w.main.a)));
+        au.keyAt = Math.min(...au.works.map((w) => w.keyAt));
+        au.era = eraOfYear(au.when);
+        au.onV = au.works.some((w) => w.onV);
       }
       return [...am.values()];
     };
-    const main = authors(ws.filter((w) => w.wb !== 2)), cited = authors(ws.filter((w) => w.wb === 2));
-    const order = TRADS.map(([k]) => k).concat(["x"]);
-    const groups = order.map((k) => ({ key: k, name: TRAD_NAME[k] || "Other", authors: main.filter((au) => (order.includes(au.trad) ? au.trad : "x") === k) }))
+    const byName = (p, q) => p.name.localeCompare(q.name);
+    const ORDER = {
+      keys: (p, q) => p.keyAt - q.keyAt || p.when - q.when,
+      book: (p, q) => p.rank - q.rank || p.when - q.when || byName(p, q),
+      whole: (p, q) => p.rank - q.rank || p.when - q.when || byName(p, q),
+      sermons: (p, q) => eraIndex(p.era) - eraIndex(q.era) || (q.onV ? 1 : 0) - (p.onV ? 1 : 0) || p.rank - q.rank || p.when - q.when || byName(p, q),
+      cited: (p, q) => p.rank - q.rank || byName(p, q),
+    };
+    const book = cfg.bookName === "Psalm" ? "the Psalms" : cfg.bookName || "the book", ref = `${cfg.bookName || ""} ${cfg.ch || ""}`.trim();
+    const NAMES = { keys: `Key commentaries on ${book}`, book: `Commentaries on ${book}`, whole: "Whole-Bible commentaries", sermons: `Homilies and sermons on ${ref}`, cited: "Cited in commentaries on other books" };
+    const groups = ["keys", "book", "whole", "sermons", "cited"].map((k) => ({ key: k, name: NAMES[k], authors: authors(ws.filter((w) => w.kind === k)).sort(ORDER[k]) }))
       .filter((g) => g.authors.length);
-    for (const g of groups) g.authors.sort((p, q) => p.when - q.when || p.rank - q.rank || p.name.localeCompare(q.name));
-    cited.sort((p, q) => p.rank - q.rank || p.name.localeCompare(q.name));
-    const count = (gs) => gs.reduce((n, au) => n + au.works.length, 0);
-    return { groups, cited, works: count(main), citedWorks: count(cited) };
+    for (const g of groups) {
+      if (g.key !== "sermons") continue;
+      g.eras = [];
+      for (const au of g.authors) { let e = g.eras[g.eras.length - 1]; if (!e || e.key !== au.era) { e = { key: au.era, name: ERA_LABEL[au.era] || "Undated", authors: [] }; g.eras.push(e); } e.authors.push(au); }
+    }
+    const count = (gs) => gs.reduce((n, g) => n + g.authors.reduce((k, au) => k + au.works.length, 0), 0);
+    const sermonCount = (gs) => gs.filter((g) => g.key === "sermons").reduce((n, g) => n + g.authors.reduce((k, au) => k + au.works.reduce((m, w) => m + Math.max(1, (w.main.ser || []).length), 0), 0), 0);
+    const main = groups.filter((g) => g.key !== "cited");
+    return { groups, cited: [], works: count(main.filter((g) => g.key !== "sermons")), sermons: sermonCount(main), citedWorks: count(groups.filter((g) => g.key === "cited")) };
   }
 
   function directory(rows, cfg) {
@@ -237,6 +278,11 @@
     const meta = (w) => {
       const c = w.main, bits = [];
       if (w.wb === 2) bits.push(c.hit && c.hit.v && c.hit.v.length ? `Cites ${cfg.ch}:${c.hit.v.slice(0, 4).join(", ")}${c.hit.v.length > 4 ? " and more" : ""}` : `Cites chapter ${cfg.ch}`);
+      else if (w.kind === "sermons" && (c.ser || []).length) {
+        const ons = c.ser.filter((x) => onVerse(x, v)), on = ons.length, n = c.ser.length;
+        const one = serWord(on ? ons : c.ser, false), many = serWord(c.ser, true);
+        bits.push(on ? `${on === n && n === 1 ? `${one[0].toUpperCase()}${one.slice(1)}` : `${on} of ${n} ${many}`} on ${cfg.ch}:${v}` : `${n} ${n === 1 ? one : many} on ${ref}`);
+      }
       else if (notedOn(c, v)) bits.push(`Note on ${cfg.ch}:${v}`);
       else {
         // its notes elsewhere in the chapter: the verses themselves when they are few ("Notes on 1:18, 20"), else how many
@@ -248,23 +294,32 @@
       return bits.join(DOT);
     };
     // a volume's name: the catalogue's, the collected edition's ("WA 38"), the slug's ("Tom. XII"), else its title's ("Vol. II")
-    const titleVolume = (t) => { const m = /\b(Vol(?:ume)?|Tom(?:us)?)\.?\s+([IVXLC]+|\d+)\b/.exec(String(t || "")); return m ? `${/^T/.test(m[1]) ? "Tom." : "Vol."} ${m[2]}` : ""; };
+    const titleVolume = (t) => { const x = /\b(Vol(?:ume)?|Tom(?:us)?)\.?\s+([IVXLC]+|\d+)\b/.exec(String(t || "")); return x ? `${/^T/.test(x[1]) ? "Tom." : "Vol."} ${x[2]}` : ""; };
     const volName = (c) => (cfg.volOf && cfg.volOf(c.slug)) || cfg.volShort(c.vol) || slugVolume(c.slug) || titleVolume(c.t) || "";
+    // a heading in English, the printed one (Latin, German …) in the title attribute
+    const orig = (x) => (x && x.tl && x.tl !== x.t ? ` title="${esc(x.tl)}"` : "");
+    // the sermons of a work on the passage, each with its heading, the verses it is on and its page
+    const sermons = (c) => {
+      const xs = sermonsOf(c, v); if (!xs.length) return "";
+      return `<ul class="vr-gl vr-ser">${xs.slice(0, 12).map((x) => `<li><a href="${esc(cfg.read(c.slug, x.p))}">${esc(pg(c.slug, x.p))}</a> <span${orig(x)}>${esc(x.t)}</span>`
+        + `${x.ref ? `${DOT}<span class="vr-k">${esc(x.vul ? `${x.ref} (Vulgate count)` : x.ref)}</span>` : ""}</li>`).join("")}${xs.length > 12 ? `<li class="vr-k">and ${fmt(xs.length - 12)} more</li>` : ""}</ul>`;
+    };
     const entry = (w, au, solo) => {
       const c = w.main, p = pageFor(c, v, cfg), id = `vr-pv-${++dirSeq}`;
       const cur = w.vols.some((x) => x.slug === cfg.cur);
       const vol = w.vols.length > 1 ? "" : volName(c);
-      const find = foldText(`${au.name} ${c.a || ""} ${w.vols.map((x) => `${x.t || ""} ${volName(x)}`).join(" ")}`);
+      const find = foldText(`${au.name} ${c.a || ""} ${w.vols.map((x) => `${x.t || ""} ${x.tl || ""} ${volName(x)} ${(x.ser || []).map((y) => `${y.t} ${y.tl || ""}`).join(" ")}`).join(" ")}`);
       const vols = w.vols.length > 1 ? `<p class="vr-e-vols"><span>${w.vols.length} volumes</span>${w.vols.map((x) => {
         const q = pageFor(x, v, cfg), label = volName(x) || (q != null ? pg(x.slug, q) : x.t);
         return `<button type="button" class="vr-e-vol" data-vr-read="${esc(x.slug)}"${x.slug === cfg.cur ? ' aria-current="true"' : ""} aria-label="${esc(`Read ${label} beside the text`)}">${esc(label)}</button>`;
       }).join("")}</p>` : "";
+      const trad = solo && TRAD_NAME[au.trad] && au.trad !== "x" ? `<span class="vr-k">${esc(TRAD_NAME[au.trad])}</span>` : "";
       return `<li class="vr-e${solo ? " vr-e-solo" : ""}${cur ? " is-cur" : ""}" data-find="${esc(find)}">`
         + `<div class="vr-e-row"><button type="button" class="vr-e-read" data-vr-read="${esc(c.slug)}"${cur ? ' aria-current="true"' : ""}>`
-        + `${solo ? `<span class="vr-a">${esc(au.name)}</span>` : ""}<span class="vr-e-t">${esc(c.t)}${vol ? `${DOT}${esc(vol)}` : ""}</span><span class="vr-e-m">${esc(meta(w))}</span></button>`
+        + `${solo ? `<span class="vr-a">${esc(au.name)}</span>` : ""}<span class="vr-e-t"${orig(c)}>${esc(c.t)}${vol ? `${DOT}${esc(vol)}` : ""}</span><span class="vr-e-m">${esc(meta(w))}${trad ? DOT : ""}${trad}</span></button>`
         + `${p != null ? `<a class="vr-e-pg" href="${esc(cfg.read(c.slug, p))}" aria-label="${esc(`${c.t}, ${pg(c.slug, p)}, in the reader`)}">${esc(pg(c.slug, p))}</a>` : "<span></span>"}`
         + `<button type="button" class="vr-e-pv" data-vr-preview="${esc(c.slug)}" data-vr-title="${esc(c.t)}" aria-expanded="false" aria-controls="${id}" aria-label="${esc(`Preview ${c.t}`)}">Preview</button></div>`
-        + `${vols}<div class="vr-e-box" id="${id}" hidden></div></li>`;
+        + `${vols}${sermons(c)}<div class="vr-e-box" id="${id}" hidden></div></li>`;
     };
     const fold = (id, cls, head, n, body) => {
       const isOpen = open.has(id);
@@ -272,15 +327,32 @@
         + `<ul class="vr-fold-list"${isOpen ? "" : " hidden"}>${body}</ul></li>`;
     };
     const author = (au) => (au.works.length === 1 ? entry(au.works[0], au, true)
-      : fold(`a:${au.key}`, "vr-au-g", `<span class="vr-a">${esc(au.name)}</span>`, `${au.works.length} works`, au.works.map((w) => entry(w, au, false)).join("")));
+      : fold(`a:${au.key}`, "vr-au-g", `<span class="vr-a">${esc(au.name)}</span>${TRAD_NAME[au.trad] && au.trad !== "x" ? ` <span class="vr-k">${esc(TRAD_NAME[au.trad])}</span>` : ""}`, `${au.works.length} works`, au.works.map((w) => entry(w, au, false)).join("")));
+    const nOf = (aus) => aus.reduce((k, au) => k + au.works.length, 0);
     const groups = m.groups.map((g) => {
-      const n = g.authors.reduce((k, au) => k + au.works.length, 0);
-      return fold(`t:${g.key}`, "vr-tg", `<span class="vr-tg-name">${esc(g.name)}</span>`, fmt(n), g.authors.map(author).join(""));
+      const body = g.eras ? g.eras.map((e) => fold(`e:${e.key}`, "vr-au-g vr-era-g", `<span class="vr-a">${esc(e.name)}</span>`, fmt(nOf(e.authors)), e.authors.map(author).join(""))).join("")
+        : g.authors.map(author).join("");
+      return fold(`g:${g.key}`, `vr-tg${g.key === "cited" ? " vr-tg-cited" : ""}`, `<span class="vr-tg-name">${esc(g.name)}</span>`, fmt(nOf(g.authors)), body);
     }).join("");
-    const cited = m.cited.length ? fold("t:cited", "vr-tg vr-tg-cited", '<span class="vr-tg-name">Cited in commentaries on other books</span>', fmt(m.citedWorks), m.cited.map(author).join("")) : "";
-    const find = `<div class="vr-dir-find"><input type="search" placeholder="Find a commentator or work" aria-label="${esc(`Find a commentary on ${ref}`)}" autocomplete="off" spellcheck="false"></div>`;
-    if (!m.groups.length && !m.cited.length) return `<div class="vr-dir"><p class="vr-empty">No commentary on ${esc(ref)} is in the library yet.</p></div>`;
-    return `<div class="vr-dir">${find}<ul class="vr-dir-list">${groups}${cited}</ul><p class="vr-empty vr-dir-none" hidden>No commentary matches.</p></div>`;
+    const find = `<div class="vr-dir-find"><input type="search" placeholder="Find a commentator, preacher or work" aria-label="${esc(`Find a commentary or sermon on ${ref}`)}" autocomplete="off" spellcheck="false"></div>`;
+    if (!m.groups.length) return `<div class="vr-dir"><p class="vr-empty">No commentary on ${esc(ref)} is in the library yet.</p></div>`;
+    return `<div class="vr-dir">${find}<ul class="vr-dir-list">${groups}</ul><p class="vr-empty vr-dir-none" hidden>No commentary matches.</p></div>`;
+  }
+
+  /* HYMNS ON THE PASSAGE (10-22, owner: "have hymns be online in option too"): the hymns whose heading or opening names the chapter
+   * (v1/scripture/preach/<book>.json, from the sermons page's index), those on the verse in view first, then by year; one row a hymn:
+   * its English title (the printed one in the title attribute), the poet or book, the year, the passage and the page. cfg: {name, ch,
+   * v, read(slug, p), pg(slug, p), all: the sermons page's hymns on the book (address), allLabel}. */
+  function hymns(rows, cfg) {
+    const v = cfg.verse || 0, pg = cfg.pg || ((slug, p) => `p. ${p}`);
+    const xs = (rows || []).slice().sort((p, q) => (onVerse(q, v) ? 1 : 0) - (onVerse(p, v) ? 1 : 0) || (p.year || 9999) - (q.year || 9999) || String(p.a).localeCompare(String(q.a)));
+    const li = (x) => `<li class="vr-row vr-wit"><p class="vr-line"><a class="vr-a" href="${esc(cfg.read(x.slug, x.p))}"${x.tl && x.tl !== x.t ? ` title="${esc(x.tl)}"` : ""}>${esc(x.t)}</a>${x.year ? ` <span class="vr-y">${esc(x.year)}</span>` : ""}`
+      + `<span class="vr-what">${esc(properName(x.a) || "")}${x.ref ? `${DOT}${esc(x.vul ? `${x.ref} (Vulgate count)` : x.ref)}` : ""}${DOT}<a href="${esc(cfg.read(x.slug, x.p))}">${esc(pg(x.slug, x.p))}</a></span></p>`
+      + `${x.first ? `<p class="vr-g">${esc(x.first)}</p>` : ""}</li>`;
+    const on = xs.filter((x) => onVerse(x, v)), rest = xs.filter((x) => !onVerse(x, v));
+    const head = `<header class="vr-rec-head"><h3>Hymns on ${esc(cfg.name)} ${esc(cfg.ch)}</h3><p class="vr-count"><b>${fmt(xs.length)}</b> ${xs.length === 1 ? "hymn" : "hymns"}${on.length ? `${DOT}<b>${fmt(on.length)}</b> on ${esc(cfg.ch)}:${esc(v)}` : ""}</p></header>`;
+    return `${head}<section class="vr-sec"><ul class="vr-rows">${on.concat(rest).map(li).join("")}</ul></section>`
+      + `${cfg.all ? `<p class="vr-foot"><a href="${esc(cfg.all)}">${esc(cfg.allLabel || "Every hymn on the book")}</a></p>` : ""}`;
   }
 
   // the find box over the directory: a match opens the groups that hold it (without forgetting which the reader opened)
@@ -288,8 +360,9 @@
     const q = foldText(String(raw || "").trim());
     host.querySelectorAll(".vr-e").forEach((li) => { li.hidden = !!q && !(li.dataset.find || "").includes(q); });
     const folds = [...host.querySelectorAll(".vr-au-g, .vr-tg")];
-    // authors first (inside traditions), then the traditions
-    for (const f of folds.sort((p, q2) => (p.classList.contains("vr-au-g") ? 0 : 1) - (q2.classList.contains("vr-au-g") ? 0 : 1))) {
+    // the innermost folds first (an author inside a period inside a group), then those holding them
+    const depth = (el) => { let d = 0; for (let x = el.parentElement; x && x !== host; x = x.parentElement) if (x.classList.contains("vr-fold-list")) d += 1; return d; };
+    for (const f of folds.map((el) => [depth(el), el]).sort((p, q2) => q2[0] - p[0]).map(([, el]) => el)) {
       const list = f.querySelector(":scope > .vr-fold-list"), btn = f.querySelector(":scope > .vr-fold-btn");
       const any = !!list.querySelector(":scope > .vr-e:not([hidden]), :scope > .vr-au-g:not([hidden])");
       f.hidden = !!q && !any;
@@ -450,5 +523,5 @@
     });
   }
 
-  root.FRVerseRail = { picker, wirePicker, directory, directoryModel, wireDirectory, filterDirectory, authorKey, workKey, slugVolume, reception, citations, wire, loadRank, standing, properName, RANK, ERA_CODES, ERA_NAME, TRADS, TRAD_NAME, KIND, VERB, esc, fmt, ord, gist };
+  root.FRVerseRail = { picker, wirePicker, directory, directoryModel, wireDirectory, filterDirectory, authorKey, workKey, slugVolume, reception, citations, hymns, eraOfYear, wire, loadRank, standing, properName, RANK, ERA_CODES, ERA_NAME, TRADS, TRAD_NAME, KIND, VERB, esc, fmt, ord, gist };
 })(typeof window === "undefined" ? globalThis : window);

@@ -189,6 +189,10 @@
     // page, said to be only that. An entry with no chapters of its own (Calov's Old Testament filed under Hebrews) is not.
     for (const e of ((dev && dev.books && dev.books[book]) || [])) {
       onMap.add(e.w);
+      // (10-22, owner: "make sure this is in english") the map names the piece in English (st, stc), the name as printed beside it
+      // (stl, stcl), shown on hover
+      const tl = (e.stc && e.stc[ch] ? e.stcl && e.stcl[ch] : e.stl) || '';
+      if (tl && by.has(e.w) && Number(ch) >= (e.c1 || 1) && Number(ch) <= (e.c2 || 999)) by.get(e.w).tl = tl;
       if (!(e.c1 > 0) || Number(ch) < e.c1 || Number(ch) > e.c2 || (e.an && e.an[ch] != null) || e.sp == null || (RANK.works[e.w] || [])[1] !== 1) continue;
       let c = by.get(e.w);
       if (!c) {
@@ -244,6 +248,9 @@
       const lo2 = Number(c.open), hi2 = Number(c.close);
       if (c.recNotes && lo2 > 0 && hi2 > lo2) for (const [v, p] of Object.entries(c.recNotes)) { const n = Number(p); if (n && (n < lo2 - 2 || n > hi2 + 2)) delete c.recNotes[v]; }
       weigh(c);
+      // (10-22) a volume of sermons the map files under the chapter for a sermon or two is listed with the homilies and sermons on the
+      // passage; a series through the book (Augustine's Tractates on John, Chrysostom's homilies) is read as its commentary (weigh)
+      if (c.k === 'sermons' && !(c.cov >= 5) && c.wb === 0) c.kd = 'sermons';
     }
     return [...by.values()].sort((x, y) => x.wb - y.wb || y.score - x.score || x.a.localeCompare(y.a));
   }
@@ -278,7 +285,8 @@
   const firstTab = () => 'c';
   try { localStorage.removeItem('fr_cp_tab'); } catch (_) {}
   const S = { list: [], cur: null, verse: null, follow: store.get('fr_cp_follow', '1') === '1', lang: store.get('fr_cp_lang', 'en'),
-    shown: null, token: 0, meta: {}, cen: {}, rec: null, pin: false, tab: firstTab(), dirOpen: new Set(), dirVerse: 0, years: new Map(), heads: new Map() };
+    shown: null, token: 0, meta: {}, cen: {}, rec: null, pin: false, tab: firstTab(), dirOpen: new Set(), dirVerse: 0, years: new Map(), heads: new Map(),
+    hymns: [], preach: null, vols: new Map() };
   const A = window.FRCommentaryAnchor;
   let pane, layout, observer;
 
@@ -328,8 +336,8 @@
     const tabs = document.createElement('div');
     tabs.className = 'cp-tabs'; tabs.setAttribute('role', 'group'); tabs.setAttribute('aria-label', 'Beside the text');
     tabs.innerHTML = SITE.name === 'mo'
-      ? '<button type="button" data-tab="c">Commentary</button><button type="button" data-tab="s">Citations</button><button type="button" data-tab="r">Reception</button>'
-      : '<button type="button" data-tab="c">Commentary</button><button type="button" data-tab="r">Reception</button><button type="button" data-tab="s">Citations</button>';
+      ? '<button type="button" data-tab="c">Commentary</button><button type="button" data-tab="s">Citations</button><button type="button" data-tab="r">Reception</button><button type="button" data-tab="h" hidden>Hymns</button>'
+      : '<button type="button" data-tab="c">Commentary</button><button type="button" data-tab="r">Reception</button><button type="button" data-tab="s">Citations</button><button type="button" data-tab="h" hidden>Hymns</button>';
     // The Verse Desk, at the end of the tab row on Mere Orthodoxy's page (Ian, 2026-10-20: a button always there for opening it). The
     // row is sticky, so it stays in reach as the page scrolls; head() points it at the verse the rail is on.
     if (SITE.name === 'mo') tabs.insertAdjacentHTML('beforeend', '<a class="btn cp-desk" href="/the-faith-received/scripture/desk/">Verse Desk</a>');
@@ -372,10 +380,13 @@
     return true;
   }
 
-  // the rail's three views; Citations is the site's own verse panel, shown in the rail's place
+  // the rail's views; Citations is the site's own verse panel, shown in the rail's place; Hymns (10-22) is drawn where Reception is
+  // (.cp-rec), so the pane's styles for that view serve it, and only where the chapter has hymns
   function setTab(t, quiet) {
+    if (t === 'h' && !S.hymns.length) t = 'c';
     S.tab = t;
-    pane.dataset.tab = t;
+    pane.dataset.tab = t === 'h' ? 'r' : t;
+    pane.dataset.view = t;
     // On a wide screen Citations is the page's sidebar, shown in the rail's place. On a phone the sidebar is not in the page: the
     // verse panel opens under the verse in the text, so there the sheet shrinks to its tabs and the panel is brought into view.
     const phone = SITE.name === 'mo' && !wide.matches;
@@ -389,6 +400,7 @@
     layout.querySelectorAll('.cp-tabs [data-tab]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.tab === t)));
     head();
     if (t === 'r') paintRec();
+    if (t === 'h') paintHymns();
     if (t === 's' && SITE.name === 'tfr') {
       const side = layout.querySelector(SITE.side), b = SITE.pick(S.verse || 1);
       if (side && side.hidden && b) b.click();
@@ -399,7 +411,7 @@
     if (!pane) return;
     const w = where(); if (!w) return;
     const name = refName(w);
-    pane.querySelector('.cp-eyebrow').textContent = S.tab === 'r' ? 'Reception history' : (S.verse ? 'Commentary on this verse' : 'Commentary');
+    pane.querySelector('.cp-eyebrow').textContent = S.tab === 'r' ? 'Reception history' : S.tab === 'h' ? 'Hymns' : (S.verse ? 'Commentary on this verse' : 'Commentary');
     const cb = pane.querySelector('.cp-close'); if (cb) cb.hidden = !w.v;
     pane.querySelector('.cp-ref').textContent = S.verse ? `${name} ${w.ch}:${S.verse}` : `${name} ${w.ch}`;
     desk();
@@ -430,6 +442,43 @@
     if (!(S.verse in c.notes)) c.notes[S.verse] = p;
     S.pin = true;
     setTab('c'); choose(slug);
+  }
+
+  /* SERMONS AND HYMNS ON THE PASSAGE (10-22, owner: "make sure we collect everything rank it properly ... and also make sure this is in
+   * english"; "have hymns be online in option too"). v1/scripture/preach/<book>.json (The Faith Received's
+   * runs/scripture_keys_1019/preach_1022/build_preach.py, from its sermons page's indexes): the sermons, homilies and hymns whose own
+   * heading or opening names a passage of the chapter, each at its page, the heading in English with the printed one beside it. A psalm
+   * from a Vulgate source is filed under its Hebrew number and never matched to a verse. The sermons join the list (a work of its own,
+   * kd "sermons", unless the work is already there); the hymns are a view of their own, offered only where the chapter has any. */
+  const preachOf = (book) => json(`${BASE}/v1/scripture/preach/${book}.json`).catch(() => null);
+  const preachRow = (r) => ({ slug: r[0], p: r[1], t: r[2], tl: r[3] || '', a: r[4] || '', tr: r[5] || '', year: r[6] || null, v1: r[7] || null,
+    v2: r[8] || null, theme: r[9] || '', ref: r[10] || '', first: r[11] || '', vul: r[12] === 'v', fl: r[13] || null });
+  // a sermon on the verse: its heading names the verse (never one in the Vulgate's count of a psalm)
+  const serOn = (x, v) => !!(v && x.v1 && !x.vul && x.v1 <= v && v <= (x.v2 || x.v1));
+  const SER_SHELF = { 'Greek Fathers': 'gf', 'Latin Fathers': 'pl', 'Eastern Fathers': 'po', 'Humanism & Law': 'hl', 'Humanism and Law': 'hl' };
+  function addSermons(list, rows, pr) {
+    const by = new Map(list.map((c) => [c.slug, c])), works = (pr && pr.works) || {}, of = new Map();
+    for (const r of rows) { const x = preachRow(r); if (!of.has(x.slug)) of.set(x.slug, []); of.get(x.slug).push(x); }
+    for (const [slug, xs] of of) {
+      let c = by.get(slug);
+      // a work found citing the chapter whose own heading names it is a sermon on it
+      if (c && c.wb === 2) { c.wb = 0; c.kd = 'sermons'; }
+      if (!c) {
+        const [t, vol] = String(works[slug] || '').split(' · '), m = S.meta[slug] || {};
+        if (vol && /^(?:P[LGO]\s*\d+|(?:Vol|Tom|Tomus|Pars|Part)\.?\s+[0-9IVXLC])/i.test(vol)) S.vols.set(slug, vol);
+        c = { slug, a: m.a || xs[0].a, t: t || m.t || slug, notes: {}, rows: {}, open: null, sh: X_SHELF[xs[0].tr] || SER_SHELF[xs[0].tr] || famShelf(slug) || 'x',
+          wb: 0, score: 0, kd: 'sermons', born: xs[0].fl || xs[0].year || null };
+        list.push(c); by.set(slug, c);
+      }
+      c.ser = xs;
+    }
+  }
+  // the hymns on the chapter, those on the verse first (scripture-verse-rail.js)
+  function paintHymns() {
+    const box = pane && pane.querySelector('.cp-rec'), w = where(), VR = window.FRVerseRail; if (!box || !w) return;
+    if (!VR || !VR.hymns) { box.innerHTML = '<p class="cp-empty">The hymns could not be drawn.</p>'; return; }
+    box.innerHTML = VR.hymns(S.hymns, { name: refName(w), ch: w.ch, verse: S.verse || 1, read: SITE.read, pg: pgOf, all: '' });
+    box.scrollTop = 0;
   }
 
   function paintRec() {
@@ -637,12 +686,32 @@
    * hit"). v1/scripture/hits/<book>/<c>.json: the commentaries filed under other books (and the whole-Bible sets) that cite this
    * chapter, each at the page where it cites it most. */
   const hitsOf = (book, ch) => json(`${BASE}/v1/scripture/hits/${book}/${ch}.json`).then((d) => (d && d.hits) || []).catch(() => []);
-  // in the order their authors came: the curated key's year (Luther 1483, Bucer 1491, Musculus 1497, Calvin 1509), else the century
-  const when = (c) => c.born || cenOf(c) * 100 - 50;
+  /* THE YEAR OF A NAME (10-22): v1/enrich/author_dates.json {authors: {name: {y, born, died, circa, fl, dates, basis, aliases}}}, 2,799
+   * names as the surfaces spell them (y: the birth year, else the first attested, else the death). Read once, the first time a name has
+   * no year of its own (the curated key's, the reception history's), and the lists drawn again when it comes; until then, and if it never
+   * comes, the century stands. */
+  let DATES = null, datesAsked = false;
+  function dateYear(a) {
+    if (!a) return 0;
+    if (DATES) { const x = DATES.get(a); return x && Number(x.y) > 0 ? Number(x.y) : 0; }
+    if (!datesAsked) {
+      datesAsked = true;
+      json(`${BASE}/v1/enrich/author_dates.json`).then((d) => {
+        const m = new Map();
+        for (const [n, x] of Object.entries((d && d.authors) || {})) { m.set(n, x); for (const al of x.aliases || []) if (!m.has(al)) m.set(al, x); }
+        DATES = m;
+        if (pane && S.list.length) fillList();
+      }).catch(() => { DATES = new Map(); });
+    }
+    return 0;
+  }
+  // in the order their authors came: the curated key's year (Luther 1483, Bucer 1491, Musculus 1497, Calvin 1509), else his year in the
+  // dates of names (10-22), else the century
+  const when = (c) => c.born || dateYear(c.a) || cenOf(c) * 100 - 50;
   const aKey = (a) => { const VR = window.FRVerseRail; return VR && VR.authorKey ? VR.authorKey(a) : String(a || '').toLowerCase(); };
   // in the order their authors came, for the directory: the curated key's year, else the year the reception history gives the author
-  // (his floruit), else the century
-  const whenDir = (c) => { const cen = S.cen[c.slug] || cenOf(c); return c.born || S.years.get(aKey(c.a)) || (cen < 99 ? cen * 100 - 50 : 9999); };
+  // (his floruit), else his year in the dates of names (10-22), else the century
+  const whenDir = (c) => { const cen = S.cen[c.slug] || cenOf(c); return c.born || S.years.get(aKey(c.a)) || dateYear(c.a) || (cen < 99 ? cen * 100 - 50 : 9999); };
   function readYears(rec) {
     S.years = new Map();
     for (const x of Object.values((rec && rec.verses) || {})) for (const e of x.eras || []) for (const r of e.top || []) {
@@ -654,8 +723,11 @@
   const listOpen = () => !!(pane && !pane.querySelector('.cp-list').hidden);
   const dirVerse = () => (listOpen() && S.dirVerse) || S.verse || 0;
   // a row's page is where its Read opens, as near as the library's index tells it before the pages are read (placeNow)
+  // (10-22) keyOrder: the book's curated keys (rank.json `books`), every volume of each, in their order: the directory's first group;
+  // volOf: a sermon volume's Patrologia number ("PL 131"), from the sermons index
   const dirCfg = (w) => ({ cur: S.cur && S.cur.slug, verse: dirVerse(), ch: w.ch, bookName: refName(w), tradOf, when: whenDir, rankOf, volShort,
-    read: SITE.read, pg: pgOf, open: S.dirOpen, place: placeNow });
+    read: SITE.read, pg: pgOf, open: S.dirOpen, place: placeNow, volOf: (slug) => S.vols.get(slug) || '',
+    keyOrder: (RANK.books[w.book] || []).flatMap(([, slugs]) => slugs || []) });
   // a key button is pressed while its work is read, in whichever of its volumes
   const isCur = (c) => !!(S.cur && (S.cur.slug === c.slug || setOf(S.cur) === setOf(c)));
   function markKeys() {
@@ -667,7 +739,8 @@
     // a commentary's note on the verse known to the reception history (its exegesis rows) counts as a note here too
     const rn = ((S.rec && S.rec.verses && S.rec.verses[String(S.verse || 0)]) || {}).notes || {};
     for (const c of S.list) if (rn[c.slug] != null && S.verse && !(S.verse in c.notes)) c.notes[S.verse] = rn[c.slug];
-    const onBook = S.list.filter((c) => c.wb === 0), whole = S.list.filter((c) => c.wb === 1);
+    // the strip is for commentaries: a volume of sermons is never a key button
+    const onBook = S.list.filter((c) => c.wb === 0 && c.kd !== 'sermons'), whole = S.list.filter((c) => c.wb === 1 && c.kd !== 'sermons');
     const firstsOf = (xs) => { const seen = new Set(), out = []; for (const c of xs.slice().sort((x, y) => y.score - x.score)) { const k = aKey(c.a) || c.slug; if (!seen.has(k)) { seen.add(k); out.push(c); } } return out; };
     // the key works, one click away: the book's curated keys (at most eight, the most needed), in the order they wrote; else the
     // curated key commentators (tier 1, then 2), at most five; a rule; the first two sets on the whole Bible. A chapter with neither
@@ -712,6 +785,7 @@
   function nameCur() {
     pane.querySelector('.cp-who').textContent = S.cur ? [authorName(S.cur), centuryOf(S.cur.slug)].filter(Boolean).join(dot) || 'Commentary' : 'No commentary';
     pane.querySelector('.cp-what').textContent = S.cur ? `${S.cur.t}${volShort(S.cur.vol) ? ` (${volShort(S.cur.vol)})` : ''}` : '';
+    pane.querySelector('.cp-what').title = S.cur && S.cur.tl ? `As printed: ${S.cur.tl}` : '';
   }
   // Only the reader's own choice is remembered (fr_cp_pick): the old key held whatever opened first, Lapide for nearly everyone.
   function choose(slug, mine) {
@@ -751,8 +825,39 @@
   // the place of a set whose map knows only where the book begins (10-22): the chapter's heading where it has been found, else the
   // book's first page
   const bookPlace = (c) => { const w = where() || {}, h = S.heads.get(`${c.slug}|${w.book}|${w.ch}`); return h ? { p: h, how: 'head' } : { p: c.bookAt, how: 'book' }; };
+  /* A SERMON ON THE PASSAGE (10-22): the work's sermon whose heading names the verse (the narrowest); for a work filed with the sermons,
+   * else its sermon nearest before the verse, else its first on the chapter, said to be that. A commentary keeps its own note on the
+   * verse first (Chrysostom's homilies on Matthew open at his note, not at the homily's first column). Never read for verse heads. */
+  function sermonAt(c, v) {
+    const xs = c.ser || []; if (!xs.length) return null;
+    if (c.kd !== 'sermons' && (c.notes[v] != null || (c.recNotes && c.recNotes[v] != null) || (c.collected && c.collected[v]))) return null;
+    const span = (x) => (x.v2 || x.v1) - x.v1;
+    const on = xs.filter((x) => serOn(x, v)).sort((a, b) => span(a) - span(b) || a.p - b.p)[0];
+    if (on) return { p: on.p, how: 'sermon', v, x: on };
+    if (c.kd !== 'sermons' || c.notes[v] != null) return null;
+    const before = xs.filter((x) => x.v1 && !x.vul && x.v1 < v).sort((a, b) => b.v1 - a.v1 || a.p - b.p)[0];
+    const x = before || xs.slice().sort((a, b) => (a.v1 || 0) - (b.v1 || 0) || a.p - b.p)[0];
+    return { p: x.p, how: 'sermon-ch', x };
+  }
+  // the sermon's heading on its page: its first words as printed or in English, else its division word, in either language, with its
+  // number ("HOMILIA I.", "Homily I.", "SERMO CXI")
+  const foldHead = (s) => String(s || '').replace(/^#{1,6}\s+/, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+  const DIV = 'sermo|sermon|homilia|homily|homilie|tractatus|tractate|concio|contio|oratio|oration|discourse|lectio|lecture|predigt|ode|hymnus|hymn';
+  function headingAt(all, x) {
+    const keys = [x && x.tl, x && x.t].map((s) => foldHead(s).slice(0, 16)).filter((k) => k.length >= 6);
+    const i = keys.length ? all.findIndex((s) => { const f = foldHead(s); return keys.some((k) => f.startsWith(k)); }) : -1;
+    if (i >= 0) return i;
+    const m = new RegExp(`^\\W*(?:${DIV})\\.?\\s+([IVXLCDM]+|\\d+)\\b`, 'i').exec(String((x && (x.tl || x.t)) || ''));
+    if (!m) return -1;
+    const rx = new RegExp(`^(?:#{1,6}\\s+)?\\W*(?:${DIV})\\.?\\s+${m[1]}\\b`, 'i');
+    return all.findIndex((s) => rx.test(s));
+  }
+  const clip = (s, n) => { const t = String(s || '').replace(/[.\s]+$/, ''); return t.length > n ? `${t.slice(0, n).replace(/[\s,;:]+\S*$/, '')}…` : t; };
+  const sermonSay = (t, v, ch, name) => (t.how === 'sermon' ? clip(t.x.t, 120)
+    : `${clip(t.x.t, 110)}, on ${t.x.vul ? `${t.x.ref}, the Vulgate's count` : t.x.ref || `${name} ${ch}`} (no sermon on ${ch}:${v} recorded)`);
   function quickTargetOf(c, v) {
     if (!c) return null;
+    const sp = sermonAt(c, v); if (sp) return sp;
     if (c.collected) {
       if (c.collected[v]) return { p: c.collected[v][0][1], how: 'collected', v, items: c.collected[v] };
       const next = Object.keys(c.collected).map(Number).filter((x) => x > v).sort((a, b) => a - b)[0];
@@ -785,7 +890,7 @@
    * holds his note on the verse. For each verse the pane takes the volume with its note on the verse, else the one whose last note
    * before it is nearest; where no volume has either, the reader's own choice stands. */
   function holds(c, v) {
-    if ((c.collected && c.collected[v]) || c.notes[v] != null || (c.recNotes && c.recNotes[v] != null)) return [2, 0];
+    if ((c.collected && c.collected[v]) || c.notes[v] != null || (c.recNotes && c.recNotes[v] != null) || (c.ser || []).some((x) => serOn(x, v))) return [2, 0];
     const before = Object.keys(c.notes).map(Number).filter((x) => x < v);
     return before.length ? [1, v - Math.max(...before)] : [0, 0];
   }
@@ -917,6 +1022,8 @@
     } else if (t.how === 'head' || t.how === 'book') {
       const u = underHead(all, w, (c.pv && c.pv[v]) || v);
       if (u.hit >= 0) { hit = u.hit; from = hit; found = true; } else if (u.head >= 0) from = u.head;
+    } else if (t.how === 'sermon' || t.how === 'sermon-ch') {
+      const k = headingAt(all, t.x); if (k >= 0) from = k;
     }
     const to = hit >= 0 && A ? A.noteEnd(all, hit, found ? v : printed, 6) : all.length;
     const out = []; let len = 0;
@@ -934,6 +1041,7 @@
       : t.how === 'cites' ? `It cites ${name} ${w.ch} on ${at}, in its commentary on another book`
       : t.how === 'head' ? `No note on ${w.ch}:${v} was found. ${name} ${w.ch} begins on ${at}, by its heading`
       : t.how === 'book' ? `${name} ${w.ch} is not mapped in it. ${w.book === 'psalms' ? 'The Psalms begin' : `${name} begins`} on ${at}`
+      : t.how === 'sermon' || t.how === 'sermon-ch' ? `${sermonSay(t, v, w.ch, name)}, ${at}`
       : `${name} ${w.ch} opens on ${at}`;
     return `<p class="vr-pv-where">${esc(say)}</p><div class="vr-pv-text" lang="${lane === 'en' ? 'en' : 'la'}">${out.join('') || '<p class="vr-empty">A blank page.</p>'}</div>${acts(t.p)}`;
   }
@@ -943,6 +1051,7 @@
     head();
     if (SITE.name === 'mo') creeds();
     if (S.tab === 'r') paintRec();
+    if (S.tab === 'h') paintHymns();
     // a verse chosen in the text while the list is open: the list says what each work holds for that verse
     if (force && listOpen()) renderDir();
     const w = where(); if (!S.cur || !w) return;
@@ -1023,7 +1132,8 @@
       // (10-22) a work on another book, at the page where it cites the chapter; a set whose map knows only where the book begins
       : t.how === 'cites' ? `It cites ${bookName} ${sh.ch} on this page, in its commentary on another book`
       : t.how === 'head' ? `No note on ${ref(S.verse)} was found. This is where ${bookName} ${sh.ch} begins, by its heading`
-      : t.how === 'book' ? `${bookName} ${sh.ch} is not mapped in it. This is where ${sh.book === 'psalms' ? 'the Psalms begin' : `${bookName} begins`}` : 'Reading on';
+      : t.how === 'book' ? `${bookName} ${sh.ch} is not mapped in it. This is where ${sh.book === 'psalms' ? 'the Psalms begin' : `${bookName} begins`}`
+      : t.how === 'sermon' || t.how === 'sermon-ch' ? sermonSay(t, S.verse, sh.ch, bookName) : 'Reading on';
     // where the text stands, said as a sentence: "Its note on Matthew 1:2, col. 65 · Open in the reader" (10-21); a note found on the
     // page under the chapter's heading is said to be that, at its own page (10-22)
     const setWhere = (p, found) => {
@@ -1051,6 +1161,9 @@
       // under the chapter's heading, the verse's own note by its heading word ("Vers. 1."), else the heading itself (10-22)
       const u = underHead(all, wr, (S.cur && S.cur.pv && S.cur.pv[S.verse]) || S.verse);
       if (u.hit >= 0) { h = u.hit; found = true; setWhere(pages[pageOf[h]].n, true); } else if (u.head > 0) top = u.head;
+    } else if (t.how === 'sermon' || t.how === 'sermon-ch') {
+      // a sermon starts at its own heading, what came before it on the page folded away
+      const k = headingAt(all, t.x); if (k > 0) top = k;
     }
     const from = h > 0 ? h : top;
     // the editors' textual notes of a scholarly edition (variant readings, line numbers) are set apart, and do not count toward what is shown
@@ -1171,7 +1284,7 @@
     // a new chapter: the rail follows the reading line again, its list shut
     S.rec = null; S.pin = false; S.dirOpen = new Set();
     setDir(false);
-    const [list, rec, hits] = await Promise.all([commentaries(w.book, w.ch), recOf(w.book, w.ch), hitsOf(w.book, w.ch)]);
+    const [list, rec, hits, pr] = await Promise.all([commentaries(w.book, w.ch), recOf(w.book, w.ch), hitsOf(w.book, w.ch), preachOf(w.book)]);
     // the hits join the list as works the pane can open at their page (wb 2: a list of their own, never a key)
     const have = new Set(list.map((c) => c.slug));
     for (const x of hits) {
@@ -1184,6 +1297,12 @@
     for (const [v, x] of Object.entries((rec && rec.verses) || {})) {
       for (const [slug, p] of Object.entries(x.notes || {})) { const c = citing.get(slug); if (c && !(v in c.notes)) c.notes[v] = p; }
     }
+    // the sermons and homilies whose headings name the chapter join the list; its hymns are the Hymns view, offered only where it has any
+    const pc = (pr && pr.chapters && pr.chapters[String(w.ch)]) || {};
+    addSermons(list, pc.s || [], pr);
+    S.preach = pr; S.hymns = (pc.h || []).map(preachRow);
+    layout.querySelectorAll('.cp-tabs [data-tab="h"]').forEach((b) => { b.hidden = !S.hymns.length; });
+    if (S.tab === 'h' && !S.hymns.length) setTab('c', true);
     S.list = list; S.rec = rec;
     readYears(rec);
     heat();
