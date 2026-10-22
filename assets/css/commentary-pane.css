@@ -91,7 +91,9 @@ html.cp-site-mo .cp-top > .cp-eyebrow, html.cp-site-mo .cp-top > .cp-ref { grid-
 .cp-pick { flex: none; min-height: 44px; padding: 0 2px; background: none; border: 0; font-size: 14px; color: var(--cp-accent); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .cp-list { margin: 0 0 6px; padding: 0; list-style: none; }
 /* The key works of the chapter, one click away (2026-10-19): the four first on the book, a rule, the two first on the whole Bible. */
-.cp-keys { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 10px 0 2px; }
+.cp-keys { display: flex; flex-direction: column; gap: 6px; margin: 10px 0 2px; }
+.cp-keys-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.cp-keys-lab { flex: none; margin-right: 2px; font-size: 0.8125rem; color: var(--cp-muted, #6b6b6b); }
 .cp-keys:empty { display: none; }
 .cp-key { padding: 3px 10px; border: 1px solid var(--cp-rule); border-radius: 999px; background: transparent; color: var(--cp-ink); font: inherit; font-size: 12.5px; line-height: 1.4; cursor: pointer; }
 .cp-key:hover { border-color: var(--cp-ink); }
@@ -375,3 +377,8 @@ html.cp-site-mo .cp-tabs .cp-desk { flex: none; min-height: 36px; margin: 0 0 6p
 .cp-rec-most button[aria-current="true"] { border-color: var(--cp-ink); }
 .cp-rec-most button:hover { background: var(--cp-ground); }
 .cp-rec-most button:focus-visible, .cp-more:focus-visible { outline: 2px solid var(--cp-ink); outline-offset: 2px; }
+@media (max-width: 640px) {
+  .cp-keys-row { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; margin: 0 -16px; padding: 2px 16px; }
+  .cp-keys-row::-webkit-scrollbar { display: none; }
+  .cp-key { flex: none; }
+}

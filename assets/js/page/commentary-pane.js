@@ -674,14 +674,16 @@
     // shows its first four. One button an author and one name once (10-21): the Glossa's two volumes were "Glossa, Glossa".
     const tierOf = (c) => (RANK.works[c.slug] || [])[4] || 0;
     const firsts = firstsOf(onBook);
-    const book = (keys.length ? keys.slice(0, 8) : firsts.filter((c) => tierOf(c)).sort((x, y) => tierOf(x) - tierOf(y) || y.score - x.score).slice(0, 5))
+    const book = (keys.length ? keys.slice(0, 10) : firsts.filter((c) => tierOf(c)).sort((x, y) => tierOf(x) - tierOf(y) || y.score - x.score).slice(0, 5))
       .sort((x, y) => when(x) - when(y) || y.score - x.score);
     const seenA = new Set(), seenL = new Set();
     const keep = (c) => { const k = aKey(c.a) || c.slug, l = short(c.a); if (seenA.has(k) || seenL.has(l)) return false; seenA.add(k); seenL.add(l); return true; };
-    const head = (book.length ? book : firsts.slice(0, 4)).filter(keep), tail = firstsOf(whole).filter(keep).slice(0, 2);
-    const strip = head.concat(tail);
-    pane.querySelector('.cp-keys').innerHTML = strip.length < 2 ? '' : strip.map((c, i) =>
-      `${i === head.length && i ? '<span class="cp-keys-sep" aria-hidden="true"></span>' : ''}<button type="button" class="cp-key" data-slug="${esc(c.slug)}" aria-pressed="${isCur(c)}" title="${esc(`${c.t}${volShort(c.vol) ? ` (${volShort(c.vol)})` : ''}, ${c.a}`)}">${esc(short(c.a))}</button>`).join('');
+    const head = (book.length ? book : firsts.slice(0, 4)).filter(keep), tail = firstsOf(whole).filter(keep).slice(0, 6);
+    // (10-22, owner: "quickly go to landmark whole bible and book commentaries organized on the bar") two rows, each named once:
+    // the landmark commentaries on this book, then the landmark sets on the whole Bible in their curated order
+    const btn = (c) => `<button type="button" class="cp-key" data-slug="${esc(c.slug)}" aria-pressed="${isCur(c)}" title="${esc(`${c.t}${volShort(c.vol) ? ` (${volShort(c.vol)})` : ''}, ${c.a}`)}">${esc(short(c.a))}</button>`;
+    const row = (label, xs) => xs.length ? `<div class="cp-keys-row" role="group" aria-label="${esc(label)}"><span class="cp-keys-lab" aria-hidden="true">${esc(label)}</span>${xs.map(btn).join('')}</div>` : '';
+    pane.querySelector('.cp-keys').innerHTML = head.length + tail.length < 2 ? '' : row(`On ${refName(w) === 'Psalm' ? 'the Psalms' : refName(w)}`, head) + row('Whole Bible', tail);
     if (listOpen()) renderDir();
   }
   /* THE DIRECTORY (10-21, owner: "need to be able to click into all chapter and whole bible commentaries seamlessly, and every should
