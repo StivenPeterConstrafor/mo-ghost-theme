@@ -594,7 +594,7 @@ const PATH_NOTE='Among the Reformed and Lutherans, each metaphysician\'s positio
 const LATIN_HEAD=/^(?:caput|quaestio|articulus|disputatio|sectio|liber|capitulum|theoremata|problema|de|an|utrum)\b/i;
 function placeOf(s){
   const raw=String(s||''),cut=raw.length>=150;
-  let parts=raw.trim().split(/\s+—\s+/),last=true;
+  let parts=raw.trim().split(/\s+\u2014\s+/),last=true;
   if(parts.length>1&&LATIN_HEAD.test(parts[1])){parts=[parts[0]];last=false;}
   let t=parts.reduce((a,b)=>a?`${a}${/[.?!:]$/.test(a)?' ':': '}${b}`:b,'');
   if(cut&&last&&!/[.?!)]$/.test(t)){if(!/\s$/.test(raw))t=t.replace(/\s*\S+$/,'');t=`${t.replace(/[\s,;:]+$/,'')}…`;}

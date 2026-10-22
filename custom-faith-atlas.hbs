@@ -7,7 +7,10 @@
 <link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
 <link rel=stylesheet href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Source+Serif+Pro:ital,wght@0,400;0,600;1,400&display=swap">
 <style>
-.tfr-tool{--bg:#FFFFFF;--fg:#1C1C1A;--muted:#5A5A56;--border:#D8D8D3;--card-bg:#FFFFFF;--highlight:#EFEFEA;--sel:var(--card-bg);
+/* the shared graphics module's shelf colours (--tg-*) pinned to their light values here: this site is light, and the module's
+   dark values, keyed to the system's dark mode (no data-theme on this site's html), would lift them on a light page */
+.tfr-tool{--bg:#FFFFFF;--fg:#1C1C1A;--muted:#5A5A56;--border:#D8D8D3;--card-bg:#FFFFFF;--highlight:#EFEFEA;--sel:var(--card-bg);--affirms:#3F6B4E;--denies:#A8462B;
+  --tg-gf:#2E6E8E;--tg-pl:#7A4E9B;--tg-po:#5E8C61;--tg-md:#B07B2A;--tg-rc:#A63D5A;--tg-lu:#C1593C;--tg-rf:#2F7D4F;--tg-ed:#3B5BA5;--tg-hl:#8C7B5C;--tg-x:#7A7A76;
   --font-display:'EB Garamond',Georgia,serif;--font-body:'Source Serif Pro',Georgia,serif;--sans:'Source Serif Pro',Georgia,serif;--ease:cubic-bezier(.22,1,.36,1)}
 /* THE ATLAS OF DISPUTED QUESTIONS (2026-10-20, owner item 7: "The classic questions (for example, whether God's existence can be
    demonstrated), with every place the library treats them and each author's answer"). v1/atlas (runs/minimax_1019/atlas).
@@ -16,7 +19,14 @@
    One type scale: secondary .8rem, body 1rem, headings 1.25 / 1.6 / 2rem.
    THE DESIGN PASS (2026-10-22, owner: "design is impeccable"): the answers filter is a quiet toolbar (one choice, underlined), not a
    row of pills; a chosen question is a sheet on the stone, not a block of ink; a question steps to the one before and after, by the
-   arrow keys too, as on the maps; the page's title follows the question. */
+   arrow keys too, as on the maps; the page's title follows the question.
+   THE ATLAS IN THE MAPS' LANGUAGE (2026-10-22, with tradition-graphics.js/.css, the maps' drawings shared): a question opens on its
+   answers split in one divided bar, each answer named with its count; then its answers through the centuries, a lane an answer and
+   each author a dot at his year in his tradition's colour (the answer lanes: a page-local extension of the module's era strip, to
+   move into the module); its traditions by answer as small divided bars; its positions as its map heads them (the module's position
+   block); and last, as the evidence, each author's answer with his pages, as before. Each question of the list carries its split in
+   a thin bar. A figure speaks in one set of colours: the answers' (the split, the traditions' bars, the evidence) or the traditions'
+   (the lanes, the positions), since the library's green and red would read two ways beside the Reformed and the Lutheran. */
 .tfr-tool *{box-sizing:border-box}
 .tfr-tool{margin:0;background:var(--bg);color:var(--fg);font:16px/1.62 var(--font-body);-webkit-font-smoothing:antialiased}
 .tfr-tool a{color:var(--fg)}
@@ -44,7 +54,31 @@
 .tfr-tool .tally button:hover{color:var(--fg)}
 .tfr-tool .tally button[aria-pressed="true"]{color:var(--fg);border-bottom-color:var(--fg)}
 .tfr-tool .tally .tsep{align-self:center;width:1px;height:1rem;background:var(--border)}
-.tfr-tool .ans{display:flex;align-items:baseline;gap:.45rem;margin:1.6rem 0 0;padding-bottom:.35rem;border-bottom:1px solid var(--fg);font:500 1.25rem/1.3 var(--font-display)}
+.tfr-tool .sec-h{display:flex;align-items:baseline;gap:.45rem;margin:2.2rem 0 .4rem;padding-bottom:.35rem;border-bottom:1px solid var(--fg);font:500 1.25rem/1.3 var(--font-display);text-wrap:balance}
+.tfr-tool .ans{display:flex;align-items:center;gap:.45rem;margin:1.4rem 0 0;padding-bottom:.3rem;border-bottom:1px solid var(--border);font:500 1rem/1.3 var(--font-display)}
+.tfr-tool .split{display:flex;gap:1px;height:8px;margin:1rem 0 .5rem;border-radius:3px;overflow:hidden}
+.tfr-tool .split i,.tfr-tool .mt i{display:block;min-width:2px;background:var(--c)}
+.tfr-tool .split-n{display:flex;flex-wrap:wrap;gap:.15rem 1.1rem;margin:0 0 .4rem;font-size:.8rem;line-height:1.5}
+.tfr-tool .split-n>span{display:inline-flex;align-items:center;gap:.35rem}
+.tfr-tool .sw{flex:none;display:inline-block;width:.6rem;height:.6rem;border-radius:50%;background:var(--c,#7A7A76)}
+.tfr-tool .sw.pale{box-shadow:inset 0 0 0 1px var(--muted)}
+.tfr-tool .mt{display:flex;gap:1px;height:4px;margin:.4rem 0 .15rem;border-radius:2px;overflow:hidden}
+.tfr-tool :is(.split,.mt,.tr-b) i.na{margin-left:3px}
+.tfr-tool .trs{list-style:none;margin:.2rem 0 0;padding:0}
+.tfr-tool .trs>li{display:grid;grid-template-columns:minmax(9rem,13rem) minmax(0,1fr);gap:.1rem 1.2rem;align-items:center;padding:.4rem 0;border-bottom:1px solid var(--border)}
+.tfr-tool .tr-n{display:inline-flex;align-items:baseline;gap:.4rem;font:500 1rem/1.3 var(--font-display)}
+.tfr-tool .tr-b{display:flex;gap:1px;height:8px;border-radius:3px;overflow:hidden}
+.tfr-tool .tr-b i{display:block;min-width:2px;background:var(--c)}
+.tfr-tool .al{margin:.2rem 0 0}
+.tfr-tool .al-l+.al-l{margin-top:.6rem}
+.tfr-tool .al-h{display:flex;flex-wrap:wrap;align-items:center;gap:.1rem .45rem;margin:0 0 .2rem;font-size:.8rem;line-height:1.4}
+.tfr-tool .al-u{margin-left:auto;color:var(--muted)}
+.tfr-tool .al-p{position:relative}
+.tfr-tool .al-bg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.tfr-tool .al-d{position:absolute;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:var(--c);box-shadow:0 0 0 1px var(--bg)}
+.tfr-tool .al .tg-ax{margin-top:.2rem}
+.tfr-tool .pos-in{max-width:70ch;margin:2.2rem 0 0;color:var(--muted);font-size:.8rem;text-wrap:pretty}
+.tfr-tool .pos-in a{color:var(--fg)}
 .tfr-tool .hl{list-style:none;margin:0;padding:0}
 .tfr-tool .hr{display:grid;grid-template-columns:minmax(7.5rem,12rem) minmax(0,1fr) minmax(3.2rem,auto);gap:.1rem 1.2rem;align-items:baseline;padding:.55rem 0;border-bottom:1px solid var(--border)}
 .tfr-tool .hr[hidden]{display:none}
@@ -103,10 +137,11 @@
 .tfr-tool .hr{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"who pg" "line line";column-gap:.8rem}
 .tfr-tool .h-who{grid-area:who}
 .tfr-tool .h-pg{grid-area:pg}
-.tfr-tool .h-line{grid-area:line;margin-top:.2rem}}
+.tfr-tool .h-line{grid-area:line;margin-top:.2rem}
+.tfr-tool .trs>li{grid-template-columns:minmax(0,1fr);gap:.3rem;padding:.55rem 0}}
 .tfr-tool{background:transparent}
 .tfr-tool .wrap{padding-top:1.2rem}
-.tfr-tool .more{border-radius:3px}
+.tfr-tool .more,.tfr-tool .tg-more,.tfr-tool .tg-hold>summary{border-radius:3px}
 </style>
 {{/contentFor}}
 {{!-- /the-faith-received/disputed-questions/: Disputed questions, as The Faith Received has it (tools/prdl_reader_prototype/atlas.html), in this site's
@@ -124,4 +159,5 @@
 
 </div></main>
 <link rel="stylesheet" href="{{asset "css/port/work-hub.css"}}&amp;frv=0374a552e8452478"><script src="{{asset "js/port/page-window.js"}}&amp;frv=2023bacb69cf7ee4"></script>
-<script src="{{asset "js/faith-atlas.js"}}&amp;frv=4263c4f32c20ee37"></script>
+<link rel="stylesheet" href="{{asset "css/port/tradition-graphics.css"}}&amp;frv=cc8cf6f7c7831d99"><script src="{{asset "js/port/tradition-graphics.js"}}&amp;frv=b1b5cb5fca8233e6"></script>
+<script src="{{asset "js/faith-atlas.js"}}&amp;frv=4bb86bda58480d1a"></script>
