@@ -435,7 +435,8 @@
       map && section("tg-questions", "Disputed questions", `<span class="tg-ct">${fmt(qs.length)}</span>`,
         `<p>The classic questions on this topic. For each, the authors answering by century, its positions as one bar divided by their size, the largest first, and the way to its map, to every answer, and to the controversies the library's works of controversy file under it. The answers, positions and centuries are read by machine from each author's pages. Choose a question to draw its positions below.</p>`,
         `${map}<p class="tg-meta tg-qm-more"><a href="${ATLAS.slice(0, -1)}">Every disputed question, by locus</a> · <a href="${MAPS.slice(0, -1)}">Maps of the tradition</a></p><div class="tg-chosen" id="tg-chosen" aria-live="polite"></div>`),
-      band && section("tg-scripture", "Scripture by chapter", "",
+      // The heading counts what the band holds, as Disputed questions does (quality pass, 2026-10-22); the Methodology says which verses.
+      band && section("tg-scripture", "Scripture by chapter", `<span class="tg-ct">${scr.rows.length === 1 ? "the most cited" : `the ${fmt(scr.rows.length)} most cited`}</span>`,
         `<p>The chapters of the verses most particular to ${named}, placed along the canon: the counts are the citations of those verses on the pages that treat the topic, summed by chapter. The most cited are named over their bars and listed below; each opens the chapter in the Scripture reader.</p>`, band),
     ].filter(Boolean).join("");
   }

@@ -116,7 +116,7 @@
     $root.innerHTML =
       `<header class="td-head td-head--contents">` +
         `<label class="sd-search td-find"><span class="sd-filter-label">Find a topic</span><input type="search" data-td-find placeholder="Justification, the Trinity, baptism…" autocomplete="off"></label>` +
-        `<p class="sd-muted td-find-empty" data-td-find-empty hidden>No topic matches. Try a broader word.</p>` +
+        `<p class="sd-muted td-find-empty" data-td-find-empty role="status" hidden>No topic matches. Try a broader word.</p>` +
       `</header>` +
       `<div class="tgi-intro" data-tgi-intro hidden></div>` +
       `<nav class="tg tgi-jump" data-tgi-jump aria-label="The parts">${LOCI.parts.map((p) =>
@@ -185,6 +185,8 @@
       });
       $jump.hidden = Boolean(q);
       $empty.hidden = shown > 0;
+      // The line names the word that found nothing (quality pass, 2026-10-22). Text, not markup: the word is the reader's.
+      if (!shown) $empty.textContent = q ? `No topic matches “${$find.value.trim()}”. Try a broader word.` : "No topic matches. Try a broader word.";
     };
     const paint = () => {
       $dir.innerHTML = LOCI.parts.map(part).join("");
