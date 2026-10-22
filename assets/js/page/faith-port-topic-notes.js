@@ -413,7 +413,7 @@
   function guideHTML(g) {
     const pos = (g.positions || []).map((p) => `<li><strong>${esc(p.tradition)}</strong>: ${esc(p.summary)}
       <span class="cn-pages">${(p.evidence || []).slice(0, 5).map((e) => pageLink(e.work, e.page, `p. ${e.page}`)).join(" · ")}</span></li>`).join("");
-    const read = (g.read || []).map((r) => `<li>${pageLink(r.work, r.page, r.title || r.work)}<span>${esc(r.why)}</span></li>`).join("");
+    const read = (g.read || []).map((r) => `<li>${r.title ? pageLink(r.work, r.page, r.title) : pageLink(r.work, r.page, r.work).replace("<a ", `<a data-work-name="${esc(r.work)}" `)}<span>${esc(r.why)}</span></li>`).join("");
     return `${g.brief ? `<p>${esc(g.brief)}</p>` : ""}${g.scope_note ? `<p><em>Scope:</em> ${esc(g.scope_note)}</p>` : ""}
       ${g.differed ? `<p><em>Where the traditions differed:</em> ${esc(g.differed)}</p>` : ""}
       ${pos ? `<h5>Positions</h5><ul class="bn-list">${pos}</ul>` : ""}${read ? `<h5>Where to read</h5><ul class="rn-list">${read}</ul>` : ""}
@@ -524,3 +524,16 @@
   setInterval(draw, 700);
   addEventListener("hashchange", () => { empty.delete(slugNow()); draw(); });
 })();
+// a work named only by its slug (a Patrologia piece whose title the list lacks): its name from its meta.json, fetched once a slug
+const WORK_NAMES = new Map();
+const WORK_NAMES_BASE = window.__FR_BLOB_BASE__ || "https://mo-tfr-library.mo-podcast-feed.workers.dev";
+let WORK_NAMES_OBSERVER = null;
+function fillWorkNames(root) {
+  (root || document).querySelectorAll("a[data-work-name]").forEach((a) => {
+    const slug = a.getAttribute("data-work-name"); a.removeAttribute("data-work-name");
+    if (!WORK_NAMES.has(slug)) WORK_NAMES.set(slug, fetch(`${WORK_NAMES_BASE}/v1/works/${encodeURIComponent(slug)}/meta.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null));
+    WORK_NAMES.get(slug).then((m) => { if (!m) return; const t = m.title_en || m.title || slug; a.textContent = (m.author ? `${m.author}, ` : "") + t + (m.volume ? ` · ${m.volume}` : ""); });
+  });
+}
+// the lists render as folds open: fill the names whenever a slug-named link appears
+if (typeof document !== "undefined" && document.body && !WORK_NAMES_OBSERVER) { WORK_NAMES_OBSERVER = new MutationObserver(() => fillWorkNames(document)); WORK_NAMES_OBSERVER.observe(document.body, { childList: true, subtree: true }); fillWorkNames(document); }
