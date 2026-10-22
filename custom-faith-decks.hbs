@@ -186,16 +186,15 @@
 .tfr-tool .card[hidden]{display:none}
 .tfr-tool .ln .card .lbl{display:flex;align-items:baseline;gap:.5rem;margin:0 0 .35rem;font:italic .9375rem/1.3 var(--font-display);color:var(--muted)}
 .tfr-tool .card .lbl b{font:600 .8125rem/1 var(--font-body);font-style:normal;color:var(--fg)}
-.tfr-tool .card .sc{font-variant-caps:small-caps;letter-spacing:.02em}
+.tfr-tool .card .sc{font-variant-caps:all-small-caps;letter-spacing:.03em}
 .tfr-tool .ln .card .nt{margin:0;font:.9375rem/1.62 var(--font-body);text-wrap:pretty}
-.tfr-tool .ln .card .held{margin:.7rem 0 0;line-height:2.1}
-.tfr-tool .card .chip{display:inline;padding:.1em .35em;margin:0 .05em;border:1px solid var(--border);border-radius:5px;background:var(--card-bg);color:inherit;font:inherit;text-decoration:none;cursor:pointer;line-height:1.75;-webkit-box-decoration-break:clone;box-decoration-break:clone}
-.tfr-tool .card .chip .t,.tfr-tool .card .chip .p{margin-left:.3em}
-.tfr-tool .card .chip:hover{border-color:var(--muted)}
-.tfr-tool .card .chip[aria-pressed="true"]{border-color:var(--fg);background:var(--highlight)}
-.tfr-tool .card .chip .a{font-weight:600;color:var(--fg)}
-.tfr-tool .card .chip .t{color:var(--muted);font-style:italic}
-.tfr-tool .card .chip .p{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tfr-tool .ln .card .held{margin:.7rem 0 0;font:.875rem/1.7 var(--font-body)}
+.tfr-tool .card .held-l{font-style:italic;color:var(--muted);font-family:var(--font-display)}
+.tfr-tool .card :is(.nt,.held) .ref{color:var(--fg);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;text-decoration-color:var(--muted);cursor:pointer;border-radius:3px}
+.tfr-tool .card :is(.nt,.held) .ref:hover{text-decoration-color:var(--fg);background:var(--highlight)}
+.tfr-tool .card .ref[aria-pressed="true"]{background:var(--highlight);text-decoration-color:var(--fg)}
+.tfr-tool .card .tag{margin-left:.25em;padding:0 .3em;border:1px solid var(--border);border-radius:4px;font:600 .72em/1.3 var(--font-body);color:var(--muted);white-space:nowrap;vertical-align:.12em;-webkit-user-select:none;user-select:none;font-variant-numeric:tabular-nums}
+.tfr-tool .card .tag::before{content:attr(data-t)}
 .tfr-tool .tip{position:fixed;z-index:920;max-width:min(22rem,calc(100vw - 1.5rem));padding:.55rem .7rem;border:1px solid var(--border);border-radius:8px;background:var(--tint);font:.8125rem/1.45 var(--font-body);color:var(--fg);pointer-events:none;opacity:0;transform:translateY(2px)}
 .tfr-tool .tip.on{opacity:1;transform:none}
 .tfr-tool .bh .who{margin:0;font:500 1.25rem/1.25 var(--font-display);text-wrap:balance}
@@ -204,6 +203,10 @@
 .tfr-tool .bb .lead{margin:.9rem 0 .2rem;font:italic .9375rem/1.45 var(--font-display);color:var(--muted)}
 .tfr-tool .bb .empty{margin:2.5rem .5rem;font:italic 1.0625rem/1.5 var(--font-display);color:var(--muted);text-align:center;text-wrap:balance}
 .tfr-tool .bb .empty a{color:var(--fg);text-underline-offset:3px}
+.tfr-tool .bb .nopage{margin:1.6rem .4rem}
+.tfr-tool .bb .np-h{margin:0 0 .6rem;font:italic 1.0625rem/1.45 var(--font-display);color:var(--muted)}
+.tfr-tool .bb .np-c{margin:0 0 .9rem;padding:.7rem .85rem;border:1px solid var(--border);border-radius:8px;background:var(--tint);font:.9375rem/1.55 var(--font-body)}
+.tfr-tool .bb .np-a{font:600 .875rem/1.3 var(--font-body);color:var(--fg);text-underline-offset:3px}
 .tfr-tool .bb .pw{display:block}
 .tfr-tool .bb .pw-bar{position:sticky;top:0;z-index:2;display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .8rem;padding:.6rem 0;background:var(--card-bg);border-bottom:1px solid var(--border);margin-bottom:.6rem}
 .tfr-tool .bb .pw-lanes{border-radius:999px}
@@ -227,8 +230,8 @@
 .tfr-tool .bsheet .bb{flex:1;min-height:0;overflow:auto;padding:.4rem 1.15rem 2rem;overscroll-behavior:contain}
 .tfr-tool .bscrim{position:fixed;inset:0;z-index:905;background:rgba(0,0,0,.18);opacity:0;pointer-events:none}
 .tfr-tool .bscrim.on{opacity:1;pointer-events:auto}
-.tfr-tool :is(.ap .num,.mk,.card .chip,.morebar button,.bsheet .close):focus-visible{outline:2px solid var(--fg);outline-offset:2px}
-@media (prefers-reduced-motion:no-preference){.tfr-tool .card .chip{transition:border-color .15s var(--ease),background-color .15s var(--ease)}
+.tfr-tool :is(.ap .num,.mk,.card .ref,.morebar button,.bsheet .close):focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+@media (prefers-reduced-motion:no-preference){.tfr-tool .card .ref{transition:text-decoration-color .15s var(--ease),background-color .15s var(--ease)}
 .tfr-tool .tip{transition:opacity .12s var(--ease),transform .12s var(--ease)}
 .tfr-tool .bsheet{transition:transform .28s var(--ease),visibility 0s linear .28s}
 .tfr-tool .bsheet.up{transition:transform .28s var(--ease)}
@@ -274,4 +277,4 @@
 
 </div></main>
 <link rel="stylesheet" href="{{asset "css/port/work-hub.css"}}&amp;frv=0374a552e8452478"><script src="{{asset "js/port/page-window.js"}}&amp;frv=2023bacb69cf7ee4"></script>
-<script src="{{asset "js/faith-decks.js"}}&amp;frv=2455c91f1e5342c2"></script>
+<script src="{{asset "js/faith-decks.js"}}&amp;frv=c5bb734bb56edfd1"></script>

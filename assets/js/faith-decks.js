@@ -377,28 +377,60 @@ async function moreBase(){
 // cards; a running head that repeats the chapter is left out; *words* in the translation are italic
 const ital=h=>h.replace(/\*([^*<>]{1,160})\*/g,'<i>$1</i>');
 const shortTitle=t=>String(t||'').replace(/\s*\(.*?\)\s*/g,' ').split(/[,:;]/)[0].trim().slice(0,48);
+// THE NOTE AS PRINTED (the data session's prototype, revised 10-22 after the owner found copied notes running the names together):
+// nothing in the note is replaced or re-cased, so it reads and copies as the print. A work we hold: its PRINTED name, with the
+// initials before it ("FRANC. JUNIUS", "HENRIC. ALTINGIUS"), becomes the link, and a quiet tag after it ("p. 463", or the short title
+// when there is no page) says where it opens; the tag is not part of the text (user-select: none; the link's label carries it).
+// Capitals of the print are set in small capitals by the font (all-small-caps), the letters themselves untouched.
 const LINKS=[];
-function chipHTML(l){
-  const i=LINKS.push(l)-1,[surface,slug,page,title,author]=l,pg=page!=null&&page!=='';
-  return `<a class="chip" href="${esc(read(slug,pg?page:null))}" data-li="${i}"><span class="a">${esc(surnameOf(author)||surface)}</span><span class="t">${esc(shortTitle(title))}</span>${pg?`<span class="p">${atw(slug)}\u00a0${esc(page)}</span>`:''}</a>`;
+const CAPS=/\b[A-Z][A-Z'À-Þ]{2,}\.?(?:\s+[A-Z][A-Z'À-Þ]{1,}\.?)*/g;
+function smallCaps(html){
+  return html.split(/(<[^>]+>)/).map(seg=>seg.startsWith('<')?seg:seg.replace(CAPS,m=>/[A-Z]{4,}|[A-Z]{3,}\.?\s+[A-Z]{3,}/.test(m)?`<span class="sc">${m}</span>`:m)).join('');
 }
-// a note's held works as chips where the note names them, the rest after it; a run of two or more names in capitals in small capitals
+const stems=t=>new Set((fold(t).match(/[a-z]{4,}/g)||[]).map(w=>w.slice(0,6)));
 function noteHTML(text,links){
-  let html=esc(text);
-  const used=new Set(),chips=[],rest=[];
-  (links||[]).forEach(l=>{
+  links=links||[];
+  const ids=links.map(l=>LINKS.push(l)-1);
+  let html=ital(esc(text));
+  const rest=[];
+  // every mention of a held author in the note (initials and surname with its Latin ending, outside tags); each link then goes to the
+  // mention whose next words best share its title ("ALTINGIUS in Theological Problems" with New Problematic Theology), one a mention
+  const occ=[];
+  links.forEach((l,i)=>{
     if(!l||!l[1])return;
-    const [surface,,,,author]=l,chip=chipHTML(l);
-    const names=[surface,surnameOf(author)].filter(Boolean).map(x=>String(x).replace(/[.]/g,'').trim()).filter(x=>x.length>3);
-    let placed=false;
-    for(const n of names){
-      const re=new RegExp(`(?<![A-Za-zÀ-ɏ])(${n.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/\s+/g,'[.\\s]+')}[A-Za-zÀ-ɏ]*\\.?)`,'i');
-      if(!placed&&!used.has(n)&&re.test(html)){html=html.replace(re,()=>`\uE000${chips.push(chip)-1}\uE001`);used.add(n);placed=true;}
+    const [surface,,,,author]=l;
+    const sur=[surface,surnameOf(author)].filter(Boolean).map(s=>String(s).replace(/[.]/g,' ').trim().split(/\s+/).pop()).filter(s=>s.length>3);
+    for(const n of [...new Set(sur)]){
+      const re=new RegExp(`((?:\\b[A-Z][A-Za-z]{0,9}\\.\\s+){0,3})(?<![A-Za-zÀ-ɏ])${n.slice(0,Math.max(5,n.length-3)).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}[A-Za-zÀ-ɏ]*(?![^<]*>)`,'gi');
+      let m;
+      while((m=re.exec(html))){const cut=((m[1]||'').match(/^(?:[a-z][A-Za-z]{0,9}\.\s+)+/)||[''])[0].length;occ.push({i,at:m.index+cut,len:m[0].length-cut,after:html.slice(m.index+m[0].length,m.index+m[0].length+160)});}
     }
-    if(!placed)rest.push(chip);
   });
-  html=ital(html).replace(/\b[A-Z][A-Z'À-Þ]{2,}\.?(?:\s+[A-Z][A-Z'À-Þ]{2,}\.?)+/g,m=>`<span class="sc">${m.toLowerCase()}</span>`).replace(/\uE000(\d+)\uE001/g,(m,k)=>chips[+k]);
-  return `<p class="nt">${html}</p>${rest.length?`<p class="held">${rest.join(' ')}</p>`:''}`;
+  const used=new Map(),byLink=new Map();
+  const pairs=occ.map(o=>{const t=stems(links[o.i][3]),a=stems(o.after);let sc=0;t.forEach(w=>{if(a.has(w))sc++;});return {...o,sc};}).sort((x,y)=>y.sc-x.sc||x.at-y.at);
+  for(const o of pairs){if(byLink.has(o.i)||used.has(o.at))continue;byLink.set(o.i,o);used.set(o.at,o.i);}
+  // one work cited several times (Problem 2, then Problem 13): its pages rise with the order of the mentions
+  const bySlug=new Map();
+  for(const o of byLink.values()){const sl=links[o.i][1];if(!bySlug.has(sl))bySlug.set(sl,[]);bySlug.get(sl).push(o);}
+  for(const os of bySlug.values()){
+    if(os.length<2)continue;
+    const idx=os.map(o=>o.i).sort((x,y)=>(+links[x][2]||1e9)-(+links[y][2]||1e9));
+    os.sort((x,y)=>x.at-y.at).forEach((o,k)=>{o.i=idx[k];});
+  }
+  // right to left, so the earlier offsets stay true
+  for(const o of [...byLink.values()].sort((x,y)=>y.at-x.at)){
+    const [surface,slug,page,title,author]=links[o.i],pg=page!=null&&page!=='';
+    const label=`${author||surface}, ${title}${pg?`, page ${page}`:''}: open beside the text`;
+    html=`${html.slice(0,o.at)}<a class="ref" href="${esc(read(slug,pg?page:null))}" data-li="${ids[o.i]}" aria-label="${esc(label)}">${html.slice(o.at,o.at+o.len)}</a><span class="tag" aria-hidden="true" data-t="${pg?`${atw(slug)} ${esc(page)}`:esc(shortTitle(title))}"></span>${html.slice(o.at+o.len)}`;
+  }
+  const placed=new Set([...byLink.values()].map(o=>o.i));
+  links.forEach((l,i)=>{
+    if(!l||!l[1]||placed.has(i))return;
+    const [surface,slug,page,title,author]=l,pg=page!=null&&page!=='';
+    rest.push(`<a class="ref" href="${esc(read(slug,pg?page:null))}" data-li="${ids[i]}" aria-label="${esc(`${author||surface}, ${title}`)}">${esc(author||surface)}</a><span class="tag" aria-hidden="true" data-t="${esc(shortTitle(title))}${pg?`, ${atw(slug)} ${esc(page)}`:''}"></span>`);
+  });
+  html=smallCaps(html);
+  return `<p class="nt">${html}</p>${rest.length?`<p class="held"><span class="held-l">Also cited here, in the library:</span> ${rest.join(' · ')}</p>`:''}`;
 }
 function runningHead(text){
   const t=PL.text||{},f=x=>fold(x).replace(/^(?:of|on|concerning|de)\s+/,'').replace(/\s+/g,'');
@@ -522,7 +554,7 @@ let SHEET=null;
 function besideBox(chip){
   if(!isPhone()){
     const host=PANE.b;SHOWN.b='';RUN.b++;
-    host.innerHTML=`<header class="ph bh"><button type="button" class="back" data-beside-back>← ${S.r?'Back':`All ${esc(WHO())}`}</button><p class="who"></p><p class="what"></p><a class="open" target="_blank" rel="noopener" hidden>Open in the reader ↗</a></header><div class="scroll bb"></div>`;
+    host.innerHTML=`<header class="ph bh"><button type="button" class="back" data-beside-back>← ${S.deck==='vitringa'?'All works beside this chapter':S.r?'Back':`All ${esc(WHO())}`}</button><p class="who"></p><p class="what"></p><a class="open" target="_blank" rel="noopener" hidden>Open in the reader ↗</a></header><div class="scroll bb"></div>`;
     return host;
   }
   if(!SHEET){
@@ -544,7 +576,7 @@ function sheetDown(){
 async function besideOpen(l,chip){
   if(!l)return;
   const [surface,slug,page,title,author]=l,PW=window.FRPageWindow,pg=page!=null&&page!=='';
-  document.querySelectorAll('.card .chip[aria-pressed="true"]').forEach(c=>c.removeAttribute('aria-pressed'));
+  document.querySelectorAll('.card .ref[aria-pressed="true"]').forEach(c=>c.removeAttribute('aria-pressed'));
   if(chip)chip.setAttribute('aria-pressed','true');
   if(PW&&typeof PW.open==='function'){PW.open({slug,page,title,author});return;}
   const box=besideBox(chip),bb=box.querySelector('.bb'),op=box.querySelector('.open'),href=read(slug,pg?page:null);
@@ -552,11 +584,14 @@ async function besideOpen(l,chip){
   box.querySelector('.what').textContent=`${title||''}${pg?`, ${atw(slug)} ${page}`:''}`;
   op.href=href;op.hidden=false;
   bb.innerHTML='<p class="empty">Opening the page…</p>';
-  let at=pg?+page:null,lead='';
-  if(at==null&&!isFam(slug)){const m=await metaOf(slug);at=m?(+m.title_page||(+(m.front_matter_n||0)+1)||1):null;lead='Vitringa names this work without a page: its title page.';}
-  const ok=at!=null&&PW&&!isFam(slug)?await PW.fill(bb,{slug,page:at,hl:''}).catch(()=>false):false;
+  if(!pg){
+    const nt=chip&&chip.closest('.nt'),all=nt?nt.textContent:'',name=chip?chip.textContent:'',at=nt?all.indexOf(name):-1;
+    const cited=(at>=0?name+all.slice(at+name.length).split(/;|\.\s(?=[A-Z]{3,})/)[0]:'').slice(0,220);
+    bb.innerHTML=`<div class="nopage"><p class="np-h">Vitringa cites this work without a page we can place.</p>${cited?`<p class="np-c">“${esc(cited.trim())}”</p>`:''}<p><a class="np-a" href="${esc(href)}" target="_blank" rel="noopener">Open the work in the reader ↗</a></p></div>`;
+    return;
+  }
+  const ok=PW&&!isFam(slug)?await PW.fill(bb,{slug,page,hl:''}).catch(()=>false):false;
   if(!bb.isConnected)return;
-  if(ok&&lead)bb.insertAdjacentHTML('afterbegin',`<p class="lead">${esc(lead)}</p>`);
   if(!ok)bb.innerHTML=`<p class="empty">This page cannot be shown here. <a href="${esc(href)}">Open it in the reader</a>.</p>`;
 }
 // the chip's gist, after 300 ms of a mouse over it, at once on keyboard focus: below the chip when there is room, else above
@@ -576,13 +611,13 @@ function tipShow(ch){
 }
 function tipHide(){clearTimeout(tipT);TIP.classList.remove('on');if(tipFor){tipFor.removeAttribute('aria-describedby');tipFor=null;}}
 document.addEventListener('pointerover',e=>{
-  const ch=e.target.closest&&e.target.closest('.card .chip');
+  const ch=e.target.closest&&e.target.closest('.card .ref');
   if(!ch||e.pointerType!=='mouse'||ch===tipFor)return;
   clearTimeout(tipT);tipT=setTimeout(()=>tipShow(ch),300);
 });
-document.addEventListener('pointerout',e=>{const ch=e.target.closest&&e.target.closest('.card .chip');if(ch&&!ch.contains(e.relatedTarget))tipHide();});
-document.addEventListener('focusin',e=>{const ch=e.target.closest&&e.target.closest('.card .chip');if(ch)tipShow(ch);});
-document.addEventListener('focusout',e=>{if(e.target.closest&&e.target.closest('.card .chip'))tipHide();});
+document.addEventListener('pointerout',e=>{const ch=e.target.closest&&e.target.closest('.card .ref');if(ch&&!ch.contains(e.relatedTarget))tipHide();});
+document.addEventListener('focusin',e=>{const ch=e.target.closest&&e.target.closest('.card .ref');if(ch)tipShow(ch);});
+document.addEventListener('focusout',e=>{if(e.target.closest&&e.target.closest('.card .ref'))tipHide();});
 document.addEventListener('click',e=>{
   const alt=e.target.closest('[data-alt]');
   if(alt){S.alt=alt.dataset.alt||null;S.j=null;go();return;}
@@ -596,10 +631,10 @@ document.addEventListener('click',e=>{
   }
   const num=e.target.closest('.ap .num');
   if(num&&!(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button!==0)){e.preventDefault();const n=num.closest('.ap').dataset.aph;if(n){S.art=`a${n}`;go();}return;}
-  const ch=e.target.closest('.card a.chip');
+  const ch=e.target.closest('.card a.ref');
   if(ch&&!(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button!==0)){e.preventDefault();tipHide();besideOpen(LINKS[+ch.dataset.li],ch);return;}
   if(e.target.closest('[data-sheet-close]')){sheetDown();return;}
-  if(e.target.closest('[data-beside-back]')){document.querySelectorAll('.card .chip[aria-pressed="true"]').forEach(c=>c.removeAttribute('aria-pressed'));SHOWN.b='';render();return;}
+  if(e.target.closest('[data-beside-back]')){document.querySelectorAll('.card .ref[aria-pressed="true"]').forEach(c=>c.removeAttribute('aria-pressed'));SHOWN.b='';if(S.deck==='vitringa'&&S.r){S.r=null;S.i=null;go();}else render();return;}
   const more=e.target.closest('[data-more-pages]');
   if(more&&!more.disabled){loadMoreBase(more.dataset.morePages);return;}
   const ma=e.target.closest('[data-more-alt]');
