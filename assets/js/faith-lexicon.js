@@ -40,8 +40,12 @@ function listHTML(rows){
   return [...by.values()].map(v=>{const t=v[0];return `<li><button type="button" data-id="${esc(t[0])}" aria-current="${v.some(x=>x[0]===CUR)}">${esc(t[1])}${v.length>1?`<span class="lx-form"> · ${v.length} entries</span>`:''}<small>${esc(t[2]||'')}</small></button></li>`;}).join('');}
 async function showLetter(l){LETTER=l;document.querySelectorAll('#letters button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.l===l)));
   const rows=await J(`/v1/lexicon/letters/${encodeURIComponent(l)}.json`);$('#list').innerHTML=rows?listHTML(rows):'<li class="muted">Nothing under this letter.</li>';}
+let REDIR=null;
 async function showTerm(id,write){
-  const t=await J(`/v1/lexicon/terms/${encodeURIComponent(id)}.json`);if(!t){$('#entry').innerHTML='<p class="muted">This term could not be loaded.</p>';return;}
+  let t=await J(`/v1/lexicon/terms/${encodeURIComponent(id)}.json`);
+  // an id merged into another entry (the duplicate headwords, 10-22): v1/lexicon/redirects.json names the entry that holds it now
+  if(!t){if(REDIR===null)REDIR=(await J('/v1/lexicon/redirects.json'))||{};const to=REDIR[id];if(to&&to!==id){id=to;t=await J(`/v1/lexicon/terms/${encodeURIComponent(id)}.json`);}}
+  if(!t){$('#entry').innerHTML='<p class="muted">This term could not be loaded.</p>';return;}
   CUR=id;document.querySelectorAll('#list button').forEach(b=>b.setAttribute('aria-current',String(b.dataset.id===id)));
   const forms=[...(t.latin||[]).map(x=>`Latin ${x}`),...(t.greek||[]).map(x=>`Greek ${x}`)].join(' · ');
   // opened by its address before any letter list loaded: the headword's letter file tells whether it is filed more than once

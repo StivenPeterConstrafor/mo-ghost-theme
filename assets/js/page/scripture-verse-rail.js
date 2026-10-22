@@ -171,21 +171,37 @@
   // the collected volume holding a piece is named by the piece; the rest by their title, or by their slug's stem
   const workKey = (c) => `${authorKey(c.a) || c.slug}|${c.vol ? `p:${titleKey(c.t)}` : stemOf(c.slug) ? `s:${stemOf(c.slug)}` : `t:${titleKey(c.t)}`}`;
   const notedOn = (c, v) => !!(v && c.notes && Object.prototype.hasOwnProperty.call(c.notes, String(v)));
-  const pageFor = (c, v) => {
+  // how far back the volume's nearest note before the verse is (0 its note on the verse; Infinity none)
+  const backTo = (c, v) => {
+    if (notedOn(c, v)) return 0;
+    const ks = Object.keys(c.notes || {}).map(Number).filter((x) => x > 0 && x < v);
+    return ks.length ? v - Math.max(...ks) : Infinity;
+  };
+  // (10-22) a row's page is where its Read opens: the host's own place for the verse (cfg.place, the pane's), else the same order
+  // reckoned here: the note on the verse, the nearest note before, the chapter's page, the first note, the book's first page
+  const pageFor = (c, v, cfg) => {
+    if (cfg && cfg.place) { const t = cfg.place(c, v); return t ? t.p : null; }
     if (notedOn(c, v)) return c.notes[String(v)];
+    const ks = Object.keys(c.notes || {}).map(Number).filter((x) => x > 0).sort((p, q) => p - q), prev = ks.filter((x) => x < v).pop();
+    if (prev != null) return c.notes[String(prev)];
     if (c.open != null) return c.open;
-    const ks = Object.keys(c.notes || {}).map(Number).sort((p, q) => p - q);
-    return ks.length ? c.notes[String(ks[0])] : null;
+    if (ks.length) return c.notes[String(ks[0])];
+    return c.bookAt != null ? c.bookAt : null;
   };
   let dirSeq = 0;
 
   // the model: [{key, name, works: [{key, main, vols}]}] by tradition, and the works citing the chapter apart
   function directoryModel(rows, cfg) {
     const v = cfg.verse || 0, by = new Map();
-    for (const c of rows || []) { const k = workKey(c); if (!by.has(k)) by.set(k, { key: k, vols: [] }); by.get(k).vols.push(c); }
+    // the volumes of a set that only cite the chapter are a work of their own in "Cited in commentaries on other books" (10-22): folded
+    // under the set's own volume they were offered as its "5 volumes", four of them pages on other books
+    for (const c of rows || []) { const k = `${workKey(c)}${c.wb === 2 ? "|cited" : ""}`; if (!by.has(k)) by.set(k, { key: k, vols: [] }); by.get(k).vols.push(c); }
     const ws = [...by.values()];
+    const has = (c) => (Object.keys(c.notes || {}).length ? 1 : 0);
     for (const w of ws) {
-      w.vols.sort((p, q) => (notedOn(q, v) ? 1 : 0) - (notedOn(p, v) ? 1 : 0) || (q.open != null ? 1 : 0) - (p.open != null ? 1 : 0) || (q.score || 0) - (p.score || 0));
+      // the volume that leads is the one the pane opens for the verse: its note on it, else the nearest note before, then the chapter's
+      // page, any notes in the chapter, standing
+      w.vols.sort((p, q) => backTo(p, v) - backTo(q, v) || (q.open != null ? 1 : 0) - (p.open != null ? 1 : 0) || has(q) - has(p) || (q.score || 0) - (p.score || 0));
       w.main = w.vols[0];
       w.wb = Math.min(...w.vols.map((c) => (c.wb == null ? 0 : c.wb)));
     }
@@ -225,7 +241,8 @@
       else {
         // its notes elsewhere in the chapter: the verses themselves when they are few ("Notes on 1:18, 20"), else how many
         const vs = Object.keys(c.notes || {}).map(Number).filter((x) => x > 0).sort((p, q) => p - q), n = vs.length;
-        bits.push(!n ? `On chapter ${cfg.ch}` : n <= 3 ? `${n === 1 ? "Note" : "Notes"} on ${cfg.ch}:${vs.join(", ")}` : `Notes on ${n} verses of chapter ${cfg.ch}`);
+        // a set whose map knows only where the book begins (10-22) says so, not "On chapter 51"
+        bits.push(!n && c.open == null && c.bookAt != null ? `Chapter ${cfg.ch} not mapped` : !n ? `On chapter ${cfg.ch}` : n <= 3 ? `${n === 1 ? "Note" : "Notes"} on ${cfg.ch}:${vs.join(", ")}` : `Notes on ${n} verses of chapter ${cfg.ch}`);
       }
       if (w.wb === 1) bits.push("whole Bible");
       return bits.join(DOT);
@@ -234,12 +251,12 @@
     const titleVolume = (t) => { const m = /\b(Vol(?:ume)?|Tom(?:us)?)\.?\s+([IVXLC]+|\d+)\b/.exec(String(t || "")); return m ? `${/^T/.test(m[1]) ? "Tom." : "Vol."} ${m[2]}` : ""; };
     const volName = (c) => (cfg.volOf && cfg.volOf(c.slug)) || cfg.volShort(c.vol) || slugVolume(c.slug) || titleVolume(c.t) || "";
     const entry = (w, au, solo) => {
-      const c = w.main, p = pageFor(c, v), id = `vr-pv-${++dirSeq}`;
+      const c = w.main, p = pageFor(c, v, cfg), id = `vr-pv-${++dirSeq}`;
       const cur = w.vols.some((x) => x.slug === cfg.cur);
       const vol = w.vols.length > 1 ? "" : volName(c);
       const find = foldText(`${au.name} ${c.a || ""} ${w.vols.map((x) => `${x.t || ""} ${volName(x)}`).join(" ")}`);
       const vols = w.vols.length > 1 ? `<p class="vr-e-vols"><span>${w.vols.length} volumes</span>${w.vols.map((x) => {
-        const q = pageFor(x, v), label = volName(x) || (q != null ? pg(x.slug, q) : x.t);
+        const q = pageFor(x, v, cfg), label = volName(x) || (q != null ? pg(x.slug, q) : x.t);
         return `<button type="button" class="vr-e-vol" data-vr-read="${esc(x.slug)}"${x.slug === cfg.cur ? ' aria-current="true"' : ""} aria-label="${esc(`Read ${label} beside the text`)}">${esc(label)}</button>`;
       }).join("")}</p>` : "";
       return `<li class="vr-e${solo ? " vr-e-solo" : ""}${cur ? " is-cur" : ""}" data-find="${esc(find)}">`
