@@ -10,11 +10,13 @@ const ROMAN=n=>{const m=[[1000,'M'],[900,'CM'],[500,'D'],[400,'CD'],[100,'C'],[9
 const PARTS=[['Ia','First Part'],['I-II','First Part of the Second'],['II-II','Second Part of the Second'],['III','Third Part']];
 // the Decretum's four runs of places: the distinctions of Part I, the causae of Part II, De penitentia (inside C. 33) and De consecratione
 const DECRETUM=[['D','Distinctions','Distinctio'],['C','Causae','Causa'],['DP','De penitentia','De penitentia, Distinctio'],['DC','De consecratione','De consecratione, Distinctio']];
-const FIRST={sentences:'1',summa:'Ia',decretals:'1',decretum:'D'};
-const TEXTNAME={sentences:"Lombard's text",summa:"Aquinas's text",decretals:"The Decretals",decretum:"Gratian's text"};
+const FIRST={sentences:'1',summa:'Ia',decretals:'1',decretum:'D',systems:'I'};
+const TEXTNAME={sentences:"Lombard's text",summa:"Aquinas's text",decretals:"The Decretals",decretum:"Gratian's text",systems:"The place (no common text)"};
+const DECKNAME={sentences:"Lombard's Sentences",summa:"Aquinas's Summa",decretals:"the Decretals",decretum:"Gratian's Decretum",systems:"the systems of theology"};
 // the traditions in a fixed order; a work's own (works-index) decides
-const TRADS=['Medieval','Roman Catholic','Lutheran','Reformed','Continental Reformed','English Divines'];
-const MAXP=50; // a commentator's place is read here up to this many pages; the reader has the rest
+const TRADS=['Greek Fathers','Latin Fathers','Medieval','Roman Catholic','Lutheran','Reformed','Continental Reformed','English Divines'];
+// a commentator's place is read here up to this many pages; the reader has the rest
+const MAXP=50;
 // MereO hosts the same page with its own reader path (window.__FR_READER_PATH__ = '/the-faith-received/read/') and data address.
 // at= names the heading the link means: the reader opens on it, not on the top of its page.
 const READER=(window.__FR_READER_PATH__||'/read');
@@ -25,7 +27,9 @@ let S={deck:'sentences',part:'1',place:null,art:null,r:null,i:null,l:null,j:null
 try{LANE=localStorage.getItem('fr_deck_lane')||'en';}catch(_){}
 if(!['en','la','both'].includes(LANE))LANE='en';
 const canon=k=>((D.canon||{})[k])||{titles:[],places:[],landings:{}};
-function noun(){return {sentences:'distinction',summa:'question',decretals:'title',decretum:S.part==='C'?'causa':'distinction'}[S.deck];}
+function noun(){return {sentences:'distinction',summa:'question',decretals:'title',decretum:S.part==='C'?'causa':'distinction',systems:'place'}[S.deck];}
+const SYS=()=>S.deck==='systems';
+const WHO=()=>SYS()?'systems':'commentators';
 
 // ── the address ──────────────────────────────────────────────────────────────────────────────────────────────────────
 function state(){
@@ -35,6 +39,7 @@ function state(){
   if(h[0]==='summa')S={deck:'summa',part:PARTS.some(([k])=>k===h[1])?h[1]:'Ia',place:/^\d+$/.test(h[2]||'')?h[2]:null,art:/^\d+$/.test(h[3]||'')?h[3]:null};
   else if(h[0]==='decretals')S={deck:'decretals',part:['1','2','3','4','5'].includes(h[1])?h[1]:'1',place:/^\d+$/.test(h[2]||'')?h[2]:null,art:null};
   else if(h[0]==='decretum')S={deck:'decretum',part:DECRETUM.some(([k])=>k===h[1])?h[1]:'D',place:/^\d+$/.test(h[2]||'')?h[2]:null,art:null};
+  else if(h[0]==='systems')S={deck:'systems',part:/^[IVX]+$/.test(h[1]||'')?h[1]:'I',place:/^[a-z][a-z0-9-]*$/.test(h[2]||'')?h[2]:null,art:null};
   else S={deck:'sentences',part:['1','2','3','4'].includes(h[1])?h[1]:'1',place:/^\d+$/.test(h[2]||'')?h[2]:null,art:null};
   Object.assign(S,{r:q.get('r')||null,i:n('i'),l:q.get('l')||null,j:n('j')});
 }
@@ -46,6 +51,8 @@ function go(){const h=`#${hashOf()}`;if(location.hash!==h)location.hash=h;else r
 
 // ── the places of a deck and its grid ────────────────────────────────────────────────────────────────────────────────
 function places(){
+  // the systems: every place of the grid, in order across the ten parts (the stepper walks them all)
+  if(S.deck==='systems')return D.sys?D.sys._places.map(([part,k,name,la])=>({k,part,name,la,n:new Set((((D.sys[part]||{})[k]||{}).works||[]).map(r=>r[0])).size})):[];
   if(S.deck==='decretals'){const L=canon('X');return L.titles.filter(t=>String(t[0])===S.part).map(t=>({k:String(t[1]),n:Object.keys(L.landings[`${t[0]}.${t[1]}`]||{}).length,name:t[2]}));}
   if(S.deck==='decretum'){const L=canon('D');return L.places.filter(x=>x[0]===S.part).map(x=>({k:String(x[1]),n:Object.keys(L.landings[`${x[0]}.${x[1]}`]||{}).length,name:x[2]}));}
   if(S.deck==='sentences'){const g=D.sent[S.part]||{},max={'1':48,'2':44,'3':40,'4':50}[S.part];
@@ -56,10 +63,12 @@ function places(){
 function rowsFor(all){
   if(S.deck==='decretals'||S.deck==='decretum')return Object.entries(canon(S.deck==='decretals'?'X':'D').landings[`${S.part}.${S.place}`]||{}).map(([slug,p])=>[slug,p,'',0]);
   if(S.deck==='sentences')return (D.sent[S.part]||{})[S.place]||[];
+  if(S.deck==='systems')return (((D.sys||{})[S.part]||{})[S.place]||{}).works||[];
   const ws=((D.summa[S.part]||{})[S.place]||{}).works||[];
   return S.art==null||all?ws:ws.filter(r=>String(r[3]||0)===String(S.art));
 }
 function placeName(k){
+  if(S.deck==='systems'){const p=D.sys&&D.sys._places.find(x=>x[1]===k);return p?p[2]:String(k);}
   if(S.deck==='sentences')return `Distinction ${ROMAN(+k)}`;
   if(S.deck==='summa')return `Question ${k}`;
   if(S.deck==='decretals')return `Title ${ROMAN(+k)}`;
@@ -69,15 +78,27 @@ function heading(){
   if(S.deck==='sentences')return [`Book ${ROMAN(+S.part)}, Distinction ${ROMAN(+S.place)}`,''];
   if(S.deck==='summa'){const q=(D.summa[S.part]||{})[S.place]||{};return [`${(PARTS.find(p=>p[0]===S.part)||[])[1]}, Question ${S.place}`,q.t||''];}
   if(S.deck==='decretals'){const t=canon('X').titles.find(x=>String(x[0])===S.part&&String(x[1])===S.place);return [`Book ${ROMAN(+S.part)}, Title ${ROMAN(+S.place)}`,t?t[2]:''];}
+  if(S.deck==='systems'){const p=(D.sys&&D.sys._places.find(x=>x[1]===S.place))||[];return [p[2]||S.place,[p[3],`Part ${S.part}, ${partName(S.part)}`].filter(Boolean).join(' · ')];}
   return [placeName(S.place),''];
 }
+function partName(pk){
+  if(S.deck==='summa')return (PARTS.find(p=>p[0]===pk)||[])[1]||pk;
+  if(S.deck==='sentences'||S.deck==='decretals')return `Book ${ROMAN(+pk)}`;
+  if(S.deck==='decretum')return (DECRETUM.find(d=>d[0]===pk)||[])[1]||pk;
+  if(S.deck==='systems')return (((D.sys&&D.sys._parts)||[]).find(p=>p[0]===pk)||[])[1]||pk;
+  return pk;
+}
+// a part named inside a sentence: "the First Part", "Book II", "the Causae", "De penitentia", "God"
+function partPhrase(pk){const n=partName(pk);return S.deck==='summa'||(S.deck==='decretum'&&/^(D|C)$/.test(pk))?`the ${n}`:n;}
 function renderNav(){
   document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.deck===S.deck)));
   const parts={sentences:[['1','Book I'],['2','Book II'],['3','Book III'],['4','Book IV']],summa:PARTS.map(([k])=>[k,k]),
-    decretals:['1','2','3','4','5'].map(k=>[k,`Book ${ROMAN(+k)}`]),decretum:DECRETUM.map(([k,l])=>[k,l])}[S.deck];
-  $('#parts').innerHTML=parts.map(([k,l])=>`<button type="button" class="chip" data-part="${esc(k)}" aria-pressed="${k===S.part}" title="${esc(S.deck==='summa'?(PARTS.find(p=>p[0]===k)||[])[1]:l)}">${esc(l)}</button>`).join('');
-  const ps=places(),i=ps.findIndex(p=>p.k===S.place);
-  $('#grid').innerHTML=ps.map(p=>`<button type="button" data-place="${esc(p.k)}" aria-pressed="${p.k===S.place}" class="${p.n?'':'empty'}"${p.name?` title="${esc(p.name)}"`:''} aria-label="${esc(placeName(p.k))}${p.name?`, ${esc(p.name)}`:''}, ${p.n} ${p.n===1?'commentary':'commentaries'}">${esc(p.k)}<small>${p.n||'·'}</small></button>`).join('');
+    decretals:['1','2','3','4','5'].map(k=>[k,`Book ${ROMAN(+k)}`]),decretum:DECRETUM.map(([k,l])=>[k,l]),systems:((D.sys&&D.sys._parts)||[]).map(([k])=>[k,k])}[S.deck];
+  $('#parts').innerHTML=parts.map(([k,l])=>`<button type="button" class="chip" data-part="${esc(k)}" aria-pressed="${k===S.part}" title="${esc(S.deck==='summa'?(PARTS.find(p=>p[0]===k)||[])[1]:SYS()?partName(k):l)}"${SYS()?` aria-label="Part ${esc(k)}, ${esc(partName(k))}"`:''}>${esc(l)}</button>`).join('');
+  const ps=places(),here=p=>p.k===S.place&&(!p.part||p.part===S.part),i=ps.findIndex(here),[one,many]=SYS()?['system','systems']:['commentary','commentaries'];
+  const cell=p=>`<button type="button" data-place="${esc(p.k)}"${p.part?` data-ppart="${esc(p.part)}"`:''} aria-pressed="${here(p)}" class="${p.n?'':'empty'}"${p.name&&!SYS()?` title="${esc(p.name)}"`:''} aria-label="${esc(placeName(p.k))}${p.name&&!SYS()?`, ${esc(p.name)}`:''}, ${p.n} ${p.n===1?one:many}">${esc(SYS()?p.name:p.k)}<small>${p.n||'·'}</small></button>`;
+  $('#grid').classList.toggle('sys',SYS());
+  $('#grid').innerHTML=SYS()?((D.sys&&D.sys._parts)||[]).map(([pk,pn])=>`<p class="gpart">${esc(pk)}. ${esc(pn)}</p>${ps.filter(p=>p.part===pk).map(cell).join('')}`).join(''):ps.map(cell).join('');
   $('#pick').textContent=S.place?`${placeName(S.place)} ▾`:`Choose a ${noun()} ▾`;
   $('#prev').disabled=i<=0;$('#next').disabled=i<0||i>=ps.length-1;
   document.querySelectorAll('#lanes button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lane===LANE)));
@@ -91,7 +112,7 @@ async function loadPlace(){
   const f=`${encodeURIComponent(S.deck)}/${encodeURIComponent(S.part)}/${encodeURIComponent(S.place)}.json`;
   PL={key,text:null,out:null};
   // a place no commentator is aligned to has no outline file: it is not asked for
-  PL.wait=Promise.all([J(`/v1/decks/read/${f}`),rowsFor().length||S.art?J(`/v1/decks/outline/${f}`):null]).then(([t,o])=>{if(PL.key===key){PL.text=t;PL.out=o;}});
+  PL.wait=Promise.all([SYS()?null:J(`/v1/decks/read/${f}`),rowsFor().length||S.art?J(`/v1/decks/outline/${f}`):null]).then(([t,o])=>{if(PL.key===key){PL.text=t;PL.out=o;}});
   return PL.wait;
 }
 const order=(a,b)=>{const ta=TRADS.includes(a.tr)?TRADS.indexOf(a.tr):99,tb=TRADS.includes(b.tr)?TRADS.indexOf(b.tr):99;return ta-tb||a.y-b.y||a.a.localeCompare(b.a)||a.t.localeCompare(b.t)||a.from-b.from;};
@@ -112,8 +133,72 @@ function summary(items){
   const parts=KINDS.filter(([k])=>n[k]).slice(0,3).map(([k])=>`${n[k]} ${k}${n[k]===1?'':'s'}`);
   return parts.length?parts.join(' · '):`${items.length} heading${items.length===1?'':'s'}`;
 }
-const who=c=>`${c.a||'Unknown'}${c.y<9999?` (b. ${c.y})`:''}`;
+const who=c=>`${c.a||'Unknown'}${c.y<9999&&!SYS()?` (b. ${c.y})`:''}`;
+// the year beside a name is a commentator's birth; on the systems it is the edition's, and goes with the work
+const born=c=>c.y<9999&&!SYS()?`<small>b. ${c.y}</small>`:'';
+const workLine=c=>`${esc(c.t)}${c.vol?`, ${esc(c.vol)}`:''}${SYS()&&c.y<9999&&!String(c.vol).includes(String(c.y))?`, ${c.y}`:''}`;
 const pp=c=>c.to>c.from?`pp. ${c.from}–${c.to}`:`p. ${c.from}`;
+
+// ── where a work is not: every place of the deck in order, and the nearest places a work treats ───────────────────────
+const DPC=new Map();
+function deckPlaces(){
+  if(DPC.has(S.deck))return DPC.get(S.deck);
+  const set=rows=>new Set((rows||[]).map(r=>r[0])),num=o=>Object.keys(o||{}).filter(k=>/^\d+$/.test(k)).map(Number).sort((a,b)=>a-b);
+  let L=[];
+  if(S.deck==='summa')L=PARTS.flatMap(([pk])=>num(D.summa[pk]).map(k=>{const q=D.summa[pk][k]||{};return {part:pk,k:String(k),t:q.t||'',slugs:set(q.works)};}));
+  else if(S.deck==='sentences')L=['1','2','3','4'].flatMap(b=>num(D.sent[b]).map(k=>({part:b,k:String(k),t:'',slugs:set(D.sent[b][k])})));
+  else if(S.deck==='decretals'){const C=canon('X');L=C.titles.map(t=>({part:String(t[0]),k:String(t[1]),t:t[2]||'',slugs:new Set(Object.keys(C.landings[`${t[0]}.${t[1]}`]||{}))}));}
+  else if(S.deck==='decretum'){const C=canon('D');L=DECRETUM.flatMap(([pk])=>C.places.filter(x=>x[0]===pk).map(x=>({part:pk,k:String(x[1]),t:'',slugs:new Set(Object.keys(C.landings[`${x[0]}.${x[1]}`]||{}))})));}
+  else if(SYS()&&D.sys)L=D.sys._places.map(([pk,k,t])=>({part:pk,k,t,slugs:set(((D.sys[pk]||{})[k]||{}).works)}));
+  if(L.length)DPC.set(S.deck,L);
+  return L;
+}
+function nearest(slug){
+  const L=deckPlaces(),i=L.findIndex(p=>p.part===S.part&&p.k===S.place);
+  let before=null,after=null,count=0;
+  L.forEach((p,j)=>{if(!p.slugs.has(slug))return;count++;if(i>=0&&j<i)before=p;else if(j>i&&!after)after=p;});
+  return {before,after,count};
+}
+// a place named in a sentence or a link: its part only when it is not the part being read; the question's own title on the Summa
+function placeLabel(p,full){
+  const other=p.part!==S.part,pre=other&&!SYS()?`${partName(p.part)}, `:'';
+  if(S.deck==='summa')return `${pre}Question ${p.k}${full&&p.t?`, ${p.t}`:''}`;
+  if(S.deck==='sentences')return `${pre}Distinction ${ROMAN(+p.k)}`;
+  if(S.deck==='decretals')return `${pre}Title ${ROMAN(+p.k)}${full&&p.t?`, ${p.t}`:''}`;
+  if(S.deck==='decretum')return `${(DECRETUM.find(d=>d[0]===p.part)||[])[2]} ${ROMAN(+p.k)}`;
+  return SYS()&&other?`${p.t} (Part ${p.part}, ${partName(p.part)})`:p.t||p.k;
+}
+// the address of a place with the work kept in its pane (the right pane unless it is the left that is asked for)
+function hashFor(p,slug,side){
+  const q=new URLSearchParams(),r=side==='a'?S.r:slug,l=side==='a'?slug:S.l;if(r)q.set('r',r);if(l)q.set('l',l);
+  return `${S.deck}/${p.part}/${p.k}${q.toString()?`?${q}`:''}`;
+}
+const placeLink=(p,slug,side,full)=>`<a href="#${esc(hashFor(p,slug,side))}">${esc(placeLabel(p,full))}</a>`;
+// the pane of a work chosen where it has no division: it says so, and where the nearest are
+function absentNote(slug,side){
+  const w=D.texts.works[slug]||[],name=w[0]||(SYS()?'This system':'This commentator'),N=nearest(slug),pk=S.part,sys=SYS();
+  const L=p=>placeLink(p,slug,side,true),inPart=p=>p&&p.part===pk,His=sys?'Its':'His',he=sys?'it':'he',work=sys?'treatment of':'commentary on';
+  // a system's place named inside a sentence: "the covenants", not "The covenants"
+  const here=sys?placeName(S.place).replace(/^The /,'the '):placeName(S.place);
+  const s1=sys?`${esc(name)}, ${esc(w[1]||'')}, has nothing filed under ${esc(here)}.`:`${esc(name)} has no commentary on ${esc(here)}.`;
+  let s2='';
+  if(!N.count)s2=`${sys?'It':'He'} is not aligned to any ${noun()} of ${esc(DECKNAME[S.deck])}.`;
+  else if(inPart(N.before)&&inPart(N.after))s2=`The nearest ${noun()}s ${he} treats are ${L(N.before)}, before, and ${L(N.after)}, after.`;
+  else if(inPart(N.after))s2=`${His} ${work} ${esc(partPhrase(pk))} begins at ${L(N.after)}.${N.before?` The last ${noun()} ${he} treats before it is ${L(N.before)}.`:''}`;
+  else if(inPart(N.before))s2=`${His} ${work} ${esc(partPhrase(pk))} ends at ${L(N.before)}.${N.after?` The next ${noun()} ${he} treats is ${L(N.after)}.`:''}`;
+  else s2=`${sys?'It':'He'} treats ${N.count} other ${N.count===1?noun():`${noun()}s`} of ${esc(DECKNAME[S.deck])}; the nearest ${N.before&&N.after?'are':'is'} ${[N.before&&L(N.before),N.after&&L(N.after)].filter(Boolean).join(' and ')}.`;
+  return `<div class="abs-note"><p>${s1}</p><p>${s2}</p></div>`;
+}
+// the line under an absent work in the list: where it begins, ends, or the nearest on either side
+function nearHTML(slug){
+  const N=nearest(slug),L=p=>placeLink(p,slug,'b',false);
+  if(N.before&&N.after)return `Nearest: ${L(N.before)}, before; ${L(N.after)}, after`;
+  if(N.after)return `Begins at ${L(N.after)}`;
+  if(N.before)return `Ends at ${L(N.before)}`;
+  return '';
+}
+const DWC=new Map();
+function deckWorks(){if(!DWC.has(S.deck)&&deckPlaces().length)DWC.set(S.deck,[...new Set(deckPlaces().flatMap(p=>[...p.slugs]))]);return DWC.get(S.deck)||[];}
 
 // ── a work's pages: its page files (about a hundred pages a file), else its TEI; fetched once ─────────────────────────
 const META=new Map(),FILES=new Map(),TEIS=new Map();
@@ -145,7 +230,7 @@ const HEADLIKE=/^(?:distinct|quaest|question|art(?:ic|\.)|disput|dub(?:ium|\.)|d
 const capsy=t=>{const L=t.replace(/[^A-Za-z]/g,'');return L.length>5&&L.replace(/[^A-Z]/g,'').length/L.length>.7;};
 const headish=t=>t.length<150&&(HEADLIKE.test(t)||(t.length<100&&capsy(t)));
 function matches(item,t){const b=fold(t);if(b.length<3)return false;
-  return [item[3],item[0],...String(item[3]||'').split(/\s+—\s+/)].some(x=>{const a=fold(x),k=Math.min(28,a.length,b.length);return k>=5&&a.slice(0,k)===b.slice(0,k);});}
+  return [item[3],item[0],...String(item[3]||'').split(/\s+\u2014\s+/)].some(x=>{const a=fold(x),k=Math.min(28,a.length,b.length);return k>=5&&a.slice(0,k)===b.slice(0,k);});}
 function linesHTML(blocks,lane,marks,after){
   return blocks.map((b,bi)=>{const id=marks.get(bi),{t} = b,h=b.h===1||b.h===true||id!=null||(b.h!==2&&headish(t));
     const tail=((after&&after.get(bi))||[]).map(x=>`<span class="anc" id="${x}" data-item="${x}"></span>`).join('');
@@ -180,9 +265,11 @@ function scrollToEl(side,el,flash){
   if(flash){const t=el.classList.contains('anc')?el.closest('.pg'):el;if(t){t.classList.remove('flash');void t.offsetWidth;t.classList.add('flash');}}
 }
 function sourceSelect(side,cs,current){
-  const first=side==='a'?`<option value="">${esc(TEXTNAME[S.deck])}</option>`:`<option value="">All commentators (${cs.length})</option>`;
+  const first=side==='a'?`<option value="${SYS()?'-':''}">${esc(TEXTNAME[S.deck])}</option>`:`<option value="">All ${WHO()} (${cs.length})</option>`;
   const groups=[...TRADS,'Other'].map(t=>[t,cs.filter(c=>(TRADS.includes(c.tr)?c.tr:'Other')===t)]).filter(([,g])=>g.length);
-  return `<label class="srcl"><span>Read</span><select data-src="${side}" aria-label="What the ${side==='a'?'left':'right'} pane reads">${first}${groups.map(([t,g])=>`<optgroup label="${esc(t)}">${g.map(c=>`<option value="${esc(c.slug)}"${c.slug===current?' selected':''}>${esc(c.a||c.t)} · ${esc(c.t.slice(0,48))}${c.vol?`, ${esc(c.vol.slice(0,24))}`:''}</option>`).join('')}</optgroup>`).join('')}</select></label>`;
+  const w=current&&current!=='-'&&!cs.some(c=>c.slug===current)?D.texts.works[current]||[]:null;
+  const away=w?`<optgroup label="Not on this ${noun()}"><option value="${esc(current)}" selected>${esc(w[0]||current)}${w[1]?` · ${esc(String(w[1]).slice(0,48))}`:''}</option></optgroup>`:'';
+  return `<label class="srcl"><span>Read</span><select data-src="${side}" aria-label="What the ${side==='a'?'left':'right'} pane reads">${first}${away}${groups.map(([t,g])=>`<optgroup label="${esc(t)}">${g.map(c=>`<option value="${esc(c.slug)}"${c.slug===current?' selected':''}>${esc(c.a||c.t)} · ${esc(c.t.slice(0,48))}${c.vol?`, ${esc(c.vol.slice(0,24))}`:''}</option>`).join('')}</optgroup>`).join('')}</select></label>`;
 }
 // THE TEXT ITSELF, in the left pane unless a commentator is put there
 async function paneText(side){
@@ -194,6 +281,7 @@ async function paneText(side){
     <h2>${esc(h2)}</h2>${sub?`<p class="what">${esc(sub)}</p>`:''}${S.deck==='summa'?artsBar():''}</header>`;
   if(SHOWN[side]===key){host.querySelector('.ph').outerHTML=head;if(S.deck==='summa')jumpArt(side);return;}
   SHOWN[side]=key;host.dataset.moved='';
+  if(SYS()){host.innerHTML=`${head}<div class="scroll"><p class="note">The systems have no common text: they are compared place by place. Choose a system for either pane from the lists.</p></div>`;return;}
   if(!t){host.innerHTML=`${head}<div class="scroll"><p class="note">The text of this ${noun()} is not cut yet. ${S.deck==='sentences'?'':'Open its first page in the reader from the commentators beside it.'}</p></div>`;return;}
   const byPage=new Map();for(const l of ['en','la'])for(const [hh,txt,pg] of (t[l]||[])){if(!byPage.has(pg))byPage.set(pg,{en:[],la:[]});byPage.get(pg)[l].push({t:txt,h:hh});}
   const unit=t.slug==='pld-7607'?'column':'page';
@@ -223,14 +311,15 @@ async function paneWork(side,slug,focus){
   const host=PANE[side],cs=commentators(true),c=cs.find(x=>x.slug===slug),token=++RUN[side];
   const key=['work',PL.key,slug,LANE].join('|');
   if(!c){SHOWN[side]='';const w=D.texts.works[slug]||[];
-    host.innerHTML=`<header class="ph"><div class="ph-row">${sourceSelect(side,cs,'')}</div><h2>${esc(w[0]||slug)}</h2></header><div class="scroll"><p class="note">${esc(w[0]||'This commentator')} has no commentary on this ${noun()} in the library. Choose another in the list above.</p></div>`;return;}
+    host.innerHTML=`<header class="ph"><div class="ph-row">${sourceSelect(side,cs,slug)}</div>${side==='b'?`<button type="button" class="back" data-back>← All ${WHO()}</button>`:''}
+      <h2>${esc(w[0]||slug)}${born({y:w[4]||9999})}</h2>${w[1]?`<p class="what">${workLine({t:w[1],vol:w[2]||'',y:w[4]||9999})}</p>`:''}</header><div class="scroll">${absentNote(slug,side)}</div>`;return;}
   const {items} = c;
   if(focus==null&&S.deck==='summa'&&S.art){const k=items.findIndex(x=>String(x[4]||'')===String(S.art));if(k>=0)focus=k;}
   const toc=items.length>1?`<select data-toc="${side}" aria-label="${esc(c.a)}'s divisions of this ${noun()}">${items.map((x,k)=>`<option value="${k}"${k===focus?' selected':''}>${' '.repeat(Math.max(0,Math.min(3,x[2])-1))}${esc(x[0].slice(0,110))} · p. ${esc(x[1])}</option>`).join('')}</select>`:'';
   const cur=items[focus!=null?focus:0]||items[0];
   const head=`<header class="ph"><div class="ph-row">${sourceSelect(side,cs,slug)}<a class="open" data-open="${side}" href="${read(slug,cur[1],cur[3])}">Open in the reader ↗</a></div>
-    ${side==='b'?`<button type="button" class="back" data-back>← All commentators</button>`:''}
-    <h2>${esc(c.a||c.t)}${c.y<9999?`<small>b. ${c.y}</small>`:''}</h2><p class="what">${esc(c.t)}${c.vol?`, ${esc(c.vol)}`:''} · ${esc(pp(c))}</p>${toc}</header>`;
+    ${side==='b'?`<button type="button" class="back" data-back>← All ${WHO()}</button>`:''}
+    <h2>${esc(c.a||c.t)}${born(c)}</h2><p class="what">${workLine(c)} · ${esc(pp(c))}</p>${toc}</header>`;
   if(SHOWN[side]===key){host.querySelector('.ph').outerHTML=head;if(focus!=null)scrollToEl(side,document.getElementById(`${side}-i${focus}`),true);return;}
   SHOWN[side]=key;
   host.innerHTML=`${head}<div class="scroll"><div class="pages"></div><div class="sk" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><p class="end" hidden></p></div>`;
@@ -273,32 +362,61 @@ function paneDir(side){
   SHOWN[side]=key;RUN[side]++;
   const row=c=>{const k=S.deck==='summa'&&S.art?c.items.findIndex(x=>String(x[4]||'')===String(S.art)):0,f=c.items[k>=0?k:0];
     return `<li class="c" data-slug="${esc(c.slug)}"><div class="c-top"><button type="button" class="c-read" data-read="${esc(c.slug)}"${k>0?` data-i="${k}"`:''}>
-      <span class="who">${esc(c.a||'Unknown')}${c.y<9999?`<small>b. ${c.y}</small>`:''}</span><span class="work">${esc(c.t)}${c.vol?`, ${esc(c.vol)}`:''}</span>
+      <span class="who">${esc(c.a||'Unknown')}${born(c)}</span><span class="work">${workLine(c)}</span>
       <span class="sum">${esc(summary(c.items))} · ${esc(pp(c))}</span></button><a class="ext" href="${read(c.slug,f[1],f[3])}" aria-label="Open ${esc(c.a)} in the reader">Open ↗</a></div>
       ${c.items.length>1?`<details class="toc"><summary>Contents</summary><ol>${c.items.map((x,k)=>`<li class="d${Math.max(1,Math.min(3,x[2]))}"><button type="button" data-read="${esc(c.slug)}" data-i="${k}">${esc(x[0])}</button><a href="${read(c.slug,x[1],x[3])}" title="Open in the reader">p. ${esc(x[1])}</a></li>`).join('')}</ol></details>`:''}</li>`;};
-  const groups=[...TRADS,'Other'].map(t=>[t,cs.filter(c=>(TRADS.includes(c.tr)?c.tr:'Other')===t)]).filter(([,g])=>g.length);
+  const byTrad=list=>[...TRADS,'Other'].map(t=>[t,list.filter(c=>(TRADS.includes(c.tr)?c.tr:'Other')===t)]).filter(([,g])=>g.length);
+  const groups=byTrad(cs);
+  // the deck's other commentators, not on this place: folded under the list, each with the nearest place he treats
+  const here=new Set(commentators(true).map(c=>c.slug));
+  const away=deckWorks().filter(sl=>!here.has(sl)).map(sl=>{const w=D.texts.works[sl]||[];return {slug:sl,a:w[0]||'',t:w[1]||sl,vol:w[2]||'',tr:w[3]||'Other',y:w[4]||9999,from:0};}).filter(c=>c.a||c.t!==c.slug).sort(order);
+  const arow=c=>`<li class="c" data-slug="${esc(c.slug)}"><div class="c-who"><span class="who">${esc(c.a||'Unknown')}${born(c)}</span><span class="work">${workLine(c)}</span><span class="near">${nearHTML(c.slug)}</span></div></li>`;
+  const absent=away.length?`<details class="absent"><summary>Not on this ${noun()}<span>${away.length}</span></summary><p class="count">The other ${WHO()} of ${esc(DECKNAME[S.deck])}, with the nearest ${noun()} each treats.</p>${byTrad(away).map(([t,g])=>`<section class="grp"><h3 class="trad">${esc(t)}<span>${g.length}</span></h3><ul class="dir">${g.map(arow).join('')}</ul></section>`).join('')}</details>`:'';
   host.innerHTML=`<header class="ph"><div class="ph-row">${sourceSelect(side,cs,'')}</div>
-    <h2>Commentators</h2><p class="count">${cs.length?`${cs.length} on this ${noun()}${S.deck==='summa'&&S.art?`, article ${esc(S.art)}`:''}. Choose one to read beside the text.`:`None aligned to this ${noun()} yet.`}</p>
-    ${cs.length>8?`<input class="find" type="search" placeholder="Find a commentator" aria-label="Find a commentator">`:''}</header>
-    <div class="scroll">${groups.map(([t,g])=>`<section class="grp"><h3 class="trad">${esc(t)}<span>${g.length}</span></h3><ul class="dir">${g.map(row).join('')}</ul></section>`).join('')}</div>`;
+    <h2>${SYS()?'Systems':'Commentators'}</h2><p class="count">${cs.length?`${cs.length} on this ${noun()}${S.deck==='summa'&&S.art?`, article ${esc(S.art)}`:''}. Choose one to read beside ${SYS()?'the other pane':'the text'}.`:`None aligned to this ${noun()} yet.`}</p>
+    ${cs.length+away.length>8?`<input class="find" type="search" placeholder="Find a ${SYS()?'system':'commentator'}" aria-label="Find a ${SYS()?'system':'commentator'}">`:''}</header>
+    <div class="scroll">${groups.map(([t,g])=>`<section class="grp"><h3 class="trad">${esc(t)}<span>${g.length}</span></h3><ul class="dir">${g.map(row).join('')}</ul></section>`).join('')}${absent}</div>`;
+}
+// the systems' grid is fetched the first time that deck is opened
+let SYSP=null;
+function loadSystems(){return SYSP||(SYSP=J(`/v1/decks/systems/grid.json${VER}`).then(g=>{if(g&&g._places){D.sys=g;D.texts.works={...(g._works||{}),...D.texts.works};}else SYSP=null;return g;}));}
+// the left pane: the text of the place; on the systems, which have no common text, the place's first system unless one was chosen
+function leftSlug(){
+  if(!SYS())return S.l;
+  if(S.l==='-')return null;
+  if(S.l)return S.l;
+  // the canon family (Migne, the EEBO texts) is read in the reader from its own TEI, not here: the default is the first system this page can read
+  const cs=new Set(commentators(true).map(c=>c.slug)),ok=sl=>cs.has(sl)&&sl!==S.r,rows=rowsFor(true).map(r=>r[0]);
+  return rows.find(sl=>ok(sl)&&!/^(pg|pld|po|eebo)-\d+$/.test(sl))||rows.find(ok)||null;
 }
 async function render(){
   if(!D)return;
+  if(SYS()){
+    if(!D.sys){renderNav();PANE.a.innerHTML='<p class="note" style="padding:1rem 1.2rem">Loading the systems…</p>';PANE.b.innerHTML='';SHOWN.a=SHOWN.b='';
+      await loadSystems();if(!SYS())return;
+      if(!D.sys){PANE.a.innerHTML='<p class="note" style="padding:1rem 1.2rem">The systems could not be loaded. Reload the page to try again.</p>';return;}}
+    // a place belongs to one part: the address's part follows the place it names
+    const pl=S.place&&D.sys._places.find(x=>x[1]===S.place);
+    if(pl)S.part=pl[0];else{S.place=null;if(!D.sys._parts.some(p=>p[0]===S.part))S.part='I';}
+  }
   // a part with no place chosen opens on its first place with a commentator, so there is always a text to read
-  if(!S.place){const ps=places(),f=ps.find(p=>p.n)||ps[0];if(f){S.place=f.k;history.replaceState(null,'',`#${hashOf()}`);}}
+  if(!S.place){const ps=places().filter(p=>!p.part||p.part===S.part),f=ps.find(p=>p.n)||ps[0];if(f){S.place=f.k;history.replaceState(null,'',`#${hashOf()}`);}}
   renderNav();
   if(!S.place)return;
   await loadPlace();
-  $('#showB').textContent=S.r?((D.texts.works[S.r]||[])[0]||'Commentator'):`Commentators (${commentators().length})`;
-  await Promise.all([S.l?paneWork('a',S.l,S.j):paneText('a'),S.r?paneWork('b',S.r,S.i):Promise.resolve(paneDir('b'))]);
+  const left=leftSlug();
+  $('#showA').textContent=left?((D.texts.works[left]||[])[0]||'Left'):'Text';
+  $('#showB').textContent=S.r?((D.texts.works[S.r]||[])[0]||'Commentator'):`${SYS()?'Systems':'Commentators'} (${commentators().length})`;
+  await Promise.all([left?paneWork('a',left,S.j):paneText('a'),S.r?paneWork('b',S.r,S.i):Promise.resolve(paneDir('b'))]);
 }
-function step(d){const ps=places(),i=ps.findIndex(p=>p.k===S.place);const n=ps[i+d];if(n){S.place=n.k;S.art=null;S.i=null;S.j=null;$('#grid').hidden=true;go();}}
+// the next place; on the systems the stepper walks on into the next part
+function step(d){const ps=places(),i=ps.findIndex(p=>p.k===S.place&&(!p.part||p.part===S.part));const n=ps[i+d];if(n){if(n.part)S.part=n.part;S.place=n.k;S.art=null;S.i=null;S.j=null;$('#grid').hidden=true;go();}}
 function show(w){$('#desk').dataset.show=w;document.querySelectorAll('.switch [data-show]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.show===w)));}
 document.addEventListener('click',e=>{
   const t=e.target.closest('[data-deck]');if(t){S={deck:t.dataset.deck,part:FIRST[t.dataset.deck]||'1',place:null,art:null,r:null,i:null,l:null,j:null};go();return;}
   // another book is mostly another volume: the panes go back to the text and the list
   const p=e.target.closest('[data-part]');if(p){S.part=p.dataset.part;S.place=null;S.art=null;S.r=null;S.i=null;S.l=null;S.j=null;go();return;}
-  const g=e.target.closest('[data-place]');if(g){S.place=g.dataset.place;S.art=null;S.i=null;S.j=null;$('#grid').hidden=true;$('#pick').setAttribute('aria-expanded','false');go();return;}
+  const g=e.target.closest('[data-place]');if(g){if(g.dataset.ppart)S.part=g.dataset.ppart;S.place=g.dataset.place;S.art=null;S.i=null;S.j=null;$('#grid').hidden=true;$('#pick').setAttribute('aria-expanded','false');go();return;}
   const a=e.target.closest('[data-art]');if(a){S.art=a.dataset.art===''?null:a.dataset.art;S.i=null;S.j=null;go();return;}
   const l=e.target.closest('[data-lane]');if(l){LANE=l.dataset.lane;try{localStorage.setItem('fr_deck_lane',LANE);}catch(_){}render();return;}
   const r=e.target.closest('[data-read]');if(r){S.r=r.dataset.read;S.i=r.dataset.i!=null?+r.dataset.i:null;show('b');go();return;}
@@ -314,12 +432,13 @@ document.addEventListener('change',e=>{
   const t=e.target.closest('select[data-toc]');
   if(t){const side=t.dataset.toc,k=+t.value;if(side==='a')S.j=k;else S.i=k;history.replaceState(null,'',`#${hashOf()}`);
     const el=document.getElementById(`${side}-i${k}`);if(el)scrollToEl(side,el,true);
-    const c=commentators(true).find(x=>x.slug===(side==='a'?S.l:S.r)),it=c&&c.items[k],o=PANE[side].querySelector('a[data-open]');if(it&&o)o.href=read(c.slug,it[1],it[3]);}
+    const c=commentators(true).find(x=>x.slug===(side==='a'?leftSlug():S.r)),it=c&&c.items[k],o=PANE[side].querySelector('a[data-open]');if(it&&o)o.href=read(c.slug,it[1],it[3]);}
 });
 document.addEventListener('input',e=>{
   const f=e.target.closest('.find');if(!f)return;const q=fold(f.value);
-  PANE.b.querySelectorAll('.c').forEach(li=>{li.hidden=!!q&&!fold(li.querySelector('.c-read').textContent).includes(q);});
+  PANE.b.querySelectorAll('.c').forEach(li=>{const t=li.querySelector('.c-read,.c-who');li.hidden=!!q&&!fold(t?t.textContent:'').includes(q);});
   PANE.b.querySelectorAll('.grp').forEach(g=>{g.hidden=![...g.querySelectorAll('.c')].some(li=>!li.hidden);});
+  const ab=PANE.b.querySelector('details.absent');if(ab&&q)ab.open=[...ab.querySelectorAll('.c')].some(li=>!li.hidden);
 });
 // the reader scrolls a pane himself: the contents follow, and a late page no longer pulls him to the chosen division
 let spyRaf=0;

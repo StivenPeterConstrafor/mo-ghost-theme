@@ -31,14 +31,25 @@ async function showHistory(id){const box=$('#hist');if(!box)return;const h=await
   const span=first&&last&&first!==last?`, from ${esc(first[0])} to ${esc(last[0])}`:'';
   box.innerHTML=`<h3 id="hist-h">How the library defines it</h3><p class="muted">${h.works.toLocaleString()} ${h.works===1?'work':'works'}${span}. Each line is a one-line English summary, made by machine, of how that page defines the term; open the page to read the author's own words.</p><ol>${histRows(h,60)}</ol>${h.rows.length>60?`<button type="button" class="more">Show all ${h.works.toLocaleString()} works</button>`:''}`;
   const more=box.querySelector('.more');if(more)more.addEventListener('click',()=>{box.querySelector('ol').innerHTML=histRows(h,h.rows.length);more.remove();});}
-function listHTML(rows){return rows.map(t=>`<li><button type="button" data-id="${esc(t[0])}" aria-current="${t[0]===CUR}">${esc(t[1])}<small>${esc(t[2]||'')}</small></button></li>`).join('');}
+const SIBS=new Map();
+function listHTML(rows){
+  // one row a headword: the lexicon filed some headwords several times (wages: merces, merces with ὀψώνια, opsōnion); the list shows each
+  // once, with the works of its fullest entry, and the entry opened names the others under "Also filed as"
+  const by=new Map();rows.forEach(t=>{const k=String(t[1]).toLowerCase();if(!by.has(k))by.set(k,[]);by.get(k).push(t);});
+  by.forEach((v,k)=>{v.sort((a,b)=>(b[2]||0)-(a[2]||0));SIBS.set(k,v);});
+  return [...by.values()].map(v=>{const t=v[0];return `<li><button type="button" data-id="${esc(t[0])}" aria-current="${v.some(x=>x[0]===CUR)}">${esc(t[1])}${v.length>1?`<span class="lx-form"> · ${v.length} entries</span>`:''}<small>${esc(t[2]||'')}</small></button></li>`;}).join('');}
 async function showLetter(l){LETTER=l;document.querySelectorAll('#letters button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.l===l)));
   const rows=await J(`/v1/lexicon/letters/${encodeURIComponent(l)}.json`);$('#list').innerHTML=rows?listHTML(rows):'<li class="muted">Nothing under this letter.</li>';}
 async function showTerm(id,write){
   const t=await J(`/v1/lexicon/terms/${encodeURIComponent(id)}.json`);if(!t){$('#entry').innerHTML='<p class="muted">This term could not be loaded.</p>';return;}
   CUR=id;document.querySelectorAll('#list button').forEach(b=>b.setAttribute('aria-current',String(b.dataset.id===id)));
   const forms=[...(t.latin||[]).map(x=>`Latin ${x}`),...(t.greek||[]).map(x=>`Greek ${x}`)].join(' · ');
-  $('#entry').innerHTML=`<h2>${esc(t.headword)}</h2>${forms?`<p class="forms">${esc(forms)}</p>`:''}<p class="muted">The senses below come from up to thirty of the works that define it; every work that does is listed under How the library defines it.</p>${
+  // opened by its address before any letter list loaded: the headword's letter file tells whether it is filed more than once
+  const hk=String(t.headword||'').toLowerCase(),hl=fold(hk).slice(0,1);
+  if(hl&&!SIBS.has(hk)){const lr=await J(`/v1/lexicon/letters/${encodeURIComponent(hl)}.json`);if(lr){const by=new Map();lr.forEach(x=>{const k=String(x[1]).toLowerCase();if(!by.has(k))by.set(k,[]);by.get(k).push(x);});by.forEach((v,k)=>{v.sort((a,b)=>(b[2]||0)-(a[2]||0));if(!SIBS.has(k))SIBS.set(k,v);});}}
+  const sib=(SIBS.get(hk)||[]).filter(x=>x[0]!==id);
+  const also=sib.length?`<p class="also">Also filed as ${sib.map(x=>`<button type="button" class="lnk" data-id="${esc(x[0])}">${esc([x[3],x[4]].filter(Boolean).join(' · ')||x[1])}<small> ${esc(x[2]||'')} ${x[2]===1?'work':'works'}</small></button>`).join(', ')}</p>`:'';
+  $('#entry').innerHTML=`<h2>${esc(t.headword)}</h2>${forms?`<p class="forms">${esc(forms)}</p>`:''}${also}<p class="muted">The senses below come from up to thirty of the works that define it; every work that does is listed under How the library defines it.</p>${
     (t.senses||[]).map((s,i)=>`<section class="sense"><p><strong>${i+1}.</strong> ${esc(s.gloss)}</p><ol>${(s.src||[]).slice(0,12).map(([w,p,a,ti])=>`<li>${esc(a||'')}${a?', ':''}<a href="${read(w,p)}">${esc(ti||w)}, p. ${esc(p)}</a></li>`).join('')}${(s.src||[]).length>12?`<li>and ${(s.src||[]).length-12} more</li>`:''}</ol></section>`).join('')}<section class="hist" id="hist" aria-labelledby="hist-h"></section>`;
   showHistory(id);
   if(write)history.replaceState(null,'',`#${encodeURIComponent(id)}`);

@@ -127,14 +127,30 @@ html.cp-site-mo .cp-top > .cp-eyebrow, html.cp-site-mo .cp-top > .cp-ref { grid-
 a.cp-row-t { text-decoration: none; }
 .cp-w-g { font-size: 13px; line-height: 1.45; color: var(--cp-muted); max-width: 62ch; }
 
-.cp-lang { display: flex; align-items: center; gap: 8px; margin: 6px 0 0; font-size: 13px; color: var(--cp-muted); }
+/* English or the source text: one control of two segments, the chosen one inked (10-21) */
+.cp-lang { display: inline-flex; align-items: stretch; width: max-content; margin: 8px 0 0; border: 1px solid var(--cp-rule); border-radius: 3px; overflow: hidden; font-size: 13px; }
 .cp-lang[hidden] { display: none; }
-.cp-lang button { min-height: 32px; padding: 0 2px; background: none; border: 0; font-size: 13px; color: var(--cp-muted); cursor: pointer; }
-.cp-lang button[aria-pressed="true"] { color: var(--cp-ink); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--cp-accent); }
+.cp-lang button { min-width: 4.6em; min-height: 32px; padding: 0 12px; background: none; border: 0; font-size: 13px; color: var(--cp-muted); cursor: pointer; }
+.cp-lang button + button { border-left: 1px solid var(--cp-rule); }
+.cp-lang button:hover:not([aria-pressed="true"]) { color: var(--cp-ink); background: var(--cp-ground); }
+.cp-lang button[aria-pressed="true"] { background: var(--cp-ink); color: var(--cp-paper); }
+.cp-pane .cp-lang button:focus-visible { outline-offset: -3px; }
+@media (pointer: coarse) { .cp-lang button { min-height: 44px; } }
+
+/* the directory of every commentary on the chapter (scripture-verse-rail.css), in the rail's flow: the rail has no box that scrolls,
+   so the find box stays where it is rather than sticking to the window under the masthead (10-21) */
+.cp-list .vr-dir { margin: 2px 0 10px; }
+.cp-list .vr-dir-find { position: static; padding: 8px 0; }
+/* the rail's paper and ground are one cream here: a work's preview is set on a white sheet with a hairline, so it reads as the work's
+   page and not as the list */
+html.cp-site-mo .vr-e-box { background: #fff; border: 1px solid var(--cp-rule); border-radius: 3px; }
+html.cp-site-mo .vr-dir-find input { background: #fff; }
 
 .cp-where { margin: 10px 0 16px; padding: 0 0 10px; font-size: 13px; color: var(--cp-muted); border-bottom: 1px solid var(--cp-rule); }
 .cp-where .cp-pg { font-variant-numeric: tabular-nums; }
 .cp-where a { color: var(--cp-accent); text-decoration: underline; text-underline-offset: 3px; }
+/* the way to the reader keeps its separator with it when the line wraps (10-21) */
+.cp-where .cp-go { white-space: nowrap; }
 
 /* the commentary's own words: in the page's flow, so the page scrolls and there is no second scrollbar */
 .cp-body { font-size: 16px; line-height: 1.62; }

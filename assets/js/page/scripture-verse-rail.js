@@ -3,9 +3,10 @@
  * page's rail calls (commentary-pane.js on both sites, the verse panel on The Faith Received, scripture-dev-core.js on Mere Orthodoxy),
  * each a pure function of its data and a routes object, so one file serves both sites:
  *
- *   picker      the Commentary picker: the commentaries on the chapter in four groups by what they hold for THIS verse (a note on the
- *               verse; a note on the chapter; the whole Bible; works on other books that cite the chapter, one row per author however
- *               many volumes), the curated key commentaries first in the order their authors wrote, then by tradition; a find box.
+ *   directory   every commentary on the chapter, chapter commentaries and whole-Bible sets alike: by tradition, then author, then
+ *               work (a set's volumes folded under one entry), each group shut with its count, each work previewable in place and
+ *               openable in the reader; a find box. The panes' Commentary list since 2026-10-21 evening.
+ *   picker      the earlier Commentary picker (four groups by what a commentary holds for THIS verse), kept for a cached pane.
  *   reception   the verse's history: one line of counts, the century strip, the commentaries on the verse (each author once, keys
  *               first, then by tradition), then each period's witnesses by standing, the page's gist behind the row, and the rest
  *               of a period one click away in Citations. One methodology line for the whole rail.
@@ -35,8 +36,9 @@
   const gist = (g) => { const t = String(g || "").trim(); if (!t) return ""; return /[.!?)\]"'”’]$/.test(t) ? t : `${t.replace(/\s+\S*$/, "")}…`; };
   const years = (x) => x.d || (x.y ? `fl. c. ${x.y}` : "");
   // a byline set right for a row: the catalogue's title-first strings ("Archbishop of Bulgaria Theophylact") turned about, a guessed
-  // attribution ("Uncertain author (Bede?)") read as "Bede (uncertain)"
-  const NAMES = {};
+  // attribution ("Uncertain author (Bede?)") read as "Bede (uncertain)"; the map's run-together byline for the Catena Aurea read as the
+  // catalogue prints it
+  const NAMES = { "collected by Thomas Aquinas The catena": "The catena, collected by Thomas Aquinas", "collected by Thomas Aquinas": "The catena, collected by Thomas Aquinas" };
   const properName = (a) => {
     const s = String(a || "").trim(); if (!s) return s;
     if (NAMES[s]) return NAMES[s];
@@ -136,6 +138,185 @@
     });
     list.addEventListener("keydown", (e) => { if (e.key === "Escape" && e.target.closest(".vr-find")) { e.target.value = ""; e.target.dispatchEvent(new Event("input", { bubbles: true })); } });
     const box = list.querySelector(".vr-find input"); if (box) box.addEventListener("click", (e) => e.stopPropagation());
+  }
+
+  // ── the directory: every commentary on the chapter, by tradition, then author, then work ──────────────────────────────────
+  /* (2026-10-21, owner: "need to be able to click into all chapter and whole bible commentaries seamlessly, and every should be
+   * collapsed by tradition author expandable and previewable"). Replaces the picker in both panes. One entry a work: the volumes of
+   * one set (one author with one title, or one slug stem before a volume number: Denys's tomes, Poole's Synopsis, Salmeron's
+   * eleven) fold under it, the volume with the verse's note (else the chapter's page) leading. The traditions in the lists' order,
+   * each shut with its count; inside, the authors in the order they wrote; an author with one work is one row, an author with more
+   * is shut with his count. Each work: the row reads it beside the text, its page opens in the reader, Preview opens its note on the
+   * verse (or its chapter's page) under the row, fetched the first time (on.preview). The works on other books that cite the
+   * chapter are one more group, last.
+   * rows: the pane's S.list entries {slug, a, t, vol, notes {v: p}, open, hit, sh, wb (0 on the book, 1 a set on the whole Bible,
+   * 2 a work on another book citing the chapter), score, born}.
+   * cfg: {cur, verse, ch, bookName, tradOf(c), when(c), rankOf(slug, a), volShort(t), read(slug, p), pg(slug, p), volOf(slug),
+   * open: Set of the groups the reader has opened ("t:gf", "a:<author key>")}. */
+  const foldText = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const authorKey = (a) => foldText(properName(a)).replace(/[^a-z0-9]+/g, " ").trim();
+  const VOL_WORDS = /[\s.,:;(]*\b(?:vol(?:ume)?|tom(?:e|us)?|pars|part|band)\.?\s*[ivxlc\d]+\b.*$/i;
+  const titleKey = (t) => foldText(t).replace(VOL_WORDS, "").replace(/[^a-z0-9]+/g, " ").trim();
+  const ORDINALS = ["primus", "secundus", "tertius", "quartus", "quintus", "sextus", "septimus", "octavus", "nonus", "decimus", "undecimus", "duodecimus"];
+  const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
+  const VOL_SLUG = new RegExp(`-(?:(?:vol|tom|tomus|pars|part|band)-[a-z0-9]+(?:-.*)?|${ORDINALS.join("|")})$`);
+  const stemOf = (slug) => (VOL_SLUG.test(slug) ? String(slug).replace(VOL_SLUG, "") : "");
+  // a volume's label from its slug where nothing else names it: "-vol-15" Vol. 15, "-tom-iv-gospels" Tom. IV, "-quintus" Tom. V
+  const slugVolume = (slug) => {
+    const m = /-(vol|tom|tomus|pars|part|band)-([a-z0-9]+)/.exec(slug);
+    if (m) { const n = /^[ivxlc]+$/.test(m[2]) ? m[2].toUpperCase() : m[2]; return `${{ vol: "Vol.", tom: "Tom.", tomus: "Tom.", pars: "Part", part: "Part", band: "Vol." }[m[1]]} ${n}`; }
+    const o = ORDINALS.findIndex((x) => String(slug).endsWith(`-${x}`));
+    return o >= 0 ? `Tom. ${ROMAN[o]}` : "";
+  };
+  // the collected volume holding a piece is named by the piece; the rest by their title, or by their slug's stem
+  const workKey = (c) => `${authorKey(c.a) || c.slug}|${c.vol ? `p:${titleKey(c.t)}` : stemOf(c.slug) ? `s:${stemOf(c.slug)}` : `t:${titleKey(c.t)}`}`;
+  const notedOn = (c, v) => !!(v && c.notes && Object.prototype.hasOwnProperty.call(c.notes, String(v)));
+  const pageFor = (c, v) => {
+    if (notedOn(c, v)) return c.notes[String(v)];
+    if (c.open != null) return c.open;
+    const ks = Object.keys(c.notes || {}).map(Number).sort((p, q) => p - q);
+    return ks.length ? c.notes[String(ks[0])] : null;
+  };
+  let dirSeq = 0;
+
+  // the model: [{key, name, works: [{key, main, vols}]}] by tradition, and the works citing the chapter apart
+  function directoryModel(rows, cfg) {
+    const v = cfg.verse || 0, by = new Map();
+    for (const c of rows || []) { const k = workKey(c); if (!by.has(k)) by.set(k, { key: k, vols: [] }); by.get(k).vols.push(c); }
+    const ws = [...by.values()];
+    for (const w of ws) {
+      w.vols.sort((p, q) => (notedOn(q, v) ? 1 : 0) - (notedOn(p, v) ? 1 : 0) || (q.open != null ? 1 : 0) - (p.open != null ? 1 : 0) || (q.score || 0) - (p.score || 0));
+      w.main = w.vols[0];
+      w.wb = Math.min(...w.vols.map((c) => (c.wb == null ? 0 : c.wb)));
+    }
+    const authors = (list) => {
+      const am = new Map();
+      for (const w of list) { const k = authorKey(w.main.a) || w.main.slug; if (!am.has(k)) am.set(k, { key: k, name: properName(w.main.a) || w.main.t, works: [] }); am.get(k).works.push(w); }
+      for (const au of am.values()) {
+        au.works.sort((p, q) => (notedOn(q.main, v) ? 1 : 0) - (notedOn(p.main, v) ? 1 : 0) || (q.main.score || 0) - (p.main.score || 0) || String(p.main.t).localeCompare(String(q.main.t)));
+        // an author is filed once: under the tradition most of his works are filed under, a named one before "Other"
+        const n = new Map();
+        for (const w of au.works) { const t = cfg.tradOf(w.main) || "x"; n.set(t, (n.get(t) || 0) + (t === "x" ? 0.5 : 1)); }
+        au.trad = [...n.entries()].sort((p, q) => q[1] - p[1] || tradIndex(p[0]) - tradIndex(q[0]))[0][0];
+        au.when = Math.min(...au.works.map((w) => cfg.when(w.main) || 9999));
+        au.rank = Math.min(...au.works.map((w) => cfg.rankOf(w.main.slug, w.main.a)));
+      }
+      return [...am.values()];
+    };
+    const main = authors(ws.filter((w) => w.wb !== 2)), cited = authors(ws.filter((w) => w.wb === 2));
+    const order = TRADS.map(([k]) => k).concat(["x"]);
+    const groups = order.map((k) => ({ key: k, name: TRAD_NAME[k] || "Other", authors: main.filter((au) => (order.includes(au.trad) ? au.trad : "x") === k) }))
+      .filter((g) => g.authors.length);
+    for (const g of groups) g.authors.sort((p, q) => p.when - q.when || p.rank - q.rank || p.name.localeCompare(q.name));
+    cited.sort((p, q) => p.rank - q.rank || p.name.localeCompare(q.name));
+    const count = (gs) => gs.reduce((n, au) => n + au.works.length, 0);
+    return { groups, cited, works: count(main), citedWorks: count(cited) };
+  }
+
+  function directory(rows, cfg) {
+    const m = directoryModel(rows, cfg), v = cfg.verse || 0, open = cfg.open || new Set();
+    const pg = cfg.pg || ((slug, p) => `p. ${p}`);
+    const ref = `${cfg.bookName || ""} ${cfg.ch}`.trim();
+    // what the work holds for the verse in view
+    const meta = (w) => {
+      const c = w.main, bits = [];
+      if (w.wb === 2) bits.push(c.hit && c.hit.v && c.hit.v.length ? `Cites ${cfg.ch}:${c.hit.v.slice(0, 4).join(", ")}${c.hit.v.length > 4 ? " and more" : ""}` : `Cites chapter ${cfg.ch}`);
+      else if (notedOn(c, v)) bits.push(`Note on ${cfg.ch}:${v}`);
+      else {
+        // its notes elsewhere in the chapter: the verses themselves when they are few ("Notes on 1:18, 20"), else how many
+        const vs = Object.keys(c.notes || {}).map(Number).filter((x) => x > 0).sort((p, q) => p - q), n = vs.length;
+        bits.push(!n ? `On chapter ${cfg.ch}` : n <= 3 ? `${n === 1 ? "Note" : "Notes"} on ${cfg.ch}:${vs.join(", ")}` : `Notes on ${n} verses of chapter ${cfg.ch}`);
+      }
+      if (w.wb === 1) bits.push("whole Bible");
+      return bits.join(DOT);
+    };
+    // a volume's name: the catalogue's, the collected edition's ("WA 38"), the slug's ("Tom. XII"), else its title's ("Vol. II")
+    const titleVolume = (t) => { const m = /\b(Vol(?:ume)?|Tom(?:us)?)\.?\s+([IVXLC]+|\d+)\b/.exec(String(t || "")); return m ? `${/^T/.test(m[1]) ? "Tom." : "Vol."} ${m[2]}` : ""; };
+    const volName = (c) => (cfg.volOf && cfg.volOf(c.slug)) || cfg.volShort(c.vol) || slugVolume(c.slug) || titleVolume(c.t) || "";
+    const entry = (w, au, solo) => {
+      const c = w.main, p = pageFor(c, v), id = `vr-pv-${++dirSeq}`;
+      const cur = w.vols.some((x) => x.slug === cfg.cur);
+      const vol = w.vols.length > 1 ? "" : volName(c);
+      const find = foldText(`${au.name} ${c.a || ""} ${w.vols.map((x) => `${x.t || ""} ${volName(x)}`).join(" ")}`);
+      const vols = w.vols.length > 1 ? `<p class="vr-e-vols"><span>${w.vols.length} volumes</span>${w.vols.map((x) => {
+        const q = pageFor(x, v), label = volName(x) || (q != null ? pg(x.slug, q) : x.t);
+        return `<button type="button" class="vr-e-vol" data-vr-read="${esc(x.slug)}"${x.slug === cfg.cur ? ' aria-current="true"' : ""} aria-label="${esc(`Read ${label} beside the text`)}">${esc(label)}</button>`;
+      }).join("")}</p>` : "";
+      return `<li class="vr-e${solo ? " vr-e-solo" : ""}${cur ? " is-cur" : ""}" data-find="${esc(find)}">`
+        + `<div class="vr-e-row"><button type="button" class="vr-e-read" data-vr-read="${esc(c.slug)}"${cur ? ' aria-current="true"' : ""}>`
+        + `${solo ? `<span class="vr-a">${esc(au.name)}</span>` : ""}<span class="vr-e-t">${esc(c.t)}${vol ? `${DOT}${esc(vol)}` : ""}</span><span class="vr-e-m">${esc(meta(w))}</span></button>`
+        + `${p != null ? `<a class="vr-e-pg" href="${esc(cfg.read(c.slug, p))}" aria-label="${esc(`${c.t}, ${pg(c.slug, p)}, in the reader`)}">${esc(pg(c.slug, p))}</a>` : "<span></span>"}`
+        + `<button type="button" class="vr-e-pv" data-vr-preview="${esc(c.slug)}" data-vr-title="${esc(c.t)}" aria-expanded="false" aria-controls="${id}" aria-label="${esc(`Preview ${c.t}`)}">Preview</button></div>`
+        + `${vols}<div class="vr-e-box" id="${id}" hidden></div></li>`;
+    };
+    const fold = (id, cls, head, n, body) => {
+      const isOpen = open.has(id);
+      return `<li class="${cls}"><button type="button" class="vr-fold-btn" data-vr-fold="${esc(id)}" aria-expanded="${isOpen}">${head}<span class="vr-fold-n">${esc(n)}</span></button>`
+        + `<ul class="vr-fold-list"${isOpen ? "" : " hidden"}>${body}</ul></li>`;
+    };
+    const author = (au) => (au.works.length === 1 ? entry(au.works[0], au, true)
+      : fold(`a:${au.key}`, "vr-au-g", `<span class="vr-a">${esc(au.name)}</span>`, `${au.works.length} works`, au.works.map((w) => entry(w, au, false)).join("")));
+    const groups = m.groups.map((g) => {
+      const n = g.authors.reduce((k, au) => k + au.works.length, 0);
+      return fold(`t:${g.key}`, "vr-tg", `<span class="vr-tg-name">${esc(g.name)}</span>`, fmt(n), g.authors.map(author).join(""));
+    }).join("");
+    const cited = m.cited.length ? fold("t:cited", "vr-tg vr-tg-cited", '<span class="vr-tg-name">Cited in commentaries on other books</span>', fmt(m.citedWorks), m.cited.map(author).join("")) : "";
+    const find = `<div class="vr-dir-find"><input type="search" placeholder="Find a commentator or work" aria-label="${esc(`Find a commentary on ${ref}`)}" autocomplete="off" spellcheck="false"></div>`;
+    if (!m.groups.length && !m.cited.length) return `<div class="vr-dir"><p class="vr-empty">No commentary on ${esc(ref)} is in the library yet.</p></div>`;
+    return `<div class="vr-dir">${find}<ul class="vr-dir-list">${groups}${cited}</ul><p class="vr-empty vr-dir-none" hidden>No commentary matches.</p></div>`;
+  }
+
+  // the find box over the directory: a match opens the groups that hold it (without forgetting which the reader opened)
+  function filterDirectory(host, raw) {
+    const q = foldText(String(raw || "").trim());
+    host.querySelectorAll(".vr-e").forEach((li) => { li.hidden = !!q && !(li.dataset.find || "").includes(q); });
+    const folds = [...host.querySelectorAll(".vr-au-g, .vr-tg")];
+    // authors first (inside traditions), then the traditions
+    for (const f of folds.sort((p, q2) => (p.classList.contains("vr-au-g") ? 0 : 1) - (q2.classList.contains("vr-au-g") ? 0 : 1))) {
+      const list = f.querySelector(":scope > .vr-fold-list"), btn = f.querySelector(":scope > .vr-fold-btn");
+      const any = !!list.querySelector(":scope > .vr-e:not([hidden]), :scope > .vr-au-g:not([hidden])");
+      f.hidden = !!q && !any;
+      list.hidden = q ? !any : btn.getAttribute("aria-expanded") !== "true";
+    }
+    const none = host.querySelector(".vr-dir-none");
+    if (none) none.hidden = !q || !!host.querySelector(".vr-dir-list > li:not([hidden])");
+  }
+
+  // the directory's behaviour: folds, the find box, Preview (on.preview(slug) -> HTML, fetched once), and reading a work beside the
+  // text (on.read(slug)); on.fold(id, open) lets the host remember what is open
+  function wireDirectory(host, on) {
+    if (host.dataset.vrDirWired) return; host.dataset.vrDirWired = "1";
+    host.addEventListener("input", (e) => { if (e.target.closest(".vr-dir-find input")) filterDirectory(host, e.target.value); });
+    host.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && e.target.closest(".vr-dir-find input") && e.target.value) { e.stopPropagation(); e.target.value = ""; filterDirectory(host, ""); }
+    });
+    host.addEventListener("click", (e) => {
+      const f = e.target.closest("[data-vr-fold]");
+      if (f) {
+        const open = f.getAttribute("aria-expanded") !== "true", list = f.parentElement.querySelector(":scope > .vr-fold-list");
+        f.setAttribute("aria-expanded", String(open)); if (list) list.hidden = !open;
+        if (on && on.fold) on.fold(f.dataset.vrFold, open);
+        return;
+      }
+      const pv = e.target.closest("[data-vr-preview]");
+      if (pv) {
+        const box = host.querySelector(`#${pv.getAttribute("aria-controls")}`); if (!box) return;
+        const open = pv.getAttribute("aria-expanded") !== "true";
+        pv.setAttribute("aria-expanded", String(open)); box.hidden = !open;
+        // the name says what the button now does, as its label does ("Close preview of …")
+        pv.textContent = open ? "Close preview" : "Preview";
+        pv.setAttribute("aria-label", `${open ? "Close preview of" : "Preview"} ${pv.dataset.vrTitle || ""}`.trim());
+        if (open && !box.dataset.loaded && on && on.preview) {
+          box.dataset.loaded = "1";
+          box.innerHTML = '<p class="vr-pv-wait" role="status">Opening the page…</p>';
+          Promise.resolve(on.preview(pv.dataset.vrPreview)).then((html) => { box.innerHTML = html || '<p class="vr-empty">Nothing on this page to show.</p>'; })
+            .catch(() => { box.dataset.loaded = ""; box.innerHTML = '<p class="vr-empty">The page could not be opened. Close the preview and try again.</p>'; });
+        }
+        return;
+      }
+      const rd = e.target.closest("[data-vr-read]");
+      if (rd && on && on.read) { e.preventDefault(); on.read(rd.dataset.vrRead); }
+    });
   }
 
   // ── reception ────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -252,5 +433,5 @@
     });
   }
 
-  root.FRVerseRail = { picker, wirePicker, reception, citations, wire, loadRank, standing, properName, RANK, ERA_CODES, ERA_NAME, TRADS, TRAD_NAME, KIND, VERB, esc, fmt, ord, gist };
+  root.FRVerseRail = { picker, wirePicker, directory, directoryModel, wireDirectory, filterDirectory, authorKey, workKey, slugVolume, reception, citations, wire, loadRank, standing, properName, RANK, ERA_CODES, ERA_NAME, TRADS, TRAD_NAME, KIND, VERB, esc, fmt, ord, gist };
 })(typeof window === "undefined" ? globalThis : window);

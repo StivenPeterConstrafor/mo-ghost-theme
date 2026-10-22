@@ -114,7 +114,8 @@
     'Denys the Carthusian': 'Denys', 'Willem van Est': 'Estius', 'Nicholas of Lyra': 'Lyra', 'Matthew Poole': 'Poole' };
   const short = (a) => {
     if (SHORT[a]) return SHORT[a];
-    if (/catena/i.test(a) && /aquinas/i.test(a)) return 'Catena Aurea'; // "The catena, collected by Thomas Aquinas" in the chapter files
+    // "The catena, collected by Thomas Aquinas" in the chapter files
+    if (/catena/i.test(a) && /aquinas/i.test(a)) return 'Catena Aurea';
     // the Greek catalogue's "Archbishop of Bulgaria Theophylact", "Bishop of Trikka Oecumenius": the name comes last
     if (/^(?:Arch)?bishop\b/i.test(a || '')) return String(a).trim().split(/\s+/).pop();
     const b = String(a || '').replace(/^Uncertain author\s*\(?/i, '').replace(/\)$/, '').replace(/\s+(?:of|the)\s+.*$/i, '').trim();
@@ -144,11 +145,16 @@
         : new TextDecoder().decode(buf);
       return JSON.parse(text);
     });
-    p.catch(() => { if (cache.get(u) === p) cache.delete(u); }); // a failed fetch is tried again, not remembered
+    // a failed fetch is tried again, not remembered
+    p.catch(() => { if (cache.get(u) === p) cache.delete(u); });
     cache.set(u, p); return p;
   }
   const gz = json;
   const where = () => SITE.where();
+  // the book as a reference names it: "Psalm 51:3", not "Psalms 51:3"
+  const refName = (w) => (w && w.book === 'psalms' ? 'Psalm' : ((w && w.name) || String((w && w.book) || '').replace(/-/g, ' ')));
+  // a page or a column: only Migne's volumes are numbered by the column (as the rest of the site says it)
+  const pgOf = (slug, p) => `${/^(pld|pg)-/.test(String(slug || '')) ? 'col.' : 'p.'} ${p}`;
 
   // ── the commentaries on this chapter ──────────────────────────────────────────────────────────────────────────────────────
   // The loaders (a work's pages, TEI, Migne columns, EEBO books) and the list of works a chapter has are in commentary-pages.js, so
@@ -158,6 +164,10 @@
   async function commentaries(book, ch) {
     const { works, meta, sigla } = await PG.listWorks(book, ch);
     Object.assign(S.meta, meta); Object.assign(SIGLA, sigla);
+    // ONE NAME A WORK (10-21): a work takes its author as the map prints it (the map's entry is the last word in `meta`), one spelling
+    // to a work; the chapter file's rows spell some differently ("Walahfrid" and "Walafrid" Strabo), which made one Glossa two
+    // authors and two "Glossa" buttons
+    for (const c of works) { const m = meta[c.slug]; if (m && m.a) c.a = m.a; }
     await loadRank();
     for (const c of works) weigh(c);
     return works.sort((x, y) => x.wb - y.wb || y.score - x.score || x.a.localeCompare(y.a));
@@ -193,7 +203,7 @@
   const firstTab = () => 'c';
   try { localStorage.removeItem('fr_cp_tab'); } catch (_) {}
   const S = { list: [], cur: null, verse: null, follow: store.get('fr_cp_follow', '1') === '1', lang: store.get('fr_cp_lang', 'en'),
-    shown: null, token: 0, meta: {}, cen: {}, rec: null, pin: false, tab: firstTab() };
+    shown: null, token: 0, meta: {}, cen: {}, rec: null, pin: false, tab: firstTab(), dirOpen: new Set(), dirVerse: 0, years: new Map() };
   const A = window.FRCommentaryAnchor;
   let pane, layout, observer;
 
@@ -210,10 +220,10 @@
           <div class="cp-cur"><div class="cp-cur-id"><span class="cp-what"></span><span class="cp-who">Commentary</span></div>
             <button type="button" class="cp-pick" aria-expanded="false" aria-controls="cpList">Change</button></div>
           <div class="cp-keys" role="group" aria-label="Key commentaries on this chapter"></div>
-          <ol class="cp-list" id="cpList" hidden></ol>
+          <div class="cp-list" id="cpList" role="region" aria-label="Every commentary on this chapter" hidden></div>
         </div>
         <div class="cp-lang" role="group" aria-label="Language of the commentary">
-          <button type="button" data-lang="en">English</button><span aria-hidden="true">·</span><button type="button" data-lang="la">Latin</button>
+          <button type="button" data-lang="en" aria-pressed="true">English</button><button type="button" data-lang="la" aria-pressed="false">Latin</button>
         </div>
       </div>
       <p class="cp-where" aria-live="polite"></p>
@@ -266,17 +276,20 @@
     pane.querySelector('.cp-follow input').onchange = (e) => { S.follow = e.target.checked; store.set('fr_cp_follow', S.follow ? '1' : '0'); if (S.follow && S.verse) show(S.verse); };
     pane.querySelectorAll('.cp-lang button').forEach((b) => { b.onclick = () => { S.lang = b.dataset.lang; store.set('fr_cp_lang', S.lang); paint(); }; });
     const pick = pane.querySelector('.cp-pick'), list = pane.querySelector('.cp-list');
-    pick.onclick = () => { const open = list.hidden; list.hidden = !open; pick.setAttribute('aria-expanded', String(open)); pick.textContent = open ? 'Hide list' : 'Change'; };
-    const closeList = () => { list.hidden = true; pick.setAttribute('aria-expanded', 'false'); pick.textContent = 'Change'; };
-    list.onclick = (e) => {
-      if (e.target.closest('[data-cp-more]')) { S.allCited = true; list.querySelectorAll('[hidden]').forEach((x) => { x.hidden = false; }); e.target.closest('[data-cp-more]').remove(); return; }
-      const li = e.target.closest('[data-slug]'); if (!li) return; choose(li.dataset.slug, true); closeList();
+    // Change opens every commentary on the chapter in place (the directory, scripture-verse-rail.js), drawn as it opens
+    pick.onclick = () => setDir(list.hidden);
+    const closeList = () => setDir(false);
+    // a key chosen from the keyboard keeps the focus on that key (the strip is drawn again for the commentary chosen)
+    pane.querySelector('.cp-keys').onclick = (e) => {
+      const b = e.target.closest('[data-slug]'); if (!b) return;
+      const { slug } = b.dataset, kept = document.activeElement === b;
+      closeList(); choose(slug, true);
+      const nb = kept && [...pane.querySelectorAll('.cp-key')].find((x) => x.dataset.slug === slug); if (nb) nb.focus();
     };
-    pane.querySelector('.cp-keys').onclick = (e) => { const b = e.target.closest('[data-slug]'); if (b) { choose(b.dataset.slug, true); closeList(); } };
     // Close (Scripture page only): the same way out as the Citations panel's, which the reader's script carries out
     const closeBtn = pane.querySelector('.cp-close');
     if (closeBtn) closeBtn.onclick = () => window.dispatchEvent(new Event('sd:close-verse'));
-    // Escape shuts the open list of commentaries first; the reader's own Escape then closes the verse
+    // Escape shuts the open list of commentaries first (after its find box is cleared); the reader's own Escape then closes the verse
     pane.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !list.hidden) { closeList(); pick.focus(); e.stopPropagation(); } });
     pane.querySelectorAll('.cp-pages button').forEach((b) => { b.onclick = () => step(+b.dataset.step); });
     wide.addEventListener('change', () => setTab(S.tab, true));
@@ -310,7 +323,7 @@
   function head() {
     if (!pane) return;
     const w = where(); if (!w) return;
-    const name = w.name || w.book.replace(/-/g, ' ');
+    const name = refName(w);
     pane.querySelector('.cp-eyebrow').textContent = S.tab === 'r' ? 'Reception history' : (S.verse ? 'Commentary on this verse' : 'Commentary');
     const cb = pane.querySelector('.cp-close'); if (cb) cb.hidden = !w.v;
     pane.querySelector('.cp-ref').textContent = S.verse ? `${name} ${w.ch}:${S.verse}` : `${name} ${w.ch}`;
@@ -322,7 +335,7 @@
     if (!w || !w.bk || !M || !M.deskHref) return;
     const v = S.verse || w.v || 1, sel = document.querySelector('[data-sd-translation]');
     const t = (sel && sel.value) || new URLSearchParams(location.search).get('t') || '';
-    const href = M.deskHref(w.bk, w.ch, v, t), label = `Open the Verse Desk for ${w.name} ${w.ch}:${v}`;
+    const href = M.deskHref(w.bk, w.ch, v, t), label = `Open the Verse Desk for ${refName(w)} ${w.ch}:${v}`;
     document.querySelectorAll('.cp-tabs .cp-desk').forEach((a) => { a.href = href; a.setAttribute('aria-label', label); });
   }
   // a verse chosen from the rail: as if clicked in the text (the site's panel follows), brought to the reading line
@@ -346,8 +359,8 @@
 
   function paintRec() {
     const box = pane && pane.querySelector('.cp-rec'), w = where(); if (!box || !w) return;
-    const rec = S.rec, n = S.verse || 1, rv = rec && rec.verses && rec.verses[String(n)];
-    const name = w.name || w.book.replace(/-/g, ' ');
+    const {rec} = S, n = S.verse || 1, rv = rec && rec.verses && rec.verses[String(n)];
+    const name = refName(w);
     const all = Object.entries((rec && rec.verses) || {}).map(([k, x]) => [+k, x.works || 0]);
     const most = all.slice().sort((a, b) => b[1] - a[1] || a[0] - b[0]).slice(0, 6);
     const mostHTML = most.length ? `<nav class="cp-rec-most" aria-label="Most cited verses of ${esc(name)} ${esc(w.ch)}"><span>Most cited</span>${most.map(([k, x]) =>
@@ -365,7 +378,7 @@
     const cfg = { name, ch: w.ch, v: n, read: SITE.read, rankOf, tradOf, keySet, keyOrder: keys.map((c) => c.slug), era: ERA, show: 6 };
     box.innerHTML = VR.reception.head(rv, ns, cfg) + VR.reception.strip(rv.strip || []) + VR.reception.notes(ns, cfg) + VR.reception.eras(rv.eras || [], cfg)
       + mostHTML + VR.reception.foot('Every page in the library that cites the verse, dated by its author\'s life; the gists are machine-written from the pages.');
-    VR.wire(box, { era: (id) => { setTab('s'); window.dispatchEvent(new CustomEvent('fr-verse-citations', { detail: { era: id, verse: n } })); } });
+    VR.wire(box, { era(id) { setTab('s'); window.dispatchEvent(new CustomEvent('fr-verse-citations', { detail: { era: id, verse: n } })); } });
     box.scrollTop = 0;
   }
   // ── creeds, confessions and catechisms that cite the verse ────────────────────────────────────────────────────────────────
@@ -447,7 +460,7 @@
     const have = new Set(rows.map((r) => `${d.a[r[0]][0]}|${d.a[r[0]][1]}|${d.a[r[0]][2]}`));
     const whole = d && d.c ? d.c.filter((r) => !have.has(`${d.a[r[0]][0]}|${d.a[r[0]][1]}|${d.a[r[0]][2]}`)).sort(cfOrder(docsIdx.docs, d)) : [];
     if (!rows.length && !whole.length) { box.hidden = true; return; }
-    const {docs} = docsIdx, name = w.name || w.book.replace(/-/g, ' ');
+    const {docs} = docsIdx, name = refName(w);
     const main = rows.filter((r) => !docs[d.a[r[0]][0]].p), papal = rows.filter((r) => docs[d.a[r[0]][0]].p);
     const n = rows.length;
     box.hidden = false;
@@ -521,8 +534,13 @@
   // The shelves also hold later editors and scholars (Daniel Heinsius on the Greek shelf, the Bollandists on the Latin), who are neither
   // Byzantine nor Medieval: Byzantine and Medieval end with the 15th century and a later writer is under "Other" ('x'). The century is
   // the list's own (S.cen), else the rank map's. In step with tradOf in scripture-dev-core.js.
+  // a Father in Migne or the Patrologia Orientalis is on the shelf of his Patrologia, where the map leaves him unshelved ("x"):
+  // Chrysostom, Cyril, Origen and Athanasius were filed under Other (10-21)
+  const famShelf = (slug) => { const m = /^(pld|pg|po)-/.exec(slug || ''); return m ? { pld: 'pl', pg: 'gf', po: 'po' }[m[1]] : ''; };
   const tradOf = (c) => {
-    const sh = c.sh || '', cen = S.cen[c.slug] || (RANK.works[c.slug] || [])[2] || 0;
+    let sh = c.sh || '';
+    if (!sh || sh === 'x') sh = famShelf(c.slug) || sh;
+    const cen = S.cen[c.slug] || (RANK.works[c.slug] || [])[2] || 0;
     if (sh === 'pl') return cen >= 16 ? 'x' : cen >= 8 ? 'md' : sh;
     if (sh === 'gf') return cen >= 16 ? 'x' : cen >= 9 ? 'by' : sh;
     return sh;
@@ -546,32 +564,66 @@
   const hitsOf = (book, ch) => json(`${BASE}/v1/scripture/hits/${book}/${ch}.json`).then((d) => (d && d.hits) || []).catch(() => []);
   // in the order their authors came: the curated key's year (Luther 1483, Bucer 1491, Musculus 1497, Calvin 1509), else the century
   const when = (c) => c.born || cenOf(c) * 100 - 50;
+  const aKey = (a) => { const VR = window.FRVerseRail; return VR && VR.authorKey ? VR.authorKey(a) : String(a || '').toLowerCase(); };
+  // in the order their authors came, for the directory: the curated key's year, else the year the reception history gives the author
+  // (his floruit), else the century
+  const whenDir = (c) => { const cen = S.cen[c.slug] || cenOf(c); return c.born || S.years.get(aKey(c.a)) || (cen < 99 ? cen * 100 - 50 : 9999); };
+  function readYears(rec) {
+    S.years = new Map();
+    for (const x of Object.values((rec && rec.verses) || {})) for (const e of x.eras || []) for (const r of e.top || []) {
+      const k = aKey(r.a); if (k && r.y && !S.years.has(k)) S.years.set(k, +r.y);
+    }
+  }
+  // the verse the directory speaks of: the one in view when it was drawn, so a row's "Note on 1:2" and its Preview agree while the
+  // reading line moves on beneath the list
+  const listOpen = () => !!(pane && !pane.querySelector('.cp-list').hidden);
+  const dirVerse = () => (listOpen() && S.dirVerse) || S.verse || 0;
+  const dirCfg = (w) => ({ cur: S.cur && S.cur.slug, verse: dirVerse(), ch: w.ch, bookName: refName(w), tradOf, when: whenDir, rankOf, volShort,
+    read: SITE.read, pg: pgOf, open: S.dirOpen });
   function fillList() {
-    const list = pane.querySelector('.cp-list'), w = where() || {};
-    const bookName = w.book === 'psalms' ? 'the Psalms' : (w.name || 'this book');
-    const keys = curated(w.book), keySet = new Set(keys.map((c) => c.slug));
-    /* THE PICKER, ORGANIZED (10-21, scripture-verse-rail.js): four groups by what a commentary holds for the verse in view (a note on
-     * it; a note on the chapter; the whole Bible; works on other books citing the chapter, one row an author however many volumes),
-     * the curated keys first in the order their authors wrote, then by tradition; a find box. */
-    const VR = window.FRVerseRail;
+    const w = where() || {};
+    const keys = curated(w.book);
     // a commentary's note on the verse known to the reception history (its exegesis rows) counts as a note here too
     const rn = ((S.rec && S.rec.verses && S.rec.verses[String(S.verse || 0)]) || {}).notes || {};
     for (const c of S.list) if (rn[c.slug] != null && S.verse && !(S.verse in c.notes)) c.notes[S.verse] = rn[c.slug];
-    list.innerHTML = VR.picker(S.list, keys, S.verse || 0, { cur: S.cur, bookName, ch: w.ch, tradOf, volShort, rankOf });
-    VR.wirePicker(list);
     const onBook = S.list.filter((c) => c.wb === 0), whole = S.list.filter((c) => c.wb === 1);
-    const firstsOf = (xs) => { const seen = new Set(), out = []; for (const c of xs.slice().sort((x, y) => y.score - x.score)) { const k = c.a || c.slug; if (!seen.has(k)) { seen.add(k); out.push(c); } } return out; };
+    const firstsOf = (xs) => { const seen = new Set(), out = []; for (const c of xs.slice().sort((x, y) => y.score - x.score)) { const k = aKey(c.a) || c.slug; if (!seen.has(k)) { seen.add(k); out.push(c); } } return out; };
     // the key works, one click away: the book's curated keys (at most eight, the most needed), in the order they wrote; else the
     // curated key commentators (tier 1, then 2), at most five; a rule; the first two sets on the whole Bible. A chapter with neither
-    // shows its first four.
+    // shows its first four. One button an author and one name once (10-21): the Glossa's two volumes were "Glossa, Glossa".
     const tierOf = (c) => (RANK.works[c.slug] || [])[4] || 0;
     const firsts = firstsOf(onBook);
     const book = (keys.length ? keys.slice(0, 8) : firsts.filter((c) => tierOf(c)).sort((x, y) => tierOf(x) - tierOf(y) || y.score - x.score).slice(0, 5))
       .sort((x, y) => when(x) - when(y) || y.score - x.score);
-    const strip = (book.length ? book : firsts.slice(0, 4)).concat(firstsOf(whole).slice(0, 2));
-    const nb = book.length || Math.min(4, firsts.length);
+    const seenA = new Set(), seenL = new Set();
+    const keep = (c) => { const k = aKey(c.a) || c.slug, l = short(c.a); if (seenA.has(k) || seenL.has(l)) return false; seenA.add(k); seenL.add(l); return true; };
+    const head = (book.length ? book : firsts.slice(0, 4)).filter(keep), tail = firstsOf(whole).filter(keep).slice(0, 2);
+    const strip = head.concat(tail);
     pane.querySelector('.cp-keys').innerHTML = strip.length < 2 ? '' : strip.map((c, i) =>
-      `${i === nb && i ? '<span class="cp-keys-sep" aria-hidden="true"></span>' : ''}<button type="button" class="cp-key" data-slug="${esc(c.slug)}" aria-pressed="${!!(S.cur && S.cur.slug === c.slug)}" title="${esc(`${c.t}${volShort(c.vol) ? ` (${volShort(c.vol)})` : ''}, ${c.a}`)}">${esc(short(c.a))}</button>`).join('');
+      `${i === head.length && i ? '<span class="cp-keys-sep" aria-hidden="true"></span>' : ''}<button type="button" class="cp-key" data-slug="${esc(c.slug)}" aria-pressed="${!!(S.cur && S.cur.slug === c.slug)}" title="${esc(`${c.t}${volShort(c.vol) ? ` (${volShort(c.vol)})` : ''}, ${c.a}`)}">${esc(short(c.a))}</button>`).join('');
+    if (listOpen()) renderDir();
+  }
+  /* THE DIRECTORY (10-21, owner: "need to be able to click into all chapter and whole bible commentaries seamlessly, and every should
+   * be collapsed by tradition author expandable and previewable"; scripture-verse-rail.js): every commentary on the chapter and every
+   * whole-Bible set, by tradition, then author, then work, each group shut with its count; a work reads beside the text from its row,
+   * opens in the reader from its page, and previews in place. Which groups are open is kept for the chapter. */
+  function renderDir() {
+    const list = pane.querySelector('.cp-list'), VR = window.FRVerseRail, w = where() || {};
+    if (!VR || !VR.directory) { list.innerHTML = '<p class="cp-empty">The list could not be drawn.</p>'; return; }
+    S.dirVerse = S.verse || 1;
+    list.innerHTML = VR.directory(S.list, dirCfg(w));
+    VR.wireDirectory(list, {
+      fold(id, open) { if (open) S.dirOpen.add(id); else S.dirOpen.delete(id); },
+      preview,
+      read(slug) { setDir(false); choose(slug, true); },
+    });
+  }
+  function setDir(open) {
+    if (!pane) return;
+    const list = pane.querySelector('.cp-list'), pick = pane.querySelector('.cp-pick');
+    list.hidden = !open;
+    pick.setAttribute('aria-expanded', String(!!open)); pick.textContent = open ? 'Hide list' : 'Change';
+    if (open) renderDir();
   }
 
   function nameCur() {
@@ -601,7 +653,8 @@
   // Lapide on Genesis 1:1 used to open at vol. 1 p. 75, "the chapter's opening" by the devotion map: the first page of an essay on
   // the days of creation printed in his volume, which begins with the text of verses 24 to 28, with "no verse notes found".
   const paraKey = (slug, n) => `para:${slug}:${n}`;
-  function parasOf(slug, n) { // a page's paragraphs in both lanes: the English if it has one, and the Latin
+  // a page's paragraphs in both lanes: the English if it has one, and the Latin
+  function parasOf(slug, n) {
     const k = paraKey(slug, n);
     if (!cache.has(k)) {
       // a page that is not there is remembered as empty; a page that failed to load is not (it is asked for again)
@@ -611,8 +664,9 @@
   }
   const resolver = A ? A.createResolver(parasOf, { verseText(v) { const el = SITE.verseEl(v); return el ? el.textContent : ''; } }) : null;
   // the work's own first (collected) or indexed target, with no page to read
-  function quickTarget(v) {
-    const c = S.cur; if (!c) return null;
+  const quickTarget = (v) => quickTargetOf(S.cur, v);
+  function quickTargetOf(c, v) {
+    if (!c) return null;
     if (c.collected) {
       if (c.collected[v]) return { p: c.collected[v][0][1], how: 'collected', v, items: c.collected[v] };
       const next = Object.keys(c.collected).map(Number).filter((x) => x > v).sort((a, b) => a - b)[0];
@@ -620,12 +674,75 @@
       const x = next != null ? next : prev;
       if (x != null) return { p: c.collected[x][0][1], how: 'collected', v: x, items: c.collected[x], nearest: true };
     }
-    if (!resolver && c.notes[v] != null) return { p: c.notes[v], how: 'note', v, indexed: true }; // without the resolver, the library's index
+    // without the resolver, the library's index
+    if (!resolver && c.notes[v] != null) return { p: c.notes[v], how: 'note', v, indexed: true };
     return null;
   }
   async function resolve(c, v, w) {
     if (resolver) return resolver.resolve(c, v, { name: w.name, ch: w.ch });
-    return c.open != null ? { p: c.open, how: 'chapter' } : null; // without commentary-anchor.js: the map's opening, said to be only that
+    // without commentary-anchor.js: the map's opening, said to be only that
+    return c.open != null ? { p: c.open, how: 'chapter' } : null;
+  }
+
+  /* A WORK'S PREVIEW IN THE DIRECTORY (10-21): its note on the verse the list speaks of (found as the Commentary view finds it), else
+   * where its chapter opens; the note and the paragraphs that carry it on, about 900 characters, in the language the pane is set to;
+   * then the two ways on, beside the text or in the reader. A collection (the Critici Sacri) gives its first critics on the verse. */
+  const ROMAN = (n) => { let x = +n, s = ''; for (const [k, r] of [[100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']]) while (x >= k) { s += r; x -= k; } return s; };
+  async function preview(slug) {
+    const c = S.list.find((x) => x.slug === slug), w = where();
+    if (!c || !w) return '';
+    const v = dirVerse() || 1, name = refName(w);
+    let t = quickTargetOf(c, v);
+    if (!t) { try { t = await resolve(c, v, w); } catch (err) { t = null; } }
+    if (!t && c.open != null) t = { p: c.open, how: 'chapter' };
+    if (!t) return `<p class="vr-empty">Nothing in it is indexed on ${esc(name)} ${esc(w.ch)}.</p>`;
+    const acts = (p) => `<p class="vr-pv-acts"><button type="button" class="vr-pv-read" data-vr-read="${esc(slug)}">Read beside the text</button><a href="${esc(SITE.read(slug, p))}">Open in the reader</a></p>`;
+    const cut = (s, n) => (s.length > n ? `${s.slice(0, n).replace(/\s+\S*$/, '')}…` : s);
+    if (t.how === 'collected') {
+      const items = t.items.slice(0, 3), ns = [...new Set(items.map((x) => +x[1]))];
+      const got = await Promise.all(ns.map((n) => page(slug, n).catch(() => null)));
+      const byPage = Object.fromEntries(ns.map((n, i) => [n, got[i] && got[i].p]));
+      const crit = new Set(t.items.map((x) => x[0])).size;
+      const notes = items.map(([who, pn, k, pv]) => {
+        const p = byPage[pn]; if (!p) return '';
+        const rx = noteRx(pv || t.v), lane = S.lang === 'la' || !p.en ? 'la' : 'en';
+        const pick = (ln) => paragraphs(p[ln]).filter((x) => rx.test(x))[k] || paragraphs(p[ln]).filter((x) => rx.test(x))[0];
+        const note = (pick(lane) || pick(lane === 'en' ? 'la' : 'en') || '').replace(/^#{1,6}\s+/, '');
+        return note ? `<p><b>${esc(who)}</b> ${esc(cut(note, 320))}</p>` : '';
+      }).join('');
+      return `<p class="vr-pv-where">${t.nearest ? `No critic on ${esc(w.ch)}:${v}. ` : ''}${crit} ${crit === 1 ? 'critic' : 'critics'} on ${esc(name)} ${esc(w.ch)}:${esc(t.v)}, ${esc(pgOf(slug, t.p))}</p>`
+        + `<div class="vr-pv-text">${notes || '<p class="vr-empty">The notes could not be found on their page.</p>'}</div>${acts(t.items[0][1])}`;
+    }
+    const [a, b] = await Promise.all([page(slug, +t.p).catch(() => null), page(slug, +t.p + stride(slug)).catch(() => null)]);
+    const pages = [a && a.p, b && b.p].filter(Boolean);
+    if (!pages.length) return `<p class="vr-empty">This page could not be opened here.</p>${acts(t.p)}`;
+    const hasEn = pages.some((p) => p.en), lane = S.lang === 'la' || !hasEn ? 'la' : 'en';
+    const all = []; pages.forEach((p) => paragraphs(p[lane] || p.la || p.en).forEach((s) => all.push(s)));
+    const printed = (c.pv && c.pv[t.v]) || t.v;
+    let from = 0, hit = -1;
+    if (t.how === 'note' || t.how === 'later' || t.how === 'nearest' || t.how === 'page') {
+      hit = A ? A.findNote(all, printed, !!t.indexed) : -1;
+      if (hit < 0) hit = all.findIndex((s) => noteRx(printed).test(s));
+      if (hit >= 0) from = hit;
+    } else if (t.how === 'chapter') {
+      // where the chapter's own heading stands on the page ("CHAPTER I.", "CAP. 1"), else the page's first words
+      const rx = new RegExp(`^(?:#{1,6}\\s+)?(?:chapter|chap\\.|caput|cap\\.|psalm|psalmus)\\s+(?:${+w.ch}|${ROMAN(w.ch)})\\b`, 'i');
+      const h = all.findIndex((s) => rx.test(s)); if (h >= 0) from = h;
+    }
+    const to = hit >= 0 && A ? A.noteEnd(all, hit, printed, 6) : all.length;
+    const out = []; let len = 0;
+    for (let i = from; i < Math.max(to, from + 1) && i < all.length && len < 900; i += 1) {
+      const s = all[i], head = /^#{1,6}\s+/.test(s), txt = head ? s.replace(/^#{1,6}\s+/, '') : s;
+      out.push(`<p${head ? ' class="vr-pv-h"' : i === hit ? ' class="vr-pv-hit"' : ''}>${esc(cut(txt, Math.max(160, 900 - len)))}</p>`);
+      len += txt.length;
+    }
+    const at = pgOf(slug, t.p);
+    const say = t.how === 'note' ? `Its note on ${name} ${w.ch}:${t.v}, ${at}`
+      : t.how === 'page' ? `Its comment on ${name} ${w.ch}:${t.v} is on ${at}`
+      : t.how === 'later' ? `No separate note on ${w.ch}:${v}. Its next note is on ${w.ch}:${t.v}, ${at}`
+      : t.how === 'nearest' ? `No separate note on ${w.ch}:${v}. Its closest earlier note is on ${w.ch}:${t.v}, ${at}`
+      : `${name} ${w.ch} opens on ${at}`;
+    return `<p class="vr-pv-where">${esc(say)}</p><div class="vr-pv-text" lang="${lane === 'en' ? 'en' : 'la'}">${out.join('') || '<p class="vr-empty">A blank page.</p>'}</div>${acts(t.p)}`;
   }
 
   async function show(v, force) {
@@ -633,26 +750,31 @@
     head();
     if (SITE.name === 'mo') creeds();
     if (S.tab === 'r') paintRec();
+    // a verse chosen in the text while the list is open: the list says what each work holds for that verse
+    if (force && listOpen()) renderDir();
     const w = where(); if (!S.cur || !w) return;
-    const tok = ++S.token, cur = S.cur;
+    const tok = ++S.token, {cur} = S;
     const bodyEl = pane.querySelector('.cp-body'), whereEl = pane.querySelector('.cp-where');
     let t = quickTarget(S.verse);
     if (!t) {
       bodyEl.classList.add('cp-loading');
-      whereEl.textContent = `Looking for its note on ${w.name || w.book} ${w.ch}:${S.verse}…`;
+      whereEl.textContent = `Looking for its note on ${refName(w)} ${w.ch}:${S.verse}…`;
       if (!bodyEl.textContent.trim()) bodyEl.innerHTML = '<p class="cp-empty">Looking for the note…</p>';
       try { t = await resolve(cur, S.verse, w); } catch (err) { t = null; console.error('Scripture pane: finding the note failed', err); }
       if (tok !== S.token) return;
       if (!t && cur.open != null) t = { p: cur.open, how: 'chapter' };
     }
     if (!t) { bodyEl.classList.remove('cp-loading'); S.shown = null; paint(); return; }
-    const same = S.shown && S.shown.slug === cur.slug && +S.shown.p === +t.p && S.shown.t.how === t.how && S.shown.t.v === t.v;
+    // the same place keeps the pages already read (they were dropped here, and the view said "This page could not be loaded")
+    const prev = S.shown;
+    const same = !!prev && prev.slug === cur.slug && +prev.p === +t.p && prev.t.how === t.how && prev.t.v === t.v && !!prev.pages;
     S.shown = { slug: cur.slug, p: +t.p, t, book: w.book, ch: w.ch };
+    if (same) Object.assign(S.shown, { pages: prev.pages, byPage: prev.byPage, last: prev.last });
     if (same && !force) return paint(true);
     bodyEl.classList.add('cp-loading');
     // a large volume takes a few seconds to open: say what is coming rather than show an empty page
     if (!bodyEl.textContent.trim() || !same) {
-      whereEl.textContent = `Opening ${cur.a || cur.t} on ${w.name || w.book} ${w.ch}:${t.v || S.verse}, p. ${t.p}…`;
+      whereEl.textContent = `Opening ${cur.a || cur.t} on ${refName(w)} ${w.ch}:${t.v || S.verse}, ${pgOf(cur.slug, t.p)}…`;
       if (!bodyEl.textContent.trim()) bodyEl.innerHTML = `<p class="cp-empty">${PG.EEBO.test(cur.slug) ? 'Opening the book (a large file, loaded once)…' : 'Opening the page…'}</p>`;
     }
     try {
@@ -686,14 +808,15 @@
     body.classList.remove('cp-loading');
     pane.querySelectorAll('.cp-lang button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === S.lang)));
     if (!sh) { body.innerHTML = S.cur ? '<p class="cp-empty">This commentary has nothing on the verse to show.</p>' : '<p class="cp-empty">No commentary on this chapter yet.</p>'; whereEl.textContent = ''; return; }
-    const bookName = (where() || {}).name || sh.book.replace(/-/g, ' ');
+    const bookName = refName(where() || { book: sh.book });
     const {t} = sh, read = SITE.read(sh.slug, sh.p), ref = (n) => `${bookName} ${sh.ch}:${n}`;
     const say = t.how === 'note' ? `Its note on ${ref(t.v)}`
       : t.how === 'page' ? `Its comment on ${ref(t.v)} is on this page`
       : t.how === 'later' ? `No separate note on ${sh.ch}:${S.verse}. Its next note is on ${ref(t.v)}`
       : t.how === 'nearest' ? `No separate note on ${sh.ch}:${S.verse}. Its closest earlier note is on ${ref(t.v)}`
       : t.how === 'chapter' ? `No note on ${ref(S.verse)} was found. This is where it opens ${bookName} ${sh.ch}` : 'Reading on';
-    whereEl.innerHTML = `<span>${esc(say)}</span>${dot}<span class="cp-pg">p. ${sh.p}</span>${dot}<a href="${read}">Open in the reader</a>`;
+    // where the text stands, said as a sentence: "Its note on Matthew 1:2, col. 65 · Open in the reader" (10-21)
+    whereEl.innerHTML = `<span>${esc(say)}, <span class="cp-pg">${esc(pgOf(sh.slug, sh.p))}</span></span> <span class="cp-go"><span aria-hidden="true">· </span><a href="${esc(read)}">Open in the reader</a></span>`;
     const pages = sh.pages || [];
     if (!pages.length) { body.innerHTML = '<p class="cp-empty">This page could not be loaded.</p>'; return; }
     if (t.how === 'collected') return paintCollected(sh, t, bookName, body, whereEl);
@@ -722,13 +845,15 @@
       return { html, who };
     };
     const one = (s, i) => {
-      if (app.has(i)) { // set small and plain, with no critics' sigla marked up: these are the editors' lines, not the commentary
-        const pb = i && pageOf[i] !== pageOf[i - 1] ? `<div class="cp-break"><span>p. ${pages[pageOf[i]].n}</span></div>` : '';
+      // set small and plain, with no critics' sigla marked up: these are the editors' lines, not the commentary
+      if (app.has(i)) {
+        const pb = i && pageOf[i] !== pageOf[i - 1] ? `<div class="cp-break"><span>${pgOf(sh.slug, pages[pageOf[i]].n)}</span></div>` : '';
         return `${pb}<p>${esc(s)}</p>`;
       }
-      const head1 = /^#{1,6}\s+/.test(s); // the page's own heads ("### CAPUT V.") are set as heads, not printed with their marks
+      // the page's own heads ("### CAPUT V.") are set as heads, not printed with their marks
+      const head1 = /^#{1,6}\s+/.test(s);
       const x = withSigla(head1 ? s.replace(/^#{1,6}\s+/, '') : s);
-      const brk = i && pageOf[i] !== pageOf[i - 1] ? `<div class="cp-break"><span>p. ${pages[pageOf[i]].n}</span></div>` : '';
+      const brk = i && pageOf[i] !== pageOf[i - 1] ? `<div class="cp-break"><span>${pgOf(sh.slug, pages[pageOf[i]].n)}</span></div>` : '';
       if (head1) return `${brk}<p class="cp-h">${x.html}</p>`;
       const mark = i === h;
       return `${brk}<p${mark ? ' class="cp-hit" id="cp-hit"' : i > h && h >= 0 && i < to ? ' class="cp-hit-on"' : ''}>${x.html}</p>${mark && x.who.length ? `<p class="cp-sig">Critics cited: ${esc(x.who.join(', '))}</p>` : ''}`;
@@ -751,20 +876,21 @@
   // a collection (the Critici Sacri): every critic's note on the verse, in the order the volume prints them
   function paintCollected(sh, t, bookName, body, whereEl) {
     const n = t.items.length, crit = new Set(t.items.map((x) => x[0])).size;
-    whereEl.innerHTML = `<span>${t.nearest ? `No critic on ${sh.ch}:${S.verse}. ` : ''}${crit} ${crit === 1 ? 'critic' : 'critics'} on ${esc(bookName)} ${sh.ch}:${t.v}</span>`
-      + `${dot}<a href="${esc(SITE.read(sh.slug, t.items[0][1]))}">Open in the reader</a>`;
+    whereEl.innerHTML = `<span>${t.nearest ? `No critic on ${sh.ch}:${S.verse}. ` : ''}${crit} ${crit === 1 ? 'critic' : 'critics'} on ${esc(bookName)} ${sh.ch}:${t.v}, ${esc(pgOf(sh.slug, t.items[0][1]))}</span>`
+      + ` <span class="cp-go"><span aria-hidden="true">· </span><a href="${esc(SITE.read(sh.slug, t.items[0][1]))}">Open in the reader</a></span>`;
     const anyEn = Object.values(sh.byPage || {}).some((p) => p && p.en), lane = S.lang === 'la' || !anyEn ? 'la' : 'en';
     pane.querySelector('.cp-lang').hidden = !anyEn;
     const rxV = noteRx(t.v);
     const firstOf = new Map(); t.items.forEach(([who], i) => { if (!firstOf.has(who)) firstOf.set(who, i); });
     const idx = `<p class="cp-index">${[...firstOf].map(([who, i]) => `<a href="#cp-c${i}" data-cp-jump="${i}">${esc(who)}</a>`).join(', ')}</p>`;
     body.innerHTML = idx + t.items.map(([who, pn, k, pv], i) => {
-      const rx = pv ? noteRx(pv) : rxV; // a critic's own number for the verse, where his numbering counts the psalm's title
+      // a critic's own number for the verse, where his numbering counts the psalm's title
+      const rx = pv ? noteRx(pv) : rxV;
       const p = (sh.byPage || {})[pn]; if (!p) return '';
       const pick = (ln) => paragraphs(p[ln]).filter((x) => rx.test(x))[k] || paragraphs(p[ln]).filter((x) => rx.test(x))[0];
       let note = (pick(lane) || pick(lane === 'en' ? 'la' : 'en') || '').replace(/^#{1,6}\s+/, '');
       if (note.length > 1100) note = `${note.slice(0, 1100).replace(/\s+\S*$/, '')} …`;
-      return `<section class="cp-crit" id="cp-c${i}"><h4><span>${esc(who)}</span><a href="${esc(SITE.read(sh.slug, pn))}">p. ${pn}</a></h4>`
+      return `<section class="cp-crit" id="cp-c${i}"><h4><span>${esc(who)}</span><a href="${esc(SITE.read(sh.slug, pn))}">${esc(pgOf(sh.slug, pn))}</a></h4>`
         + `<p>${note ? esc(note) : '<span class="cp-empty">The note could not be found on its page.</span>'}</p></section>`;
     }).join('');
     body.querySelectorAll('[data-cp-jump]').forEach((a) => { a.onclick = (e) => { e.preventDefault(); const s = body.querySelector(`#cp-c${a.dataset.cpJump}`); if (s) s.scrollIntoView({ block: 'start' }); }; });
@@ -822,7 +948,9 @@
       return;
     }
     lastKey = key;
-    S.rec = null; S.pin = false; S.allCited = false; // a new chapter: the rail follows the reading line again
+    // a new chapter: the rail follows the reading line again, its list shut
+    S.rec = null; S.pin = false; S.dirOpen = new Set();
+    setDir(false);
     const [list, rec, hits] = await Promise.all([commentaries(w.book, w.ch), recOf(w.book, w.ch), hitsOf(w.book, w.ch)]);
     // the hits join the list as works the pane can open at their page (wb 2: a list of their own, never a key)
     const have = new Set(list.map((c) => c.slug));
@@ -832,6 +960,7 @@
       S.cen[x.w] = x.cen || 0;
     }
     S.list = list; S.rec = rec;
+    readYears(rec);
     heat();
     // the century of each commentary, from the same list the Citations view reads, so the two name a work alike
     const mo = window.MOScriptureDev;
