@@ -94,6 +94,7 @@ const ord=n=>n+(n%100>=11&&n%100<=13?'th':['th','st','nd','rd'][Math.min(n%10,4)
 /* the shelves' colours: one a tradition, the same in the legend, the dots and the lists; a shelf not named falls to grey */
 const COL={'Greek Fathers':'#2E6E8E','Latin Fathers':'#7A4E9B','Eastern Fathers':'#5E8C61','Byzantine':'#1F8A7A','Medieval':'#B07B2A','Lutheran':'#C1593C','Reformed':'#2F7D4F','Continental Reformed':'#2F7D4F','Roman Catholic':'#A63D5A','English Divines':'#3B5BA5','Humanism and Law':'#8C7B5C'};
 const col=t=>COL[t]||'#7A7A76';
+const fmt=n=>Number(n||0).toLocaleString('en-US');
 const KINDS=[['refutes','Refutes','k'],['develops','Develops','k'],['follows','Follows','k'],['distinguishes','Distinguishes','k dash'],['reconciles','Reconciles','k dot']];
 const SHOWN=6;
 let IX=null,D=null,CUR=null,TRAD=new Set(),FOLD=0;const KIND=new Set(KINDS.map(k=>k[0]));
@@ -125,6 +126,21 @@ function byTradition(hs){
 }
 function holdersHTML(hs){
   return byTradition(hs).map(([t,xs])=>`<section class="tg" data-trad="${esc(t)}"><h4><i class="sw" style="--c:${col(t)}" aria-hidden="true"></i>${esc(t)}<span class="ct"><span class="sr">, </span>${xs.length}</span></h4>${foldHTML(xs,rowHTML,'hl')}</section>`).join('');
+}
+/* A POSITION (2026-10-22, owner of the old block: "slop garbage, organize, apply design principles"): its name and its share of the
+   authors who answer the question; that share as a bar in the traditions' colours, the traditions named under it with their counts
+   (a colour never stands alone); the thesis; what it turns on and its earliest holder; then its authors by tradition behind one fold,
+   open when there are six or fewer. "Not placed" takes the same block with its own note in place of a thesis. */
+function profileHTML(hs,total){
+  const tr=byTradition(hs),share=total?hs.length/total:1;
+  return `<div class="pf"><span class="pf-bar" role="img" aria-label="${esc(`${fmt(hs.length)} of ${fmt(total)} authors: ${tr.map(([t,xs])=>`${t} ${xs.length}`).join(', ')}`)}"><span class="pf-fill" style="width:${Math.max(1.5,Math.min(1,share)*100).toFixed(1)}%">${tr.map(([t,xs])=>`<i style="flex-grow:${xs.length};--c:${col(t)}"></i>`).join('')}</span></span>
+    <p class="pf-tr">${tr.map(([t,xs])=>`<span><i class="sw" style="--c:${col(t)}" aria-hidden="true"></i>${esc(t)}<span class="ct">${xs.length}</span></span>`).join('')}</p></div>`;
+}
+function positionHTML(id,label,hs,total,body){
+  const n=hs.length;
+  return `<section class="sec pos" aria-labelledby="pos-${esc(id)}"><header class="pos-h"><h3 id="pos-${esc(id)}">${esc(label)}</h3><span class="ct">${fmt(n)} of ${fmt(total)} authors</span></header>
+    ${profileHTML(hs,total)}${body}
+    <details class="hold"${n<=6?' open':''}><summary>${n===1?'The author':`The ${fmt(n)} authors`}, by tradition</summary>${holdersHTML(hs)}</details></section>`;
 }
 function posName(d,id){return (d.positions.find(p=>p.id===id)||{}).label||'';}
 function endHTML(d,e){
@@ -197,18 +213,17 @@ function show(id,push){
     if(!d||CUR!==id)return;D=d;TRAD=new Set();FOLD=0;
     const trads=Object.entries(d.traditions||{}).sort((a,b)=>b[1]-a[1]);
     const prev=IX.questions[i-1],next=IX.questions[i+1];
-    const secs=d.positions.map(p=>`<section class="sec" aria-labelledby="pos-${esc(p.id)}"><h3 id="pos-${esc(p.id)}">${esc(p.label)}<span class="ct"><span class="sr">, </span>${p.holders.length}<span class="sr"> authors</span></span></h3>
-        ${p.summary?`<p class="thesis">${esc(p.summary)}</p>`:''}${p.distinction?`<dl class="lab"><div><dt>Turns on</dt><dd>${esc(p.distinction)}</dd></div></dl>`:''}
-        ${holdersHTML(p.holders)}</section>`).join('');
-    const unpl=(d.unplaced||[]).length?`<section class="sec" aria-labelledby="sec-unpl"><h3 id="sec-unpl">Not placed<span class="ct"><span class="sr">, </span>${d.unplaced.length}</span></h3><p class="thesis muted">Answers the reading could not file under a position; each stands on his page.</p>${holdersHTML(d.unplaced)}</section>`:'';
+    const total=d.n||d.positions.reduce((n,p)=>n+p.holders.length,0)+(d.unplaced||[]).length;
+    const secs=d.positions.map(p=>positionHTML(p.id,p.label,p.holders,total,`${p.summary?`<p class="thesis">${esc(p.summary)}</p>`:''}${p.distinction||p.first?`<dl class="lab">${p.distinction?`<div><dt>Turns on</dt><dd>${esc(p.distinction)}</dd></div>`:''}${p.first&&p.first.author?`<div><dt>Earliest</dt><dd>${esc(p.first.author)}${yrOf(p.first)?`<span class="muted">, ${esc(yrOf(p.first))}</span>`:''}</dd></div>`:''}</dl>`:''}`)).join('');
+    const unpl=(d.unplaced||[]).length?positionHTML('unplaced','Not placed',d.unplaced,total,'<p class="thesis muted">Answers the reading could not file under a position; each stands on his page.</p>'):'';
     $('#m').innerHTML=`<h2>${esc(d.q)}</h2>
       <p class="meta">${esc(d.locus)} · ${d.n} authors · ${d.positions.length} positions · <a href="${ATLAS}#${esc(d.id)}">every answer in the atlas</a></p>
       ${d.note?`<p class="shape">${esc(d.note)}</p>`:''}${d.axes.length?`<dl class="lab"><div><dt>Runs along</dt><dd><ol>${d.axes.map(a=>`<li>${esc(a)}</li>`).join('')}</ol></dd></div></dl>`:''}
-      <div class="chips" id="trads" role="group" aria-label="Traditions shown">${trads.map(([t,n])=>`<button type="button" data-trad="${esc(t)}" aria-pressed="true"><i style="--c:${col(t)}"></i>${esc(t||'Other')} <span class="ct">${n}</span></button>`).join('')}</div>
-      <div class="chips" id="kinds" role="group" aria-label="Lines shown">${KINDS.filter(k=>d.relations.some(r=>r.kind===k[0])).map(([k,l,c])=>`<button type="button" class="${c}" data-kind="${k}" aria-pressed="true"><i style="--c:${k==='refutes'?'var(--accent)':'var(--muted)'}"></i>${l}</button>`).join('')}</div>
+      <div class="legend"><span class="lg-l" aria-hidden="true">Traditions</span><div class="lg" id="trads" role="group" aria-label="Traditions shown">${trads.map(([t,n])=>`<button type="button" data-trad="${esc(t)}" aria-pressed="true"><i style="--c:${col(t)}"></i>${esc(t||'Other')}<span class="ct">${n}</span></button>`).join('')}</div>
+      ${d.relations.length?`<span class="lg-l" aria-hidden="true">Lines</span><div class="lg" id="kinds" role="group" aria-label="Lines shown">${KINDS.filter(k=>d.relations.some(r=>r.kind===k[0])).map(([k,l,c])=>`<button type="button" class="${c}" data-kind="${k}" aria-pressed="true"><i style="--c:${k==='refutes'?'var(--refutes)':'var(--muted)'}"></i>${l}</button>`).join('')}</div>`:''}</div>
       <div class="diagram">${draw(d)}</div>
       ${secs}${unpl}${d.turning_points.length?turningHTML(d):''}${d.relations.length?relationsHTML(d):''}
-      <nav class="next" aria-label="Previous and next question">${prev?`<button type="button" data-go="${esc(prev.id)}">‹ ${esc(prev.q)}</button>`:'<span></span>'}${next?`<button type="button" data-go="${esc(next.id)}">${esc(next.q)} ›</button>`:'<span></span>'}</nav>`;
+      <nav class="next" aria-label="Previous and next question">${prev?`<button type="button" data-go="${esc(prev.id)}"><small>Previous question</small><span>${esc(prev.q)}</span></button>`:'<span></span>'}${next?`<button type="button" data-go="${esc(next.id)}"><small>Next question</small><span>${esc(next.q)}</span></button>`:'<span></span>'}</nav>`;
     $('#note').textContent=d.method||'';
     if(push)history.replaceState(null,'',`#${id}`);
     document.title=`${d.q} | Maps of the tradition | The Faith Received | Mere Orthodoxy`;

@@ -92,10 +92,10 @@ const PVW=(cfg=>{
   });
   return {btn,loc,can,escape(){const a=document.activeElement,box=(a&&a.closest&&a.closest('.pvw'))||OPEN.filter(b=>b.isConnected).pop();return close(box,true);}};
 })({read,col:'#q',host:'.hr',text:''});
-const MAPS='/the-faith-received/maps/';
+const MAPS='/the-faith-received/maps/',TAIL=' | Disputed questions | The Faith Received | Mere Orthodoxy';
 const ANS=[['affirms','Affirm'],['denies','Deny'],['distinguishes','Distinguish'],['reports only','Report others only'],['unclear','Unclear']];
 const SHOWN=6;
-let CUR=null,FILTER=null,DATA=null,FOLD=0;
+let CUR=null,FILTER=null,DATA=null,FOLD=0,QS=[];
 // an open question ("For whom Christ died") carries the positions the schools took, in place of affirm and deny
 const answersOf=d=>d.options?[...d.options.map(o=>[o,o]),['reports only','Report others only'],['unclear','Unclear']]:ANS;
 // the pages an answer stands on, a line a work: "p. 446", or "pp. 361, 373, 375"; each opens the reader in a new tab, as on the maps,
@@ -120,10 +120,17 @@ function renderQ(){
   // all answers: each group shows six and folds the rest; one answer chosen in the tally: all of it
   const fold=!FILTER;
   $('#q').innerHTML=`<h2>${esc(d.q)}</h2><p class="meta">${esc(d.locus)} · ${d.answers.length} authors · ${d.n_pages.toLocaleString()} pages · <a href="${MAPS}#${esc(d.id)}">the map of the tradition</a></p>${window.TFRMethod?window.TFRMethod.html("<p>Each answer is read by machine from the claims recorded on the author's pages: open the pages to check it.</p>"):'<p class="note">Each answer is read by machine from the claims recorded on the author\'s pages: open the pages to check it.</p>'}`
-    +`<div class="tally" role="group" aria-label="Filter by answer"><button type="button" data-f="" aria-pressed="${!FILTER}">Answers</button>${A.map(([k,l])=>counts[k]?`<button type="button" data-f="${esc(k)}" aria-pressed="${FILTER===k}">${esc(l)} <span class="ct">${counts[k]}</span></button>`:'').join('')}</div>${
+    +`<div class="tally" role="group" aria-label="Filter by answer"><button type="button" data-f="" aria-pressed="${!FILTER}">Answers <span class="ct">${d.answers.filter(a=>a.answer!=='unclear'&&a.answer!=='reports only').length}</span></button>${A.map(([k,l])=>counts[k]?`${k==='reports only'?'<span class="tsep" aria-hidden="true"></span>':''}<button type="button" data-f="${esc(k)}" aria-pressed="${FILTER===k}">${esc(l)} <span class="ct">${counts[k]}</span></button>`:'').join('')}</div>${
     groups.length?groups.map(([k,l,v])=>{const id=`fold${++FOLD}`;
       return `<h3 class="ans">${esc(l)}<span class="ct"><span class="sr">, </span>${v.length}</span></h3><ol class="hl" id="${id}">${v.map((a,i)=>rowHTML(a,i,fold)).join('')}</ol>${fold&&v.length>SHOWN?`<button type="button" class="more" aria-expanded="false" aria-controls="${id}" data-n="${v.length}">Show all ${v.length}</button>`:''}`;}).join('')
-      :'<p class="muted">No author in the library states an answer on the pages filed under this question yet.</p>'}`;
+      :'<p class="muted">No author in the library states an answer on the pages filed under this question yet.</p>'
+    }${stepsHTML(d.id)}`;
+}
+/* the questions before and after this one, in the atlas's order */
+function stepsHTML(id){
+  const i=QS.findIndex(x=>x.id===id),prev=i>0?QS[i-1]:null,next=i>=0?QS[i+1]:null;
+  if(!prev&&!next)return '';
+  return `<nav class="next" aria-label="Previous and next question">${prev?`<button type="button" data-q="${esc(prev.id)}"><small>Previous question</small><span>${esc(prev.q)}</span></button>`:'<span></span>'}${next?`<button type="button" data-q="${esc(next.id)}"><small>Next question</small><span>${esc(next.q)}</span></button>`:'<span></span>'}</nav>`;
 }
 // the question shown keeps its locus open and in sight in the phone's bounded list
 function keepInView(el){
@@ -132,23 +139,29 @@ function keepInView(el){
   const r=el.getBoundingClientRect(),br=box.getBoundingClientRect();if(r.top<br.top||r.bottom>br.bottom)box.scrollTop+=r.top-br.top-box.clientHeight/3;
 }
 async function showQ(id,write){
-  CUR=id;FILTER=null;document.querySelectorAll('[data-q]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.q===id)));
+  CUR=id;FILTER=null;document.querySelectorAll('#loci [data-q]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.q===id)));
   keepInView(document.querySelector(`#loci [data-q="${CSS.escape(id)}"]`));
-  DATA=await J(`/v1/atlas/q/${encodeURIComponent(id)}.json`);
-  if(!DATA){$('#q').innerHTML='<p class="muted">This question could not be loaded.</p>';return;}
+  /* a question chosen while another was loading wins: the older answer is dropped */
+  const got=await J(`/v1/atlas/q/${encodeURIComponent(id)}.json`);if(CUR!==id)return;DATA=got;
+  if(!DATA){$('#q').innerHTML='<p class="muted">This question could not be loaded. Choose it again to retry.</p>';return;}
   renderQ();if(write)history.replaceState(null,'',`#${id}`);
+  document.title=`${DATA.q}${TAIL}`;
 }
 document.addEventListener('click',e=>{
-  const b=e.target.closest('[data-q]');if(b){showQ(b.dataset.q,true);return;}
+  const b=e.target.closest('[data-q]');if(b){showQ(b.dataset.q,true);if(b.closest('.next'))$('#q').scrollIntoView({block:'start'});return;}
   const f=e.target.closest('[data-f]');if(f){FILTER=f.dataset.f||null;renderQ();return;}
   const more=e.target.closest('button.more');if(more){const open=more.getAttribute('aria-expanded')!=='true',ol=document.getElementById(more.getAttribute('aria-controls'));
     [...ol.children].forEach((li,k)=>{if(k>=SHOWN)li.hidden=!open;});more.setAttribute('aria-expanded',String(open));more.textContent=open?'Show fewer':`Show all ${more.dataset.n}`;
     if(!open&&more.getBoundingClientRect().top<0)ol.scrollIntoView({block:'start'});}
 });
-addEventListener('keydown',e=>{if(e.key==='Escape'&&PVW.escape())e.preventDefault();});
+addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&PVW.escape()){e.preventDefault();return;}
+  if(e.target.matches('input,textarea,select')||e.target.closest('.pvw')||e.altKey||e.ctrlKey||e.metaKey||(e.key!=='ArrowRight'&&e.key!=='ArrowLeft'))return;
+  const i=QS.findIndex(x=>x.id===CUR),x=i<0?null:QS[i+(e.key==='ArrowRight'?1:-1)];if(x)showQ(x.id,true);
+});
 J('/v1/atlas/index.json').then(d=>{
   if(!d){$('#loci').innerHTML='<p class="muted">The atlas could not be loaded. Reload the page to try again.</p>';return;}
-  const by=new Map();for(const x of d.questions){if(!by.has(x.locus))by.set(x.locus,[]);by.get(x.locus).push(x);}
+  QS=d.questions;const by=new Map();for(const x of d.questions){if(!by.has(x.locus))by.set(x.locus,[]);by.get(x.locus).push(x);}
   const want=location.hash.slice(1)||d.questions[0].id,wl=(d.questions.find(x=>x.id===want)||{}).locus;
   $('#loci').innerHTML=[...by.entries()].map(([l,qs])=>`<details${l===wl?' open':''}><summary>${esc(l)}<small>${qs.length}</small></summary><ul>${qs.map(x=>`<li><button type="button" data-q="${esc(x.id)}" aria-current="false">${esc(x.q)}</button></li>`).join('')}</ul></details>`).join('');
   showQ(want,false);
