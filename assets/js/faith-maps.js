@@ -322,7 +322,7 @@ function show(id,push){
     const unpl=(d.unplaced||[]).length?positionHTML('unplaced','Not placed',d.unplaced,total,'<p class="thesis muted">Answers the reading could not file under a position; each stands on his page.</p>'):'';
     const ptop=pthHTML(pathGroups(PL.top),false);
     $('#m').innerHTML=`<h2>${esc(d.q)}</h2>
-      <p class="meta">${esc(d.locus)} · ${d.n} authors · ${d.positions.length} positions · <a href="${ATLAS}#${esc(d.id)}">every answer in the atlas</a></p>
+      <p class="meta">${esc(d.locus)} · ${d.n} authors · ${d.positions.length} positions · <a href="${ATLAS}#${esc(d.id)}">every answer in the atlas</a></p>${/^q(29[4-9]|3[0-2]\d|330)$/.test(d.id)?`<p class="meta">Read the disputation as a course: <a href="/courses#metaphysics">Metaphysics with Suárez</a></p>`:''}
       ${d.note?`<p class="shape">${esc(d.note)}</p>`:''}${d.axes.length||ptop?`<dl class="lab">${d.axes.length?`<div><dt>Runs along</dt><dd><ol>${d.axes.map(a=>`<li>${esc(a)}</li>`).join('')}</ol></dd></div>`:''}${ptop}</dl>`:''}
       <div class="legend"><span class="lg-l" aria-hidden="true">Traditions</span><div class="lg" id="trads" role="group" aria-label="Traditions shown">${trads.map(([t,n])=>`<button type="button" data-trad="${esc(t)}" aria-pressed="true"><i style="--c:${col(t)}"></i>${esc(t||'Other')}<span class="ct">${n}</span></button>`).join('')}</div>
       ${d.relations.length?`<span class="lg-l" aria-hidden="true">Lines</span><div class="lg" id="kinds" role="group" aria-label="Lines shown">${KINDS.filter(k=>d.relations.some(r=>r.kind===k[0])).map(([k,l,c])=>`<button type="button" class="${c}" data-kind="${k}" aria-pressed="true"><i style="--c:${k==='refutes'?'var(--refutes)':'var(--muted)'}"></i>${l}</button>`).join('')}</div>`:''}
