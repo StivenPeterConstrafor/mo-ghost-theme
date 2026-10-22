@@ -221,6 +221,17 @@
 .tfr-tool .qi-open{white-space:nowrap}
 .tfr-tool .qi-b .sides{margin:.7rem 0 .7rem}
 .tfr-tool .qi-b .side .lbl{margin:.5rem 0 .2rem}
+.tfr-tool .pth-rows{list-style:none;margin:0;padding:0}
+.tfr-tool .pth-rows>li{display:grid;grid-template-columns:minmax(8rem,11rem) minmax(0,1fr) auto;gap:.2rem 1.2rem;align-items:baseline;padding:.7rem 0;border-top:1px solid var(--border)}
+.tfr-tool .pth-rows>li:first-child{border-top:0}
+.tfr-tool .pth-who{margin:0;font:500 1rem/1.3 var(--font-display);text-wrap:balance;overflow-wrap:anywhere}
+.tfr-tool .pth-who a{text-decoration-thickness:1px;text-underline-offset:3px}
+.tfr-tool .pth-who small{display:block;margin-top:.15rem;color:var(--muted);font:400 .8rem/1.45 var(--sans)}
+.tfr-tool .sw{display:inline-block;flex:none;width:.6rem;height:.6rem;margin-right:.45rem;border-radius:50%;background:var(--c,#7A7A76);vertical-align:.08em}
+.tfr-tool .pth-b>p{margin:0;max-width:68ch;text-wrap:pretty}
+.tfr-tool .pth-b>.pth-q{margin:.35rem 0 0 1.1rem;font-style:italic}
+.tfr-tool .pth-b>.pth-src{margin-top:.3rem;color:var(--muted);font-size:.8rem;line-height:1.5}
+.tfr-tool .pth-more{margin:.5rem 0 0;font-size:.8rem;color:var(--muted)}
 .tfr-tool .pgs{display:inline-flex;flex:none;align-items:baseline;white-space:nowrap}
 .tfr-tool .pvb{position:relative;display:inline-flex;align-items:center;margin-left:.45rem;padding:.1rem .55rem;border:1px solid var(--border);border-radius:999px;background:var(--card-bg);color:var(--fg);font:600 .8rem/1.2 var(--sans,var(--font-body));text-decoration:none;white-space:nowrap;cursor:pointer}
 .tfr-tool .pvb:hover{border-color:var(--fg)}
@@ -270,6 +281,11 @@
 .tfr-tool .lu-key{margin-left:0;flex-basis:100%}
 .tfr-tool .plr-s{grid-template-columns:minmax(0,1fr)}
 .tfr-tool .qi-b{padding-left:0}
+.tfr-tool .pth-rows>li{grid-template-columns:minmax(0,1fr)}
+.tfr-tool .pth-rows>li>.pgs{justify-self:start}
+.tfr-tool .pth-who small{display:inline}
+.tfr-tool .pth-who small:first-of-type::before{content:"";display:block}
+.tfr-tool .pth-who small+small::before{content:", "}
 .tfr-tool .tabs{gap:1.2rem}
 .tfr-tool .dbl{grid-template-columns:minmax(0,1fr)}
 .tfr-tool .pairs:not([open])>summary>.ct{display:none}}
@@ -308,4 +324,4 @@
   <p class="note" id="note"></p>
 </div></main>
 <link rel="stylesheet" href="{{asset "css/port/work-hub.css"}}&amp;frv=0374a552e8452478"><script src="{{asset "js/port/page-window.js"}}&amp;frv=2023bacb69cf7ee4"></script>
-<script src="{{asset "js/faith-controversies.js"}}&amp;frv=2a548151d1c1b05a"></script>
+<script src="{{asset "js/faith-controversies.js"}}&amp;frv=1a382616c9b7c71d"></script>

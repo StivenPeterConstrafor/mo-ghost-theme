@@ -88,7 +88,7 @@ const PVW=(cfg=>{
     e.preventDefault();open(t);
   });
   return {btn,loc,can,escape(){const a=document.activeElement,box=(a&&a.closest&&a.closest('.pvw'))||OPEN.filter(b=>b.isConnected).pop();return close(box,true);}};
-})({read,col:'#m',host:'.hr,.tps>li',text:''});
+})({read,col:'#m',host:'.hr,.tps>li,.pth',text:''});
 const ATLAS='/the-faith-received/disputed-questions/';
 const ord=n=>n+(n%100>=11&&n%100<=13?'th':['th','st','nd','rd'][Math.min(n%10,4)]||'th');
 /* the shelves' colours: one a tradition, the same in the legend, the dots and the lists; a shelf not named falls to grey */
@@ -98,6 +98,77 @@ const fmt=n=>Number(n||0).toLocaleString('en-US');
 const KINDS=[['refutes','Refutes','k'],['develops','Develops','k'],['follows','Follows','k'],['distinguishes','Distinguishes','k dash'],['reconciles','Reconciles','k dot']];
 const SHOWN=6;
 let IX=null,D=null,CUR=null,TRAD=new Set(),FOLD=0;const KIND=new Set(KINDS.map(k=>k[0]));
+/* THE REFORMED AND LUTHERAN METAPHYSICIANS (2026-10-22, owner: "metaphysics is something that reformed and lutherans get into although
+   they take the paths largely done by scotists thomists etc, this part of the map"). v1/enrich/controversies/paths/<debate>.json gives,
+   under a question, the Reformed and Lutheran metaphysicians who answer it (Timpler, Alsted, Burgersdijk, Heereboord, Goclenius,
+   Scheibler, Martini, Calov, Meisner) and the path each takes: the Thomists', the Scotists', Suárez's, the Nominalists' or his own. One
+   who follows a school stands with the one position that holds the most of that school's authors here, by the school map of the
+   controversies (SCHOOLS and SAME, copied from controversies.html); a follower of Suárez with Suárez where the map places him once. One
+   whose school the map divides evenly, or does not place, and one who goes his own way, are named under the question's head. Each name
+   opens his page in the page window; one placed with a position is drawn on the diagram as a ring at his birth year (the works' year,
+   as an author's y here is his birth year), in his tradition's colour, switched by the legend. */
+const PATH_FILES=['thomists-scotists'];
+const SCHOOLS={"Thomist":["Thomas Aquinas","Johannes Capreolus","Thomas Cajetan","Sylvester of Ferrara","Domingo Báñez","John of St. Thomas","Poinsot / John of St. Thomas","Jean-Baptiste Gonet","Charles René Billuart","Domingo de Soto","Francisco de Vitoria","Melchior Cano","Salamanticenses","Vincent Contenson","Antoine Goudin","Thomas of Strasbourg"],"Scotist":["John Duns Scotus","Juan de Rada","Johannes Maria Zamora","Claude Frassen","Bartolomeo Mastri","Francis of Meyronnes","Antonius Andreas","William of Vaurouillon","Hugh Cavellus","Luke Wadding","John Punch","Francis Lychetus"],"Nominalist":["William of Ockham","Gabriel Biel","Gregory of Rimini","Pierre d'Ailly","Adam Wodeham","Marsilius of Inghen"],"Jesuit":["Francisco Suárez","Gabriel Vásquez","Luis de Molina","Robert Bellarmine","Leonard Lessius","Martin Becanus","Juan de Lugo","Diego Laínez","Alfonso Salmerón","Francisco de Toledo","Martínez de Ripalda","Jakob Gretser","Adam Tanner","Gregory of Valencia"],"Augustinian":["Giles of Rome","Gregory of Rimini","Cornelius Jansen","Henry Noris","Lorenzo Berti"],"Other medieval":["Durand of Saint-Pourçain","Peter Aureol","Henry of Ghent","Godfrey of Fontaines","Richard of Middleton","Bonaventure","Albertus Magnus","Alexander of Hales"]};
+const SAME={'John of St. Thomas':'Poinsot / John of St. Thomas','Juan de Rada':'Juan de Rada Obs.','Bartolomeo Mastri':'Mastri / Mastrius','Melchior Cano':'Melchor Cano','Albertus Magnus':'Albert the Great','Lorenzo Berti':'Giovanni Lorenzo Berti','Henry Noris':'Enrico Noris'};
+const fold=s=>String(s||'').normalize('NFD').replace(/\p{M}/gu,'').toLowerCase().replace(/[^a-z0-9]+/g,'');
+const pkey=n=>fold(SAME[n]||n);
+const SCHOOL_OF=new Map();for(const [s,ns] of Object.entries(SCHOOLS))for(const n of ns)SCHOOL_OF.set(pkey(n),s);
+const SUAREZ=pkey('Francisco Suárez');
+/* a path: the school it follows here, and how a sentence says it (one man, several) */
+const PATH={thomist:{s:'Thomist',one:'follows',many:'follow',whom:'the Thomists'},scotist:{s:'Scotist',one:'follows',many:'follow',whom:'the Scotists'},suarezian:{s:'Jesuit',one:'follows',many:'follow',whom:'Suárez',school:true},nominalist:{s:'Nominalist',one:'stands with',many:'stand with',whom:'the Nominalists'}};
+const PATH_LABEL={thomist:'follows the Thomists',scotist:'follows the Scotists',suarezian:'follows Suárez',nominalist:'with the Nominalists',own:'his own way'};
+const PATH_NOTE='The Reformed and Lutheran metaphysicians are read by machine from their own pages, with the path each takes: one who follows a school stands with the position that holds the most of its authors here (a follower of Suárez with Suárez), a ring at his birth year on the diagram; one whose school this map divides, or who goes his own way, is named under the question.';
+const PQ=new Map(),PW={};let PL=null,RINGS=[],RING=true;
+const PATHS_P=Promise.all(PATH_FILES.map(id=>J(`${BASE}/v1/enrich/controversies/paths/${encodeURIComponent(id)}.json?v=${Date.now()}`))).then(fs=>{
+  for(const f of fs){if(!f||!f.questions||typeof f.questions!=='object')continue;Object.assign(PW,f.works||{});for(const [q,es] of Object.entries(f.questions)){if(!PQ.has(q))PQ.set(q,[]);PQ.get(q).push(...(es||[]));}}
+});
+const pyear=e=>{const y=Number((PW[e.slug]||[])[4]);return y>0&&y<2000?y:0;};
+const ptrad=e=>e.tradition||(PW[e.slug]||[])[3]||'';
+const NUM=['no','one','two','three','four','five','six','seven','eight','nine'];
+/* where each stands on this map: the position that alone holds the most authors of his school (a follower of Suárez, the one position
+   that holds Suárez); else under the question's head, with the number of positions his school is divided among (0: not placed) */
+function placePaths(d){
+  const es=(PQ.get(d.id)||[]).filter(e=>e.path==='own'||PATH[e.path]).slice().sort((a,b)=>(pyear(a)||9999)-(pyear(b)||9999)||String(a.author).localeCompare(String(b.author)));
+  const tally=d.positions.map(p=>{const c=new Map(),seen=new Set(),who=new Set();let su=false;
+    for(const h of p.holders){const k=pkey(h.author);who.add(k);if(k===SUAREZ)su=true;const s=SCHOOL_OF.get(k);if(s&&!seen.has(k)){seen.add(k);c.set(s,(c.get(s)||0)+1);}}
+    return {c,su,who};});
+  const at=d.positions.map(()=>[]),top=[];
+  for(const e of es){
+    if(e.path==='own'){top.push({e,n:-1});continue;}
+    if(e.path==='suarezian'){const ks=tally.map((t,k)=>t.su?k:-1).filter(k=>k>=0);if(ks.length===1){at[ks[0]].push(e);continue;}}
+    const ns=tally.map(t=>t.c.get(PATH[e.path].s)||0),max=Math.max(0,...ns),ks=ns.map((n,k)=>n===max?k:-1).filter(k=>k>=0);
+    if(max>0&&ks.length===1)at[ks[0]].push(e);else top.push({e,n:max>0?ks.length:0});
+  }
+  return {at,top,tally};
+}
+const andList=xs=>xs.length<3?xs.join(' and '):`${xs.slice(0,-1).join(', ')} and ${xs[xs.length-1]}`;
+/* a name, or a work's title: it opens his page in the page window (with a modifier key, the reader) */
+function plink(e,text){
+  const t=(PW[e.slug]||[])[1]||'',where=`${t}${t?', ':''}p. ${e.page}`;
+  return `<a class="pvl" href="${read(e.slug,e.page)}" data-pv="${esc(e.slug)}|${esc(e.page)}"${e.quote?` data-pv-hl="${esc(String(e.quote).slice(0,400))}"`:''} aria-expanded="false" title="${esc(where)}" aria-label="${esc(`${e.author}, ${ptrad(e)}: ${where}`)}">${esc(text)}</a>`;
+}
+/* a man in a sentence: his name; a man there from two works also names each work, and each opens its own page */
+const pman=es=>`${plink(es[0],es[0].author)}${es.length>1?` <span class="pth-w">(${es.map(e=>plink(e,(PW[e.slug]||[])[1]||`p. ${e.page}`)).join(', ')})</span>`:''}`;
+/* one sentence a path: "Scheibler and Martini follow the Scotists." The head's add how the map divides the school, or that it does not place it */
+function pathSentence(es,path,n){
+  const by=new Map();for(const e of es){if(!by.has(e.author))by.set(e.author,[]);by.get(e.author).push(e);}
+  const names=andList([...by.values()].map(pman)),many=by.size>1;
+  if(path==='own')return `${names} ${many?'go their own way':'goes his own way'}.`;
+  const P=PATH[path],split=n==null||n<0?'':n===0?`, ${P.school?'whose school':'whom'} this map does not place`:`, ${P.school?'whose school':'whom'} this map divides ${n===2?'between':'among'} ${NUM[n]||n} positions`;
+  return `${names} ${many?P.many:P.one} ${P.whom}${split}.`;
+}
+/* the note's row, for a .lab list: its label and its sentences */
+function pthHTML(groups,placed){
+  const es=groups.flatMap(g=>g.es);if(!es.length)return '';
+  const trads=[...new Set(es.map(ptrad))].join('|');
+  return `<div class="pth"${placed?' data-placed=""':''} data-trads="${esc(trads)}"><dt>Reformed and Lutheran</dt><dd class="pth-t">${groups.map(g=>pathSentence(g.es,g.path,g.n)).join(' ')}</dd></div>`;
+}
+/* the groups of a line: a path, or for the head a path and how the map divides its school, in the paths' order */
+function pathGroups(items){
+  const order=['thomist','scotist','suarezian','nominalist','own'],m=new Map();
+  for(const {e,n} of items){const k=`${e.path}|${n==null?'':n}`;if(!m.has(k))m.set(k,{path:e.path,n,es:[]});m.get(k).es.push(e);}
+  return [...m.values()].sort((a,b)=>order.indexOf(a.path)-order.indexOf(b.path)||(a.n||0)-(b.n||0));
+}
 const hash=s=>{let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0)/4294967295};
 const citedOf=h=>h.cited||(h.cite?[h.cite]:[]);
 /* a holder's dates as the data gives them; a bare year only when it is a real one (9999 marks no date) */
@@ -136,11 +207,11 @@ function profileHTML(hs,total){
   return `<div class="pf"><span class="pf-bar" role="img" aria-label="${esc(`${fmt(hs.length)} of ${fmt(total)} authors: ${tr.map(([t,xs])=>`${t} ${xs.length}`).join(', ')}`)}"><span class="pf-fill" style="width:${Math.max(1.5,Math.min(1,share)*100).toFixed(1)}%">${tr.map(([t,xs])=>`<i style="flex-grow:${xs.length};--c:${col(t)}"></i>`).join('')}</span></span>
     <p class="pf-tr">${tr.map(([t,xs])=>`<span><i class="sw" style="--c:${col(t)}" aria-hidden="true"></i>${esc(t)}<span class="ct">${xs.length}</span></span>`).join('')}</p></div>`;
 }
-function positionHTML(id,label,hs,total,body){
-  const n=hs.length;
+function positionHTML(id,label,hs,total,body,k){
+  const n=hs.length,rl0=PL&&k!=null&&PL.at[k]?pthHTML(pathGroups(PL.at[k].map(e=>({e}))),true):'',rl=rl0?`<dl class="lab pth-dl">${rl0}</dl>`:'';
   return `<section class="sec pos" aria-labelledby="pos-${esc(id)}"><header class="pos-h"><h3 id="pos-${esc(id)}">${esc(label)}</h3><span class="ct">${fmt(n)} of ${fmt(total)} authors</span></header>
     ${profileHTML(hs,total)}${body}
-    <details class="hold"${n<=6?' open':''}><summary>${n===1?'The author':`The ${fmt(n)} authors`}, by tradition</summary>${holdersHTML(hs)}</details></section>`;
+    <details class="hold"${n<=6?' open':''}><summary>${n===1?'The author':`The ${fmt(n)} authors`}, by tradition</summary>${holdersHTML(hs)}</details>${rl}</section>`;
 }
 function posName(d,id){return (d.positions.find(p=>p.id===id)||{}).label||'';}
 function endHTML(d,e){
@@ -157,7 +228,7 @@ function turningHTML(d){
 }
 function draw(d){
   const P=d.positions,all=P.flatMap(p=>p.holders.map(h=>({...h,pos:p.id})));
-  const dated=h=>Number(h.y)>0&&Number(h.y)<2000,years=all.filter(dated).map(h=>Number(h.y)),y0=Math.floor((Math.min(...years,1700)-1)/100)*100,y1=Math.min(2000,Math.ceil(Math.max(...years,1700)/100)*100),step=(y1-y0)/100>12?200:100;
+  const dated=h=>Number(h.y)>0&&Number(h.y)<2000,years=[...all.filter(dated).map(h=>Number(h.y)),...RINGS.map(r=>r.y)],y0=Math.floor((Math.min(...years,1700)-1)/100)*100,y1=Math.min(2000,Math.ceil(Math.max(...years,1700)/100)*100),step=(y1-y0)/100>12?200:100;
   const W=1000,L=56,R=12,T=14,B=38,H=Math.max(380,Math.min(720,(y1-y0)/100*44+T+B)),cw=(W-L-R)/P.length;
   const yOf=y=>T+(y-y0)/(y1-y0)*(H-T-B-26),undated=H-B+14;
   const xOf=(h,k)=>L+cw*(k+.5)+(hash(h.author)-.5)*cw*.72;
@@ -181,50 +252,67 @@ function draw(d){
   }
   let dots='';
   for(const [n,o] of at){const {h} = o;dots+=`<a class="dot" data-n="${n}" data-trad="${esc(h.tradition||'')}" tabindex="0" role="button" aria-label="${esc(h.author)}, ${esc(h.tradition||'')}, ${esc(yrOf(h)||'undated')}: ${esc(h.answer)}"><circle cx="${o.x.toFixed(1)}" cy="${o.y.toFixed(1)}" r="5" fill="${col(h.tradition)}"/></a>`;}
+  /* the Reformed and Lutheran metaphysicians placed with a position: a ring at his birth year in his position's column */
+  RINGS.forEach((r,i)=>{const t=ptrad(r.e);dots+=`<a class="dot ring" data-r="${i}" data-trad="${esc(t)}" tabindex="0" role="button" style="--c:${col(t)}" aria-label="${esc(`${r.e.author}, ${t}, born ${r.y}: ${PATH_LABEL[r.e.path]||''}, ${P[r.k].label}`)}"><circle cx="${xOf(r.e,r.k).toFixed(1)}" cy="${yOf(r.y).toFixed(1)}" r="5"/></a>`;});
   const heads=`<div class="heads" style="grid-template-columns:repeat(${P.length},1fr)">${P.map(p=>`<div>${esc(p.label)}<small>${p.holders.length} ${p.holders.length===1?'author':'authors'}${p.first?` · from ${esc(p.first.author)}`:''}</small></div>`).join('')}</div>`;
   /* on a phone the diagram keeps a readable width and scrolls sideways inside its frame; the page never does */
   return `<div class="dscroll" style="--np:${P.length}"><div>${heads}<svg class="map" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(d.q)}: ${P.length} positions, ${all.length} authors placed by century">${g}${e}${dots}</svg></div></div><div class="tip" id="tip" hidden></div>`;
 }
 function apply(){
-  document.querySelectorAll('svg.map .dot').forEach(el=>el.classList.toggle('off',TRAD.size>0&&!TRAD.has(el.dataset.trad)));
+  document.querySelectorAll('svg.map .dot').forEach(el=>el.classList.toggle('off',(TRAD.size>0&&!TRAD.has(el.dataset.trad))||(!RING&&el.classList.contains('ring'))));
   document.querySelectorAll('svg.map .edge').forEach(el=>{const a=document.querySelector(`.dot[data-n="${el.dataset.a}"]`),b=document.querySelector(`.dot[data-n="${el.dataset.b}"]`);el.classList.toggle('off',!KIND.has(el.dataset.kind)||(a&&a.classList.contains('off'))||(b&&b.classList.contains('off')));});
-  /* the lists follow the legend: a tradition switched off leaves the positions' lists too */
+  /* the lists follow the legend: a tradition switched off leaves the positions' lists too; the Reformed and Lutheran lines leave with
+     their traditions, and those placed with a position with their rings */
   document.querySelectorAll('#m .tg').forEach(el=>{el.hidden=TRAD.size>0&&!TRAD.has(el.dataset.trad==='Other'?'':el.dataset.trad);});
+  document.querySelectorAll('#m .pth').forEach(el=>{el.hidden=(TRAD.size>0&&!el.dataset.trads.split('|').some(x=>TRAD.has(x)))||(!RING&&el.hasAttribute('data-placed'));});
 }
+/* the note on a dot: an author the map places, or a Reformed or Lutheran metaphysician placed with a position (a ring) */
 function tip(n,anchor){
-  const t=$('#tip');if(!n){t.hidden=true;document.querySelectorAll('.dot.is-on,.dot.dim').forEach(x=>x.classList.remove('is-on','dim'));return;}
-  const h=D.positions.flatMap(p=>p.holders.map(x=>({...x,pos:p.label}))).find(x=>x.n===Number(n));if(!h)return;
-  const c=citedOf(h)[0];
-  t.innerHTML=`<button type="button" aria-label="Close">×</button><b>${esc(h.author)}</b> <span class="tt">${esc(yrOf(h))}${h.tradition?` · ${esc(h.tradition)}`:''}</span><div class="tt">${esc(h.pos)} · ${esc(h.answer)}</div><p>${esc(h.line)}</p>${c?`<a href="${read(c[0],c[1])}" target="_blank" rel="noopener">${esc(c[2]||c[0])}, p. ${esc(c[1])}</a>`:''}`;
+  const t=$('#tip');if(!anchor){t.hidden=true;document.querySelectorAll('.dot.is-on,.dot.dim').forEach(x=>x.classList.remove('is-on','dim'));return;}
+  const rg=anchor.dataset.r!=null?RINGS[Number(anchor.dataset.r)]:null;
+  if(rg){
+    const {e} = rg,tt=(PW[e.slug]||[])[1]||e.slug;
+    t.innerHTML=`<button type="button" aria-label="Close">×</button><b>${esc(e.author)}</b> <span class="tt">born ${esc(rg.y)}${ptrad(e)?` · ${esc(ptrad(e))}`:''}</span><div class="tt">${esc(D.positions[rg.k].label)} · ${esc(PATH_LABEL[e.path]||'')}</div><p>${esc(e.position)}</p><a href="${read(e.slug,e.page)}" target="_blank" rel="noopener">${esc(tt)}, p. ${esc(e.page)}</a>`;
+  }else{
+    const h=D.positions.flatMap(p=>p.holders.map(x=>({...x,pos:p.label}))).find(x=>x.n===Number(n));if(!h)return;
+    const c=citedOf(h)[0];
+    t.innerHTML=`<button type="button" aria-label="Close">×</button><b>${esc(h.author)}</b> <span class="tt">${esc(yrOf(h))}${h.tradition?` · ${esc(h.tradition)}`:''}</span><div class="tt">${esc(h.pos)} · ${esc(h.answer)}</div><p>${esc(h.line)}</p>${c?`<a href="${read(c[0],c[1])}" target="_blank" rel="noopener">${esc(c[2]||c[0])}, p. ${esc(c[1])}</a>`:''}`;
+  }
   t.hidden=false;
   const box=$('.diagram').getBoundingClientRect(),r=anchor.getBoundingClientRect();
   let x=r.left-box.left+12,y=r.top-box.top+12;if(x+t.offsetWidth>box.width-8)x=Math.max(8,r.left-box.left-t.offsetWidth-6);if(y+t.offsetHeight>box.height-4)y=Math.max(4,r.top-box.top-t.offsetHeight-6);
   t.style.left=`${x}px`;t.style.top=`${y}px`;
-  document.querySelectorAll('.dot').forEach(x=>{x.classList.toggle('is-on',x.dataset.n===String(n));});
-  const linked=new Set([String(n)]);document.querySelectorAll('svg.map .edge:not(.off)').forEach(el=>{if(el.dataset.a===String(n))linked.add(el.dataset.b);if(el.dataset.b===String(n))linked.add(el.dataset.a);});
-  document.querySelectorAll('.dot').forEach(x=>x.classList.toggle('dim',!linked.has(x.dataset.n)));
+  document.querySelectorAll('.dot').forEach(x=>{x.classList.toggle('is-on',x===anchor);});
+  const linked=new Set(rg?[]:[String(n)]);if(!rg)document.querySelectorAll('svg.map .edge:not(.off)').forEach(el=>{if(el.dataset.a===String(n))linked.add(el.dataset.b);if(el.dataset.b===String(n))linked.add(el.dataset.a);});
+  document.querySelectorAll('.dot').forEach(x=>x.classList.toggle('dim',x!==anchor&&!(x.dataset.n&&linked.has(x.dataset.n))));
 }
 function show(id,push){
   const i=IX.questions.findIndex(q=>q.id===id);if(i<0)return;CUR=id;
   document.querySelectorAll('.loci li button').forEach(b=>b.setAttribute('aria-current',String(b.dataset.id===id)));
   keepInView(document.querySelector(`.loci button[data-id="${CSS.escape(id)}"]`));
   $('#m').innerHTML='<p class="muted">Drawing the map…</p>';
-  J(`${BASE}/v1/maps/q/${encodeURIComponent(id)}.json`).then(d=>{
-    if(!d||CUR!==id)return;D=d;TRAD=new Set();FOLD=0;
+  Promise.all([J(`${BASE}/v1/maps/q/${encodeURIComponent(id)}.json`),PATHS_P]).then(([d])=>{
+    if(!d||CUR!==id)return;D=d;TRAD=new Set();FOLD=0;RING=true;
+    /* the Reformed and Lutheran metaphysicians on this question: placed, and the placed and dated drawn as rings (one a man a position,
+       and none for a man the map already places there) */
+    PL=placePaths(d);RINGS=[];
+    PL.at.forEach((es,k)=>{const seen=new Set();for(const e of es){const a=pkey(e.author),y=pyear(e);if(!y||seen.has(a)||PL.tally[k].who.has(a))continue;seen.add(a);RINGS.push({e,k,y});}});
     const trads=Object.entries(d.traditions||{}).sort((a,b)=>b[1]-a[1]);
     const prev=IX.questions[i-1],next=IX.questions[i+1];
     const total=d.n||d.positions.reduce((n,p)=>n+p.holders.length,0)+(d.unplaced||[]).length;
-    const secs=d.positions.map(p=>positionHTML(p.id,p.label,p.holders,total,`${p.summary?`<p class="thesis">${esc(p.summary)}</p>`:''}${p.distinction||p.first?`<dl class="lab">${p.distinction?`<div><dt>Turns on</dt><dd>${esc(p.distinction)}</dd></div>`:''}${p.first&&p.first.author?`<div><dt>Earliest</dt><dd>${esc(p.first.author)}${yrOf(p.first)?`<span class="muted">, ${esc(yrOf(p.first))}</span>`:''}</dd></div>`:''}</dl>`:''}`)).join('');
+    const secs=d.positions.map((p,k)=>positionHTML(p.id,p.label,p.holders,total,`${p.summary?`<p class="thesis">${esc(p.summary)}</p>`:''}${p.distinction||p.first?`<dl class="lab">${p.distinction?`<div><dt>Turns on</dt><dd>${esc(p.distinction)}</dd></div>`:''}${p.first&&p.first.author?`<div><dt>Earliest</dt><dd>${esc(p.first.author)}${yrOf(p.first)?`<span class="muted">, ${esc(yrOf(p.first))}</span>`:''}</dd></div>`:''}</dl>`:''}`,k)).join('');
     const unpl=(d.unplaced||[]).length?positionHTML('unplaced','Not placed',d.unplaced,total,'<p class="thesis muted">Answers the reading could not file under a position; each stands on his page.</p>'):'';
+    const ptop=pthHTML(pathGroups(PL.top),false);
     $('#m').innerHTML=`<h2>${esc(d.q)}</h2>
       <p class="meta">${esc(d.locus)} · ${d.n} authors · ${d.positions.length} positions · <a href="${ATLAS}#${esc(d.id)}">every answer in the atlas</a></p>
-      ${d.note?`<p class="shape">${esc(d.note)}</p>`:''}${d.axes.length?`<dl class="lab"><div><dt>Runs along</dt><dd><ol>${d.axes.map(a=>`<li>${esc(a)}</li>`).join('')}</ol></dd></div></dl>`:''}
+      ${d.note?`<p class="shape">${esc(d.note)}</p>`:''}${d.axes.length||ptop?`<dl class="lab">${d.axes.length?`<div><dt>Runs along</dt><dd><ol>${d.axes.map(a=>`<li>${esc(a)}</li>`).join('')}</ol></dd></div>`:''}${ptop}</dl>`:''}
       <div class="legend"><span class="lg-l" aria-hidden="true">Traditions</span><div class="lg" id="trads" role="group" aria-label="Traditions shown">${trads.map(([t,n])=>`<button type="button" data-trad="${esc(t)}" aria-pressed="true"><i style="--c:${col(t)}"></i>${esc(t||'Other')}<span class="ct">${n}</span></button>`).join('')}</div>
-      ${d.relations.length?`<span class="lg-l" aria-hidden="true">Lines</span><div class="lg" id="kinds" role="group" aria-label="Lines shown">${KINDS.filter(k=>d.relations.some(r=>r.kind===k[0])).map(([k,l,c])=>`<button type="button" class="${c}" data-kind="${k}" aria-pressed="true"><i style="--c:${k==='refutes'?'var(--refutes)':'var(--muted)'}"></i>${l}</button>`).join('')}</div>`:''}</div>
+      ${d.relations.length?`<span class="lg-l" aria-hidden="true">Lines</span><div class="lg" id="kinds" role="group" aria-label="Lines shown">${KINDS.filter(k=>d.relations.some(r=>r.kind===k[0])).map(([k,l,c])=>`<button type="button" class="${c}" data-kind="${k}" aria-pressed="true"><i style="--c:${k==='refutes'?'var(--refutes)':'var(--muted)'}"></i>${l}</button>`).join('')}</div>`:''}
+      ${RINGS.length?`<span class="lg-l" aria-hidden="true">By school</span><div class="lg" role="group" aria-label="Reformed and Lutheran metaphysicians placed by the school they follow"><button type="button" class="ring" id="rings" aria-pressed="true"><i></i>Reformed and Lutheran<span class="ct">${RINGS.length}</span></button></div>`:''}</div>
       <div class="diagram">${draw(d)}</div>
       ${secs}${unpl}${d.turning_points.length?turningHTML(d):''}${d.relations.length?relationsHTML(d):''}
       <nav class="next" aria-label="Previous and next question">${prev?`<button type="button" data-go="${esc(prev.id)}"><small>Previous question</small><span>${esc(prev.q)}</span></button>`:'<span></span>'}${next?`<button type="button" data-go="${esc(next.id)}"><small>Next question</small><span>${esc(next.q)}</span></button>`:'<span></span>'}</nav>`;
-    $('#note').textContent=d.method||'';
+    $('#note').textContent=[d.method||'',PL.at.some(x=>x.length)||PL.top.length?PATH_NOTE:''].filter(Boolean).join(' ');
     if(push)history.replaceState(null,'',`#${id}`);
     document.title=`${d.q} | Maps of the tradition | The Faith Received | Mere Orthodoxy`;
   });
@@ -249,6 +337,7 @@ $('#m').addEventListener('click',e=>{
     if(!open&&more.getBoundingClientRect().top<0)ol.scrollIntoView({block:'start'});return;}
   const t=e.target.closest('#trads button');if(t){const k=t.dataset.trad;if(TRAD.has(k))TRAD.delete(k);else TRAD.add(k);if(TRAD.size===document.querySelectorAll('#trads button').length)TRAD.clear();document.querySelectorAll('#trads button').forEach(b=>b.setAttribute('aria-pressed',String(!TRAD.size||TRAD.has(b.dataset.trad))));apply();return;}
   const k=e.target.closest('#kinds button');if(k){const kk=k.dataset.kind;if(KIND.has(kk))KIND.delete(kk);else KIND.add(kk);k.setAttribute('aria-pressed',String(KIND.has(kk)));apply();return;}
+  const rb=e.target.closest('#rings');if(rb){RING=!RING;rb.setAttribute('aria-pressed',String(RING));apply();return;}
   const d=e.target.closest('.dot');if(d){tip(d.dataset.n,d);return;}
   if(e.target.closest('#tip button')){tip(null);return;}
   if(!e.target.closest('#tip'))tip(null);

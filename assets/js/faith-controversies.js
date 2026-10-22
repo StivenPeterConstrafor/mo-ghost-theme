@@ -378,18 +378,19 @@ function showDebate(id,key){
     debateShell();
     debFile(g.id).then(f=>{
       if(!DEB||DEB.run!==run)return;
-      if(f){DEB.file=f;setQuestions(f.questions);$('#dhead').innerHTML=headHTML();$('#note').textContent=f.note||'';questionsUI();}
+      if(f){DEB.file=f;setQuestions(f.questions);$('#dhead').innerHTML=headHTML();debNote(f.note||'');questionsUI();}
       else{DEB.fallback=true;loadAll();}
       renderBoard();
     });
-  }else{DEB.want=key;if(key==='works')setTab('w',false);else{if(key||DEB.tab!=='w')setTab('q',false);if(DEB.qs&&DEB.tab==='q')pickQuestion(key,true);}}
+    pathsFile(g.id).then(f=>{if(!f||!DEB||DEB.run!==run)return;$('#dhead').innerHTML=headHTML();debNote();if(DEB.sel)fillPaths(DEB.sel);});
+  }else{DEB.want=key;debNote();if(key==='works')setTab('w',false);else{if(key||DEB.tab!=='w')setTab('q',false);if(DEB.qs&&DEB.tab==='q')pickQuestion(key,true);}}
   renderBoard();
   if(!DEB.sel)document.title=`${(DEB.file&&DEB.file.title)||g.title}${TAIL}`;
 }
 function headHTML(){
   const f=DEB.file,ws=worksOf();
   return `<h2 id="debH">${esc((f&&f.title)||DEB.g.title)}<span class="ct"><span class="sr">, </span>${f?`${fmt(f.n_questions)} questions · ${fmt(f.n_controversies)} controversies`:`${fmt(DEB.g.n)} controversies`}</span></h2>
-    <p class="argued">Argued in ${fmt(ws.length)} ${ws.length===1?'work':'works'}: ${ws.map(w=>`${isLive(w.pair)?`<a href="#${esc(w.pair)}">${esc(w.source)}</a>`:esc(w.source)}<span class="ct"> ${fmt(w.n)}<span class="sr"> controversies</span></span>`).join(' · ')}</p>${alsoHTML(ws.map(w=>w.pair))}`;
+    <p class="argued">Argued in ${fmt(ws.length)} ${ws.length===1?'work':'works'}: ${ws.map(w=>`${isLive(w.pair)?`<a href="#${esc(w.pair)}">${esc(w.source)}</a>`:esc(w.source)}<span class="ct"> ${fmt(w.n)}<span class="sr"> controversies</span></span>`).join(' · ')}</p>${pathsLine()}${alsoHTML(ws.map(w=>w.pair))}`;
 }
 function debateShell(){
   const sch=DEB.mode==='schools',luOpen=LUOPEN!=null?LUOPEN:!matchMedia('(max-width:760px)').matches&&!DEB.want;
@@ -437,7 +438,7 @@ function debateFill(){
     st.hidden=done>=all&&!DEB.failed;
     const lu=$('#lu');if(lu&&DEB.docs.length)lu.innerHTML=lineupSchools();
     if(DEB.tab==='w')$('#lw').innerHTML=DEB.docs.length?lineupSides():'<p class="muted">Reading the works of controversy…</p>';
-    if(DEB.fallback&&done>=all&&!DEB.qs){setQuestions(questionsFromPairs(DEB.docs));if(DEB.docs[0])$('#note').textContent=DEB.docs[0].note||'';questionsUI();}
+    if(DEB.fallback&&done>=all&&!DEB.qs){setQuestions(questionsFromPairs(DEB.docs));if(DEB.docs[0])debNote(DEB.docs[0].note||'');if(PATHD.has(DEB.id))$('#dhead').innerHTML=headHTML();questionsUI();}
   });
 }
 /* without the debate's file: its questions gathered from its works, in the file's shape (the classic question, else the controversy's own) */
@@ -526,9 +527,10 @@ function showQuestion(x,push){
   $('#dq').innerHTML=`<header class="c-head"><h3 class="qh">${esc(x.q)}</h3><dl class="lab">${x.atlas?`<div><dt>Classic question</dt><dd>${x.locus?`${esc(x.locus)} · `:''}<a href="${MAPS}#${esc(x.atlas)}">Map of the tradition</a> · <a href="${ATLAS}#${esc(x.atlas)}">Answers in the atlas</a></dd></div>`:''}<div><dt>Argued in</dt><dd>${order.map(p=>`${esc(wk(p).source)}<span class="ct"> ${by.get(p).length}</span>`).join(' · ')}</dd></div></dl></header>
     ${order.map((p,k)=>{const w=wk(p),its=by.get(p);return `<section class="qw" aria-labelledby="qw-${k}"><h4 class="qw-h" id="qw-${k}"><span>${isLive(p)?`<a href="#${esc(p)}">${esc(w.source)}</a>`:esc(w.source)}${w.source_title?`, <em>${esc(w.source_title)}</em>`:''}</span><span class="ct">${its.length}<span class="sr"> ${its.length===1?'controversy':'controversies'}</span></span></h4>
       <ol class="qis">${its.map((it,j)=>`<li><details class="qi" data-pair="${esc(it.pair)}" data-id="${esc(it.id)}"${j===0?' open':''}><summary><span class="qi-q">${esc(it.question)}</span><small>${esc(KIND[it.kind]||it.kind||'')}${it.place?` · ${esc(it.place)}`:''}</small></summary><div class="qi-b"><p class="muted">Reading the controversy…</p></div></details></li>`).join('')}</ol></section>`;}).join('')}
-    ${x.atlas?`<div class="dq-across" data-q="${esc(x.atlas)}"></div>`:''}
+    ${pathsSlot(x)}${x.atlas?`<div class="dq-across" data-q="${esc(x.atlas)}"></div>`:''}
     <nav class="next" aria-label="Previous and next question">${prev?`<button type="button" data-q="${esc(prev.id)}"><small>Previous question</small><span>${esc(prev.q)}</span></button>`:'<span></span>'}${next?`<button type="button" data-q="${esc(next.id)}"><small>Next question</small><span>${esc(next.q)}</span></button>`:'<span></span>'}</nav>`;
   document.querySelectorAll('#dq details.qi[open]').forEach(fillItem);
+  fillPaths(x);
   if(x.atlas)fillAcross(x);
   if(LAND){LAND=false;$('#dq').scrollIntoView({block:'start'});}
   if(push)history.replaceState(null,'',`#debate/${DEB.id}/${x.id}`);
@@ -569,6 +571,63 @@ function fillAcross(x){
     box.innerHTML=acrossHTML(a,'dq','h4');box.dataset.done=it?'2':'1';fillHolders(box);
   });
 }
+/* AMONG THE REFORMED AND LUTHERANS (2026-10-22, owner: "metaphysics is something that reformed and lutherans get into although they
+   take the paths largely done by scotists thomists etc, this part of the map"). v1/enrich/controversies/paths/<debate>.json files under
+   the debate's classic questions (by the atlas's id) the Reformed and Lutheran metaphysicians who answer them (Timpler, Alsted,
+   Burgersdijk, Heereboord, Goclenius, Scheibler, Martini, Calov, Meisner): each with his position in his work's words, the path he takes
+   (the Thomists', the Scotists', Suárez's, the Nominalists' or his own), a line of his own words and its page. A question shows them after
+   the works' controversies and before the question across the tradition, and the debate's head counts the questions they answer. PATHS
+   names the debates that have a file (no index lists them); a file that does not come shows nothing. */
+const PATHS=new Set(['thomists-scotists']),PATHF=new Map(),PATHD=new Map();
+const pathsFile=id=>{
+  if(!PATHS.has(id))return Promise.resolve(null);
+  if(!PATHF.has(id))PATHF.set(id,J(`${BASE}/v1/enrich/controversies/paths/${encodeURIComponent(id)}.json?v=${Date.now()}`).then(f=>{if(!f||!f.questions||typeof f.questions!=='object')return null;PATHD.set(id,f);return f;}));
+  return PATHF.get(id);
+};
+/* the shelves' colours, as the maps' colour table has them */
+const TRAD_COL={'Greek Fathers':'#2E6E8E','Latin Fathers':'#7A4E9B','Eastern Fathers':'#5E8C61','Byzantine':'#1F8A7A','Medieval':'#B07B2A','Lutheran':'#C1593C','Reformed':'#2F7D4F','Continental Reformed':'#2F7D4F','Roman Catholic':'#A63D5A','English Divines':'#3B5BA5','Humanism and Law':'#8C7B5C'};
+const PATH_LABEL={thomist:'follows the Thomists',scotist:'follows the Scotists',suarezian:'follows Suárez',nominalist:'with the Nominalists',own:'his own way'};
+const PATH_ORDER=['thomist','scotist','suarezian','nominalist','own','unplaced'];
+const PATH_NOTE='Among the Reformed and Lutherans, each metaphysician\'s position, the path it takes and his line are read by machine from his own pages: open the page to check it.';
+/* a place as the work heads it: an English heading with its Latin after a dash keeps the English; a heading the file cut short ends at
+   a whole word */
+const LATIN_HEAD=/^(?:caput|quaestio|articulus|disputatio|sectio|liber|capitulum|theoremata|problema|de|an|utrum)\b/i;
+function placeOf(s){
+  const raw=String(s||''),cut=raw.length>=150;
+  let parts=raw.trim().split(/\s+—\s+/),last=true;
+  if(parts.length>1&&LATIN_HEAD.test(parts[1])){parts=[parts[0]];last=false;}
+  let t=parts.reduce((a,b)=>a?`${a}${/[.?!:]$/.test(a)?' ':': '}${b}`:b,'');
+  if(cut&&last&&!/[.?!)]$/.test(t)){if(!/\s$/.test(raw))t=t.replace(/\s*\S+$/,'');t=`${t.replace(/[\s,;:]+$/,'')}…`;}
+  return t;
+}
+function pathsHTML(qid,f){
+  const W=f.works||{},yr=e=>Number((W[e.slug]||[])[4])||9999;
+  const es=(f.questions[qid]||[]).slice().sort((a,b)=>(PATH_ORDER.indexOf(a.path)-PATH_ORDER.indexOf(b.path))||(yr(a)-yr(b))||String(a.author).localeCompare(String(b.author))||(Number(a.page)-Number(b.page)));
+  if(!es.length)return '';
+  const more=Number((f.n_more||{})[qid])||0;
+  return `<section class="qw pth" aria-labelledby="pth-h"><h4 class="qw-h" id="pth-h"><span>Among the Reformed and Lutherans</span><span class="ct">${fmt(es.length)}<span class="sr"> ${es.length===1?'answer':'answers'}</span></span></h4>
+    <ol class="pth-rows">${es.map(e=>{const w=W[e.slug]||[],t=e.tradition||w[3]||'',lab=PATH_LABEL[e.path]||'',place=placeOf(e.place);
+      return `<li><p class="pth-who"><i class="sw" style="--c:${TRAD_COL[t]||'#7A7A76'}" aria-hidden="true"></i>${who(e.author)}${t?`<small>${esc(t)}</small>`:''}${lab?`<small>${esc(lab)}</small>`:''}</p><div class="pth-b"><p>${esc(e.position)}</p>${e.quote?`<p class="pth-q">“${esc(e.quote)}”</p>`:''}${w[1]||place?`<p class="pth-src">${w[1]?`<em>${esc(w[1])}</em>`:''}${w[1]&&place?', ':''}${esc(place)}</p>`:''}</div>${pg(e.slug,e.page,'',e.quote)}</li>`;}).join('')}</ol>
+    ${more?`<p class="pth-more">and ${fmt(more)} more in these works</p>`:''}</section>`;
+}
+/* the question's place for them: drawn at once when the file is here, else filled when it comes */
+function pathsSlot(x){
+  if(!PATHS.has(DEB.id))return '';
+  const qid=x.atlas||x.id,f=PATHD.get(DEB.id);
+  return `<div class="pth-box" data-q="${esc(qid)}"${f?' data-done="1"':''}>${f?pathsHTML(qid,f):''}</div>`;
+}
+function fillPaths(x){
+  const qid=x.atlas||x.id,box=document.querySelector(`#dq .pth-box[data-q="${CSS.escape(qid)}"]`);if(!box||box.dataset.done)return;
+  pathsFile(DEB.id).then(f=>{if(!f||!box.isConnected||box.dataset.done)return;box.dataset.done='1';box.innerHTML=pathsHTML(qid,f);});
+}
+/* under the debate's head: how many of its questions they answer, once the debate's questions and their file are both here */
+function pathsLine(){
+  const f=DEB&&PATHD.get(DEB.id);if(!f||!DEB.qs)return '';
+  const n=DEB.qs.filter(x=>(f.questions[x.atlas||x.id]||[]).length).length;
+  return n?`<p class="deb-also">Reformed and Lutheran metaphysicians stand on ${fmt(n)} of these questions.</p>`:'';
+}
+/* the debate's note, and the note on the Reformed and Lutherans where the debate has them */
+function debNote(base){if(base!=null)DEB.note=base;$('#note').textContent=[DEB.note||'',PATHD.has(DEB.id)?PATH_NOTE:''].filter(Boolean).join(' ');}
 /* a work's opinions as sides: the holders of one school together under it, the schools in their order, each holder with one passage of
    his own words or else what the work reports of him; the holders of no school are named after them ("Also weighed"), or, where no
    holder has a school, they are the sides */
