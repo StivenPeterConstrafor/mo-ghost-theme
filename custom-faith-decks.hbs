@@ -708,6 +708,77 @@
 .tfr-tool .op-row-h{max-width:none}
 .tfr-tool .op-row-p{flex-basis:100%;order:3}
 }
+.tfr-tool .acc-b>.sec-at{margin:.1rem 0 .4rem}
+.tfr-tool .cc-main .cc-ops{margin:.4rem 0 0;border-top:1px solid var(--fg)}
+.tfr-tool .cc-main .cc-op{padding:.9rem 0 .95rem}
+.tfr-tool .cc-main .cc-op:last-child{border-bottom:0}
+.tfr-tool .cc-main .cc-op[data-dim],.tfr-tool .secs .op[data-dim]{opacity:.42}
+.tfr-tool .cc-main .cc-judgment{margin-top:.8rem}
+.tfr-tool .secs .cc-op,.tfr-tool .secs .cc-judgment{cursor:pointer}
+.tfr-tool .rcv-fold{margin:1rem 0 0;border-top:1px solid var(--border)}
+.tfr-tool .rcv-fold>summary{display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap;padding:.6rem 0;cursor:pointer;list-style:none}
+.tfr-tool .rcv-fold>summary::-webkit-details-marker{display:none}
+.tfr-tool .rcv-fold>summary::after{content:"";display:inline-block;width:.36rem;height:.36rem;margin-left:.2rem;border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:rotate(-45deg)}
+.tfr-tool .rcv-fold[open]>summary::after{transform:rotate(45deg)}
+.tfr-tool .rcv-fold>summary:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.tfr-tool .rcv-sh{display:inline;margin:0;font:500 1.0625rem/1.35 var(--font-display)}
+.tfr-tool .rcv-in,.tfr-tool .rcv-fold>.argued{margin:.2rem 0 .4rem}
+.tfr-tool .rcv-g{margin:.6rem 0 0}
+.tfr-tool .rcv-gh{display:flex;align-items:center;gap:.35rem;margin:.4rem 0 .2rem;font:600 .8125rem/1.4 var(--sans);color:var(--muted)}
+.tfr-tool .rcv-gh .dot{display:inline-block;width:.5rem;height:.5rem;border-radius:50%;background:var(--sc)}
+.tfr-tool .rcv-one{padding:.45rem 0 .3rem;border-top:1px solid var(--border)}
+.tfr-tool .rcv-nm{margin:0;font:500 1.0625rem/1.4 var(--font-display)}
+.tfr-tool .rcv-nm small{font:.8125rem/1 var(--sans);color:var(--muted);font-variant-numeric:tabular-nums}
+.tfr-tool .rcv-one .rcp-h,.tfr-tool .rcv-one .rcp-c{margin-top:.2rem}
+.tfr-tool .rcv-one .qb{margin:.4rem 0 .5rem}
+.tfr-tool .rcv-chs{margin:.2rem 0 0}
+.tfr-tool .rcv-one .rcp-more{margin:.2rem 0 .1rem}
+@media (prefers-reduced-motion:no-preference){.tfr-tool .rcv-fold>summary::after{transition:transform .15s var(--ease)}
+}
+.tfr-tool .f1-set{display:grid;grid-template-columns:minmax(0,1fr);gap:0;margin:.2rem 0 .3rem}
+.tfr-tool .f1{min-width:0;border-top:1px solid var(--border)}
+.tfr-tool .f1>summary,.tfr-tool .f1-b,.tfr-tool .f1-rows,.tfr-tool .f1-rows>li{min-width:0}
+.tfr-tool .f1:last-child{border-bottom:1px solid var(--border)}
+.tfr-tool .f1>summary{display:flex;align-items:baseline;gap:.45rem;min-height:2.5rem;padding:.5rem .1rem;cursor:pointer;list-style:none;font:.875rem/1.45 var(--sans)}
+.tfr-tool .f1>summary::-webkit-details-marker{display:none}
+.tfr-tool .f1>summary::after{content:"";flex:none;align-self:center;width:.36rem;height:.36rem;margin-left:auto;border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:rotate(-45deg)}
+.tfr-tool .f1[open]>summary::after{transform:rotate(45deg)}
+.tfr-tool .f1>summary:hover{background:var(--tint)}
+.tfr-tool .f1>summary:focus-visible{outline:2px solid var(--fg);outline-offset:-2px}
+.tfr-tool .f1>summary .dot{flex:none;align-self:center;width:.55rem;height:.55rem;border-radius:50%;background:var(--sc,var(--s-other))}
+.tfr-tool .f1-k{flex:none;font-weight:600;color:var(--fg)}
+.tfr-tool .f1-t{flex:1 1 0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted);font-family:var(--font-body)}
+.tfr-tool .f1-n{flex:none;color:var(--muted);font-variant-numeric:tabular-nums}
+.tfr-tool .f1-b{padding:.1rem 0 .7rem}
+.tfr-tool .f1-line>summary .f1-k{max-width:38%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tfr-tool .f1-list{margin:.1rem 0 .2rem}
+.tfr-tool .f1-list .objs,.tfr-tool .f1-list .argued{margin:.2rem 0 0}
+.tfr-tool .f1-rows{list-style:none;margin:0;padding:0}
+.tfr-tool .f1-row{display:flex;align-items:baseline;gap:.25rem .7rem;flex-wrap:wrap;width:100%;max-width:100%;min-width:0;min-height:2.5rem;padding:.45rem .5rem;border:0;border-radius:6px;background:none;color:var(--fg);font:.875rem/1.45 var(--sans);text-align:left;cursor:pointer}
+.tfr-tool .f1-row:hover{background:var(--tint)}
+.tfr-tool .f1-row[aria-current="true"]{background:var(--highlight)}
+.tfr-tool .f1-row:focus-visible{outline:2px solid var(--fg);outline-offset:-2px}
+.tfr-tool .f1-row .f1-k{font:500 1rem/1.4 var(--font-display)}
+.tfr-tool .f1-row .f1-t{flex-basis:100%}
+.tfr-tool .rec-who-l{margin:.1rem 0 0;font:.8125rem/2 var(--sans)}
+.tfr-tool .grp.f1>summary{padding:.65rem 0 .5rem}
+.tfr-tool .grp.f1>summary .trad{margin:0;border:0;padding:0}
+@media (prefers-reduced-motion:no-preference){.tfr-tool .f1>summary::after{transition:transform .15s var(--ease)}
+.tfr-tool .f1>summary,.tfr-tool .f1-row{transition:background .15s var(--ease)}
+}
+.tfr-tool .probs.acc>.pr.ln1:not(.is-open):hover{background:var(--tint)}
+.tfr-tool .row1 .acc-t:hover{text-decoration-color:transparent}
+.tfr-tool .row1 .acc-t[aria-expanded="true"]{font:500 1.1875rem/1.35 var(--font-display);text-wrap:balance}
+.tfr-tool .probs.acc .acc-b{max-width:72ch}
+.tfr-tool .probs.acc .acc-b .qb blockquote,.tfr-tool .probs.acc .acc-b .cc-pos,.tfr-tool .probs.acc .acc-b .cc-r1>p{max-width:68ch}
+@media (prefers-reduced-motion:no-preference){.tfr-tool .acc-b:not([hidden]),.tfr-tool .f1[open]>.f1-b,.tfr-tool .rcv-fold[open]>:not(summary){animation:open-in .18s var(--ease)}
+.tfr-tool #paneB .dos{animation:pane-in .16s var(--ease)}
+@keyframes open-in{from{opacity:0;transform:translateY(-4px)}}
+@keyframes pane-in{from{opacity:0}}
+}
+@media (pointer:coarse){.tfr-tool .row1 .acc-t,.tfr-tool .f1>summary,.tfr-tool .f1-row,.tfr-tool .rcv-fold>summary{min-height:2.75rem}
+.tfr-tool .pr-n{display:inline-flex;align-items:center;justify-content:flex-end;min-width:1.75rem;min-height:1.75rem}
+}
 .tfr-tool{background:transparent}
 .tfr-tool .wrap{padding-top:1.2rem}
 .tfr-tool{--sticky:9rem}
@@ -755,4 +826,4 @@
 </div></main>
 <link rel="stylesheet" href="{{asset "css/port/work-hub.css"}}&amp;frv=0374a552e8452478"><script src="{{asset "js/port/page-window.js"}}&amp;frv=2023bacb69cf7ee4"></script>
 <link rel="stylesheet" href="{{asset "css/port/tradition-graphics.css"}}&amp;frv=cc8cf6f7c7831d99"><script src="{{asset "js/port/tradition-graphics.js"}}&amp;frv=3780efc0f7559ddf"></script>
-<script src="{{asset "js/faith-decks.js"}}&amp;frv=2738452c819aab53"></script>
+<script src="{{asset "js/faith-decks.js"}}&amp;frv=290e4b1fc3788e0e"></script>
