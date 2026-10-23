@@ -82,7 +82,7 @@ function state(){
   else if(h[0]==='decretals')S={deck:'decretals',part:['1','2','3','4','5'].includes(h[1])?h[1]:'1',place:/^\d+$/.test(h[2]||'')?h[2]:null,art:null};
   else if(h[0]==='decretum')S={deck:'decretum',part:DECRETUM.some(([k])=>k===h[1])?h[1]:'D',place:/^\d+$/.test(h[2]||'')?h[2]:null,art:null};
   else if(h[0]==='systems')S={deck:'systems',part:/^[IVX]+$/.test(h[1]||'')?h[1]:'I',place:/^[a-z][a-z0-9-]*$/.test(h[2]||'')?h[2]:null,art:null};
-  else if(Object.prototype.hasOwnProperty.call(GRID,h[0]))S={deck:h[0],part:/^[\w.-]+$/.test(h[1]||'')?h[1]:'',place:/^[\w.-]+$/.test(h[2]||'')?h[2]:null,art:/^[aps]\d+$/.test(h[3]||'')?h[3]:null,sel:/^s\d+$/.test(h[3]||'')&&/^(?:o\d+|c\d+|i\d+|r|h[a-z0-9][a-z0-9-]*)$/.test(h[4]||'')?h[4]:null};
+  else if(Object.prototype.hasOwnProperty.call(GRID,h[0]))S={deck:h[0],part:/^[\w.-]+$/.test(h[1]||'')?h[1]:'',place:/^[\w.-]+$/.test(h[2]||'')?h[2]:null,art:/^[aps]\d+$/.test(h[3]||'')?h[3]:null,sel:/^s\d+$/.test(h[3]||'')&&/^(?:o\d+|c\d+|i\d+|r|[hw][a-z0-9][a-z0-9-]*)$/.test(h[4]||'')?h[4]:null};
   else S={deck:'sentences',part:['1','2','3','4'].includes(h[1])?h[1]:'1',place:/^\d+$/.test(h[2]||'')?h[2]:null,art:null};
   Object.assign(S,{r:q.get('r')||null,i:n('i'),l:q.get('l')||null,j:n('j'),alt:/^[a-z]+$/.test(q.get('alt')||'')?q.get('alt'):null});
 }
@@ -725,12 +725,7 @@ function moveHTML(m,host){
     +`${adv?`<p class="mv-adv">Against ${adv}</p>`:''}`
     +`${m.quote?qbHTML({quote:m.quote,w:m.slug,p:m.page,cap:`<span class="mv-src">${src}</span>`}):`<p class="mv-src">${src}</p>`}</li>`;
 }
-// ── COMPACT OR IN FULL (2026-10-22; owner: "i dont want just two sentences i like the depth the old controversies had"): the Suárez,
-// Reformed and Lutheran decks open in full, each section as its controversy card and each problem with its statement, its objections and the disputations that
-// argue it, every passage set in; "Compact" brings back the rows of a few lines with their folds. The choice is kept for the reader.
-let COMPACT=(()=>{try{return localStorage.getItem('fr_course_compact')==='1';}catch(_){return false;}})();
 let RID=0;
-const compactBtn=()=>`<button type="button" class="ptog pcompact" aria-pressed="${COMPACT}">Compact</button>`;
 // ── A PASSAGE SET IN (owner: "with block quotes"): the words at the length the data holds them, in the controversies page's quote
 // (italic, set in on a hairline), the work and the page with Preview under them. Where the data gives the Latin too, both are set, the
 // reading language first; where it gives only the English, the Latin of the same place is a toggle away. That Latin is found, not
@@ -746,7 +741,7 @@ function qbHTML(q){
   const bq=(t,l)=>`<blockquote lang="${l}"><p>${esc(t)}${cut(t)}</p></blockquote>`;
   const first=LANE==='la'&&la?[la,'la']:[en||la,en?'en':'la'],second=en&&la?(first[1]==='la'?[en,'en']:[la,'la']):null;
   const cap=q.cap!=null?q.cap:`${q.label?`<span class="qb-t">${esc(q.label)}</span>`:''}${pg?`<span class="pgs"><a class="pg" href="${read(q.w,q.p)}">${esc(q.pl||`p. ${q.p}`)}</a> ${pvBtn(q.w,q.p)}</span>`:''}`;
-  const tog=pg&&en&&!la&&!COMPACT?`<button type="button" class="qb-la" data-qla="${esc(q.w)}|${esc(q.p)}" aria-expanded="false">Latin</button>`:'';
+  const tog=pg&&en&&!la?`<button type="button" class="qb-la" data-qla="${esc(q.w)}|${esc(q.p)}" aria-expanded="false">Latin</button>`:'';
   const full=q.full&&pg&&en?` data-qfull="${esc(q.w)}|${esc(q.p)}" data-qtext="${esc(en)}"`:'';
   return `<figure class="qb${full?' is-cut':''}"${en?` data-tg-pv-hl="${esc(en.slice(0,400))}"`:''}${full}>${bq(...first)}${second?bq(...second):''}${cap||tog?`<figcaption>${cap}${tog}</figcaption>`:''}${tog?'<div class="qb-src" hidden></div>':''}${q.says?`<p class="qb-says">${esc(q.says)}</p>`:''}</figure>`;
 }
@@ -852,7 +847,7 @@ function qbToggle(b,open){
 // reading in Latin: each passage's Latin is drawn as it comes into view
 function qbAuto(root){
   if(root)qbFullAll(root);
-  if(LANE==='en'||COMPACT||!root||typeof IntersectionObserver!=='function')return;
+  if(LANE==='en'||!root||typeof IntersectionObserver!=='function')return;
   if(!QBIO)QBIO=new IntersectionObserver(es=>{for(const x of es){if(!x.isIntersecting)continue;QBIO.unobserve(x.target);if(x.target.getAttribute('aria-expanded')!=='true')qbToggle(x.target,true);}},{rootMargin:'240px 0px'});
   root.querySelectorAll('.qb-la[aria-expanded="false"]').forEach(b=>QBIO.observe(b));
 }
@@ -896,44 +891,23 @@ function arguedHTML(list,more){
 }
 // a problem's other addresses: its question in the atlas, its debate in the controversies
 const argLinks=p=>[p.atlas?`<a href="${ATLASP}#${encodeURIComponent(p.atlas)}">Atlas: ${esc(p.atlas)}</a>`:'',p.controversy?`<a href="${CONTRO}#debate/${encodeURIComponent(p.controversy)}${p.question?`/${encodeURIComponent(p.question)}`:''}">Argued as a controversy</a>`:''].filter(Boolean).join(' · ');
+// a problem in the list: one line (its number, its seal, its question, its verdict, who agrees); open, the question whole in both
+// languages, the verdict with its adversaries and the page, the objections one line each, and a step to the problem read in full beside
 function probRow(side,p,i,ctx){
-  const cfg=PRB(),sl=sealOf(p),verdict=p.verdict||ctx.marks[p.mark]||'',mv=p.moves||p.voetius||[],fm=mv.filter(m=>branches(m).length>1),adv=advOf(p,ctx),n=String(p.n??i+1),obs=Array.isArray(p.objections)?p.objections:[];
+  const cfg=PRB(),sl=sealOf(p),verdict=p.verdict||ctx.marks[p.mark]||'',mv=p.moves||p.voetius||[],adv=advOf(p,ctx),n=String(p.n??i+1),obs=Array.isArray(p.objections)?p.objections:[];
   const la=p.la?`${esc(p.la)}${p.mark_la?` <span class="pr-mk">${esc(p.mark_la)}</span>`:''}`:'',en=esc(p.q||'');
   const [main,under]=LANE==='la'&&la?[[la,'la'],[en,'en']]:[[en,'en'],[la,'la']];
-  const acts=[],folds=[],anti=adv&&Array.isArray(p.antithesis)&&p.antithesis.length&&String(p.against||'').trim()?advPairs(p.antithesis):'';
-  const btn=(k,label)=>`<button type="button" class="pr-t" data-pt="${k}" aria-expanded="false" aria-controls="${side}-p${k}${i}">${label}</button>`;
-  const qpg=p.quote_page!=null&&p.quote_page!==''?p.quote_page:p.page;
-  const stated=`${p.status?`<p class="mv-a">${COMPACT?'<span class="ob-k">The state of the question.</span> ':''}${esc(p.status)}</p>`:''}${anti?`<p class="mv-adv">The antithesis: ${anti}</p>`:''}`
-    +`${p.quote?qbHTML({quote:p.quote,w:ctx.slug,p:qpg,pl:`${cfg.short}, ${atw(ctx.slug)} ${qpg}`}):''}`;
-  const forks=fm.map(m=>`<p class="fk-h">As ${esc(moveWho(m).s||'the disputation')} distinguishes it in ${moveLink(m,ctx.host)}</p>${forkHTML(m.distinguo)}`).join('');
-  const ag=Array.isArray(p.argued)?p.argued.filter(x=>x&&x.slug):[],agMore=Number(p.n_more||p.argued_more||0),links=argLinks(p);
-  let body='';
-  if(COMPACT){
-    if(p.status||p.quote||anti){acts.push(btn('s','The question stated'));folds.push(`<div class="stated tg" id="${side}-ps${i}" hidden>${stated}</div>`);}
-    if(obs.length){acts.push(btn('o',`Objections answered <span>(${obs.length})</span>`));folds.push(`<ol class="objs tg" id="${side}-po${i}" hidden></ol>`);}
-    if(fm.length){acts.push(btn('f',`The distinction${fm.length>1?`s <span>(${fm.length})</span>`:''}`));folds.push(`<div class="fork-w" id="${side}-pf${i}" hidden>${forks}</div>`);}
-    if(mv.length){acts.push(btn('a',`Argued at length <span>(${mv.length})</span>`));folds.push(`<ol class="argued" id="${side}-pa${i}" hidden></ol>`);}
-    if(ag.length){acts.push(btn('g',`Argued in ${esc(cfg.systems||'the systems')} <span>(${ag.length+agMore})</span>`));folds.push(`<div class="pths tg" id="${side}-pg${i}" hidden>${arguedHTML(ag,agMore)}${links?`<p class="sec-links arg-links">${links}</p>`:''}</div>`);}
-    body=`${acts.length?`<div class="pr-acts">${acts.join('')}</div>`:''}${folds.join('')}`;
-  }else{
-    // in full: the question stated, the objections it answers, its distinction and the disputations that argue it, open, each passage
-    // set in; where it is argued beyond these is the reception, in the pane beside
-    const part=(k,label,inner)=>`<section class="pr-sec" data-ps="${k}"><h4 class="pr-sh">${label}</h4>${inner}</section>`;
-    const quoted=!!p.quote||obs.some(o=>o.quote)||mv.some(m=>m.quote);
-    body=`${p.status||p.quote||anti?part('s','The question stated',`<div class="stated tg">${stated}</div>`):''}`
-      +`${obs.length?part('o',`Objections answered <span class="cc-ct">${obs.length}</span>`,`<ol class="objs tg">${obs.map(o=>objHTML(o,ctx)).join('')}</ol>`):''}`
-      +`${fm.length?part('f',`The distinction${fm.length>1?`s <span class="cc-ct">${fm.length}</span>`:''}`,`<div class="fork-w">${forks}</div>`):''}`
-      +`${mv.length?part('a',`Argued at length <span class="cc-ct">${mv.length}</span>`,`<ol class="argued tg">${mv.map(m=>moveHTML(m,ctx.host)).join('')}</ol>`):''}`
-      +`${ag.length?part('g',`Argued in ${esc(cfg.systems||'the systems')} <span class="cc-ct">${fmtN(ag.length+agMore)}</span>`,`<div class="pths tg">${arguedHTML(ag,agMore)}</div>${links?`<p class="sec-links arg-links">${links}</p>`:''}`):''}`
-      +`${quoted||!(p.status||anti||obs.length||mv.length)?'':'<p class="qb-none">No passage picked</p>'}`;
-  }
+  const bid=`${side}-pb${esc(n)}`,ag=Array.isArray(p.argued)?p.argued.filter(x=>x&&x.slug):[],agMore=Number(p.n_more||p.argued_more||0),links=argLinks(p);
   const kn=p.num?`${p.kind==='porisma'?'Corollary':'Question'} ${esc(p.num)}, `:'';
   const pg=p.page!=null&&p.page!==''?`<span class="pr-at"> · <a class="pr-pg" href="${read(ctx.slug,p.page)}" data-pp="${i}">${esc(cfg.short)}, ${kn}${atw(ctx.slug)} ${esc(p.page)}</a></span>`:'';
-  return `<li class="pr" id="${side}-p${esc(n)}" data-i="${i}"><div class="pr-m"><a class="pr-n" href="#${esc([S.deck,S.part,S.place,`p${n}`].join('/'))}" data-n="${esc(n)}" aria-label="${esc(cfg.one.replace(/^./,c=>c.toUpperCase()))} ${esc(n)}"></a>`
-    +`${sl?`<span class="seal s-${sl[1]}" data-s="${esc(sl[0])}" aria-hidden="true"></span>`:''}</div>${ctx.authors.length?stripHTML(p,ctx.authors,cfg.who):''}`
-    +`<div class="pr-b"><p class="pr-q" lang="${main[1]}">${main[0]}</p>${under[0]?`<p class="pr-u" lang="${under[1]}">${under[0]}</p>`:''}`
-    +`<p class="pr-v"><span class="pr-vw">${esc(verdict)}</span>${adv?`<span class="pr-adv">, against ${adv}</span>`:''}${pg}</p>${p.answer?`<p class="pr-ans">${esc(p.answer)}</p>`:''}`
-    +`${body}${links&&!ag.length?`<p class="sec-links arg-links">${links}</p>`:''}</div></li>`;
+  const cts=[mv.length?`argued at length in ${mv.length}`:'',ag.length?`in ${fmtN(ag.length+agMore)} ${ag.length+agMore===1?'place':'places'} in ${esc(cfg.systems||'the systems')}`:''].filter(Boolean);
+  return `<li class="pr ln1" id="${side}-p${esc(n)}" data-i="${i}"><div class="pr-m"><a class="pr-n" href="#${esc([S.deck,S.part,S.place,`p${n}`].join('/'))}" data-n="${esc(n)}" aria-label="${esc(cap1(cfg.one))} ${esc(n)}"></a>`
+    +`${sl?`<span class="seal sm s-${sl[1]}" data-s="${esc(sl[0])}" aria-hidden="true"></span>`:''}</div>${ctx.authors.length?stripHTML(p,ctx.authors,cfg.who):''}`
+    +`<div class="pr-b"><p class="row1"><button type="button" class="acc-t" aria-expanded="false" aria-controls="${bid}" lang="${main[1]}">${main[0]}</button><span class="row-meta"><span class="row-v">${esc(verdict)}</span></span></p>`
+    +`<div class="acc-b" id="${bid}" hidden>${under[0]?`<p class="pr-u" lang="${under[1]}">${under[0]}</p>`:''}`
+    +`<p class="pr-v"><span class="pr-vw">${esc(verdict)}</span>${adv?`<span class="pr-adv">, against ${adv}</span>`:''}${pg}</p>`
+    +`${obs.length?`<h4 class="pr-sh">Objections answered <span class="cc-ct">${obs.length}</span></h4><ol class="op-rows">${obs.map((o,k)=>`<li><button type="button" class="op-row ob-row" data-osel="p${esc(n)}/" data-ob="${k}"><span class="op-row-h">${esc(tidyCaps(String(o.by||'').trim())||'An objection')}</span><span class="op-row-p">${esc(o.obj||'')}</span>${o.quote?'<span class="op-row-n">1 passage</span>':''}</button></li>`).join('')}</ol>`:''}`
+    +`<p class="row-cts"><button type="button" class="res-of" data-osel="p${esc(n)}/" data-sheet="1">Read it in full</button>${cts.length?` · ${cts.join(' · ')}`:''}${links?` · ${links}`:''}</p></div></div></li>`;
 }
 // THE GRAPH BAND under the title's head, in the module's share bar (tradition-graphics.css .tg-pf): the verdicts in the answer colours,
 // the adversaries' parties in the school colours, the words and counts under each; on the Lutheran deck how often the systems beside
@@ -964,7 +938,7 @@ function graphHTML(P,cfg){
 // the verdicts pressed in the filter strip, kept from place to place; a find box narrows the list by the problems' words
 const PF=new Set();
 async function paneProblems(side){
-  const host=PANE[side],P=PL.props,cfg=PRB(),cs=commentators(true),key=['probs',PL.key,LANE,COMPACT].join('|');
+  const host=PANE[side],P=PL.props,cfg=PRB(),cs=commentators(true),key=['probs',PL.key,LANE].join('|');
   RUN[side]++;
   if(SHOWN[side]===key){if(host._art!==S.art){host._art=S.art;jumpProb(side);}return;}
   SHOWN[side]=key;host.dataset.moved='';host._art=S.art;host._P=P;host._mv=[];host._q='';host._secs=false;host._rid=++RID;
@@ -973,28 +947,29 @@ async function paneProblems(side){
   const authors=Array.isArray(P.strip_authors)?P.strip_authors.filter(Boolean):[];
   const ctx={host,slug:P.slug,marks:P.marks||{},adv:'',authors},count={};
   host._pi=ps.map(p=>{const sl=sealOf(p),cats=sl?sl[2]:[];cats.forEach(c=>{count[c]=(count[c]||0)+1;});
-    return {cats,hay:fold([p.q,p.la,p.verdict,p.mark_la,p.answer,p.status,typeof p.against==='string'?p.against:advPairs(p.against).replace(/<[^>]+>/g,' '),...(COMPACT?[]:[...(p.objections||[]).flatMap(o=>[o.by,o.obj,o.resp,o.quote]),...(p.moves||p.voetius||[]).flatMap(m=>[m.author,m.q,m.answer,m.quote])])].join(' '))};});
+    return {cats,hay:fold([p.q,p.la,p.verdict,p.mark_la,p.answer,p.status,typeof p.against==='string'?p.against:advPairs(p.against).replace(/<[^>]+>/g,' '),...(p.objections||[]).flatMap(o=>[o.by,o.obj,o.resp,o.quote]),...(p.moves||p.voetius||[]).flatMap(m=>[m.author,m.q,m.answer,m.quote])].join(' '))};});
   // Quenstedt's questions run through the chapters of his locus: a chapter's questions under its heading
   const groups=[];
   ps.forEach((p,i)=>{const ch=String(p.chap||'');if(!groups.length||groups[groups.length-1].ch!==ch)groups.push({ch,rows:[]});groups[groups.length-1].rows.push(probRow(side,p,i,ctx));});
   const avail=offered(P.marks,ps),strip=PCATS.filter(([k])=>avail.has(k)).map(([k,label,st,sc])=>`<button type="button" class="ptog" data-pf="${k}" aria-pressed="false"><span class="seal sm s-${sc}" data-s="${st}" aria-hidden="true"></span>${label} <small>${count[k]||0}</small></button>`).join('');
-  const find=`<div class="prow"><input class="pfind" type="search" autocomplete="off" spellcheck="false" placeholder="Find a ${cfg.one}…" aria-label="Find a ${cfg.one} in this ${noun()}"><p class="pcount" role="status"></p>${compactBtn()}</div>`;
+  const find=`<div class="prow"><input class="pfind" type="search" autocomplete="off" spellcheck="false" placeholder="Find a ${cfg.one}…" aria-label="Find a ${cfg.one} in this ${noun()}"><p class="pcount" role="status"></p></div>`;
   const head=authors.length?`<div class="pstrip-h"><div class="pst-l">${find}<p class="ag-key"><span><i class="ag-agrees" aria-hidden="true"></i>agrees</span><span><i class="ag-differs" aria-hidden="true"></i>differs from ${esc(cfg.who)}</span><span><i class="ag-silent" aria-hidden="true"></i>silent</span></p></div>`
     +`<span class="ag-names" aria-hidden="true">${authors.map(a=>`<span title="${esc(a)}">${esc(surnameOf(a)||a)}</span>`).join('')}</span></div>`:find;
   const more=P.more||[],spine=baseLabel();
   host.innerHTML=`<header class="ph"><div class="ph-row">${sourceSelect(side,cs,'')}${P.slug&&from!=null?`<a class="open" href="${read(P.slug,from)}">Open in the reader ↗</a>`:''}</div>
     <h2>${esc(P.title||h2g)}</h2><p class="what">${esc([P.title_la,partName(S.part)].filter(Boolean).join(' · ')||subg)}</p>
     <p class="pbase">${esc(spine)}${from!=null?`, ${from===to?`p. ${from}`:`pp. ${from}–${to}`}`:''}</p></header>`
-    +`<div class="scroll pscroll${authors.length?' has-strip':''}${COMPACT?' is-compact':''}">${ps.some(p=>!(p.moves||p.voetius||[]).length&&!(Array.isArray(p.argued)&&p.argued.length))?`<p class="pr-where">Where these ${cfg.many} are argued: <button type="button" class="res-of" data-gob>see the ${esc(GRID[S.deck].head.toLowerCase())} beside this ${noun()}</button></p>`:''}${graphHTML(P,cfg)}<div class="pctl">${strip?`<div class="pfilter" role="group" aria-label="Show the ${cfg.many} by their verdict">${strip}</div>`:''}`
+    +`<div class="scroll pscroll${authors.length?' has-strip':''}">${ps.some(p=>!(p.moves||p.voetius||[]).length&&!(Array.isArray(p.argued)&&p.argued.length))?`<p class="pr-where">Where these ${cfg.many} are argued: <button type="button" class="res-of" data-gob>see the ${esc(GRID[S.deck].head.toLowerCase())} beside this ${noun()}</button></p>`:''}${graphHTML(P,cfg)}<div class="pctl">${strip?`<div class="pfilter" role="group" aria-label="Show the ${cfg.many} by their verdict">${strip}</div>`:''}`
     +`${head}</div>`
-    +`${groups.map(g=>`<section class="pgrp">${g.ch?`<h3 class="pchap">${esc(g.ch)}</h3>`:''}<ol class="probs">${g.rows.join('')}</ol></section>`).join('')}<p class="note pnone" hidden>None of the ${cfg.many} in this ${noun()} match.</p>`
-    +`${more.length?`<section class="pmore" aria-labelledby="${side}-pmh"><h3 id="${side}-pmh">${esc(cfg.more)} <small>${more.length}</small></h3><ol class="argued">${more.map(m=>moveHTML(m,host)).join('')}</ol></section>`:''}`
+    +`${groups.map(g=>`<section class="pgrp">${g.ch?`<h3 class="pchap">${esc(g.ch)}</h3>`:''}<ol class="probs acc">${g.rows.join('')}</ol></section>`).join('')}<p class="note pnone" hidden>None of the ${cfg.many} in this ${noun()} match.</p>`
+    +`${more.length?`<details class="pmore"><summary><h3>${esc(cfg.more)} <small>${more.length}</small></h3></summary><ol class="argued tg">${more.map(m=>moveHTML(m,host)).join('')}</ol></details>`:''}`
     +`${P.slug&&to!=null?`<p class="end"><a href="${read(P.slug,to)}">Read on in the reader ↗</a></p>`:''}</div>`;
   // what the browser scrolls into view itself (a focused fold, a found word) clears the filter strip that stays at the pane's top
   const sc=host.querySelector('.pscroll'),ctl=host.querySelector('.pctl');
   if(host._ro)host._ro.disconnect();
   if(sc&&ctl&&typeof ResizeObserver==='function'){host._ro=new ResizeObserver(()=>{sc.style.scrollPaddingTop=getComputedStyle(ctl).position==='sticky'?`${ctl.offsetHeight+8}px`:'';});host._ro.observe(ctl);}
   applyProbs(side);
+  accOpen(host,accKey());
   markSel();
   qbAuto(host);
   jumpProb(side);
@@ -1009,19 +984,6 @@ function applyProbs(side){
   if(c&&cfg)c.textContent=`${shown===n?n:`${shown} of ${n}`} ${n===1?cfg.one:cfg.many} in this ${noun()}`;
   if(none)none.hidden=shown>0;
 }
-// a problem's folds: its statement, the objections it answers, its distinction, the disputations that argue it; the long ones drawn the
-// first time they are opened
-function probPanel(btn,open){
-  const panel=document.getElementById(btn.getAttribute('aria-controls'));
-  if(!panel)return;
-  btn.setAttribute('aria-expanded',String(open));panel.hidden=!open;
-  if(open&&btn.dataset.pt==='d'&&!panel.childElementCount){panel.innerHTML='<p class="rec-note">Loading Suárez’s discussion…</p>';pairFile().then(pf=>{const c=pf&&pf._by.get(panel.dataset.ctl),sec=((PANE.a._P||{}).sections||[]).find(x=>String(x.n)===String(panel.dataset.n));if(!panel.isConnected)return;panel.innerHTML=c?ccCardHTML(c,panel.dataset.n,sec):'<p class="rec-note">Suárez’s discussion of this section is not in the controversies yet.</p>';qbAuto(panel);});return;}
-  if(!open||panel.childElementCount||!/^[ao]$/.test(btn.dataset.pt))return;
-  const host=btn.closest('.pane'),li=btn.closest('.pr'),p=host&&host._P&&li&&host._P.problems[Number(li.dataset.i)];
-  if(!p)return;
-  if(btn.dataset.pt==='a')panel.innerHTML=(p.moves||p.voetius||[]).map(m=>moveHTML(m,host)).join('');
-  else panel.innerHTML=(p.objections||[]).map(o=>objHTML(o,{slug:host._P.slug})).join('');
-}
 // a row in view in its pane, below the filter strip that stays at the pane's top on a wide screen
 function probInView(side,row,flash){
   const s=scrollerOf(side),ctl=PANE[side].querySelector('.pctl'),stick=s&&ctl&&getComputedStyle(ctl).position==='sticky'?ctl.offsetHeight:0;
@@ -1029,18 +991,34 @@ function probInView(side,row,flash){
   s.scrollTop+=row.getBoundingClientRect().top-s.getBoundingClientRect().top-stick-10;
   if(flash){row.classList.remove('flash');void row.offsetWidth;row.classList.add('flash');}
 }
-// a problem's address (#<deck>/<part>/<place>/p<n>): its row in view, its folds open; a filter that hides it is let go
 function jumpProb(side){
   const m=/^([psa])(\d+)$/.exec(S.art||'');
   if(!m)return;
   const host=PANE[side],row=document.getElementById(`${side}-${m[1]}${m[2]}`),token=RUN[side];
   if(!row||!host.contains(row))return;
   if(row.hidden){PF.clear();host._q='';const f=host.querySelector('.pfind');if(f)f.value='';applyView(side);}
-  if(COMPACT&&!(DOSDECK()&&(isPhone()||rmode()==='dossier')))row.querySelectorAll('.pr-t[aria-expanded="false"]').forEach(b=>probPanel(b,true));
   if(!isPhone()){const {top} = $('#desk').getBoundingClientRect(),st=parseFloat(getComputedStyle(host).top)||12;if(top>st+1)window.scrollBy(0,top-st);}
-  const at=()=>(S.sel&&row.querySelector('[aria-current="true"]'))||row;
-  probInView(side,at(),true);
-  if(document.fonts)document.fonts.ready.then(()=>{if(token===RUN[side]&&!host.dataset.moved)probInView(side,at(),false);});
+  probInView(side,row,true);
+  if(document.fonts)document.fonts.ready.then(()=>{if(token===RUN[side]&&!host.dataset.moved)probInView(side,row,false);});
+}
+// THE LIST, ONE OPEN (2026-10-22; owner: "i dont like endles scrolling, again the scrolling for controversies was good, we want colalpsed
+// for, reading authro should happen to the side while the main content in liek a suaez is the grpahs suarez exp osition and summary").
+// The Suárez deck lists its sections and the problems decks their problems collapsed, the chosen one open in place at full depth; an
+// author is read in full in the pane beside (on a phone, the sheet).
+const accKey=()=>{const m=/^([ps])(\d+)$/.exec(S.art||'');return m?`${m[1]}${m[2]}`:null;};
+function accOpen(host,key,toggle){
+  const rows=[...host.querySelectorAll('.probs>.pr')];
+  if(!rows.length)return null;
+  const side=host===PANE.b?'b':'a';
+  let row=key?document.getElementById(`${side}-${key}`):null;
+  if(!row||!host.contains(row))row=rows.find(r=>!r.hidden)||rows[0];
+  const btn=row.querySelector('.acc-t'),was=!!btn&&btn.getAttribute('aria-expanded')==='true';
+  host.querySelectorAll('.acc-t[aria-expanded="true"]').forEach(b=>{if(b===btn)return;b.setAttribute('aria-expanded','false');const bd=document.getElementById(b.getAttribute('aria-controls'));if(bd)bd.hidden=true;const r=b.closest('.pr');if(r)r.classList.remove('is-open');});
+  if(btn){const open=toggle?!was:true;btn.setAttribute('aria-expanded',String(open));const bd=document.getElementById(btn.getAttribute('aria-controls'));if(bd)bd.hidden=!open;}
+  host.querySelectorAll('.probs>.pr.is-open').forEach(r=>r.classList.toggle('is-open',r===row&&btn&&btn.getAttribute('aria-expanded')==='true'));
+  if(btn&&btn.getAttribute('aria-expanded')==='true')row.classList.add('is-open');
+  if(TG)TG.layout(row);
+  return row;
 }
 // THE METAPHYSICS DECK (2026-10-22; owner: "suarez disp should be more than a sub controversy its a great way to learn metaphysics and
 // differences", "loved to have accompanying graphs"). Suárez's Disputationes metaphysicae read as a course in the schools' differences:
@@ -1122,31 +1100,8 @@ function rcpRowHTML(r,s){
   const st=STANCE[r.stance],w=D.texts.works[r.slug]||[],work=r.work||w[1]||'',yr=r.year||w[4]||'',pg=r.page!=null&&r.page!==''&&!!r.slug,loc=String(r.locator||'').trim();
   return `<li class="rcp-r" data-st="${esc(r.stance||'')}" data-sc="${esc(mschool(r.school))}"><p class="rcp-h">${s?`<span class="rcp-s">Section ${esc(s.n)}</span> `:''}${st?`<span class="sv sv-${st[1]}">${st[0]}</span> `:''}<b>${esc(r.author||w[0]||'')}</b>${work?`, <em>${esc(work)}</em>`:''}${yr?`, ${esc(yearOf(yr))}`:''}</p>`
     +`${r.head?`<p class="rcp-hd">${esc(r.head)}</p>`:''}${r.claim?`<p class="rcp-c">${esc(r.claim)}</p>`:''}`
-    +`${(r.quote_en||r.quote_la)&&!COMPACT?qbHTML({quote:r.quote_en,la:r.quote_la,w:r.slug,p:r.page,label:loc})
+    +`${r.quote_en||r.quote_la?qbHTML({quote:r.quote_en,la:r.quote_la,w:r.slug,p:r.page,label:loc})
       :pg||loc?`<p class="ob-pg">${loc?`<span class="qb-t">${esc(loc)}</span> `:''}${pg?ccPg(r.slug,r.page):''}</p>`:''}</li>`;
-}
-// after Suárez's resolution, the section's reception: twelve rows, the rest a step to the set finder
-function rcpHTML(s){
-  const R=recOf(s);
-  if(!R)return '';
-  const rows=R.reception,shown=rows.slice(0,12),more=Math.max(0,rows.length-12)+(Number(R.reception_more)||0),href=setHref(R.reception_set);
-  return `<section class="rcp tg" aria-label="The reception of section ${esc(s.n)}"><h4 class="cc-lbl rcp-hh">Reception <span class="cc-ct">${fmtN(rows.length+(Number(R.reception_more)||0))}</span></h4><ol class="rcp-rows">${shown.map(r=>rcpRowHTML(r)).join('')}</ol>`
-    +`${more?`<p class="rcp-more">${href?`<a href="${esc(href)}">+${fmtN(more)} more</a>`:`+${fmtN(more)} more`}</p>`:''}</section>`;
-}
-// ANSWERED AT LENGTH, under the disputation's head: one card a work, open; the author, the work and its year, the heading, the gist,
-// his words in both languages where the file has them, each with its page and Preview, and a step to the heading's page
-function ansHTML(){
-  const A=PL.rec&&Array.isArray(PL.rec.answers)?PL.rec.answers:[];
-  if(!A.length)return '';
-  return `<section class="ansb" aria-labelledby="ans-h"><h3 class="ans-hh" id="ans-h">Answered at length <span class="cc-ct">${A.length}</span></h3>${A.map(ansCardHTML).join('')}</section>`;
-}
-function ansCardHTML(a,i){
-  const w=D.texts.works[a.slug]||[],work=a.work||w[1]||'',yr=a.year||w[4]||'',pg=a.page!=null&&a.page!==''&&!!a.slug,secs=Array.isArray(a.sections)?a.sections:[];
-  const at=pg?(a.end!=null&&a.end!==''&&String(a.end)!==String(a.page)?`pp. ${a.page}–${a.end}`:`p. ${a.page}`):'';
-  return `<article class="ans tg" id="a-a${i}" data-ai="${i}"><h4 class="ans-h"><button type="button" class="cc-sel" data-asel="a${i}">${esc(a.author||w[0]||'')}</button>${work?` · <em>${esc(work)}</em>`:''}${yr?` · ${esc(yearOf(yr))}`:''}${a.tradition?` <small class="ans-tr">${esc(a.tradition)}</small>`:''}</h4>`
-    +`${a.heading?`<p class="ans-hd">${esc(a.heading)}</p>`:''}${a.gist?`<p class="ans-g">${esc(a.gist)}</p>`:''}`
-    +`${COMPACT?'':(Array.isArray(a.quotes)?a.quotes:[]).map(q=>qbHTML({quote:q.en,la:q.la,w:a.slug,p:q.page})).join('')}`
-    +`<p class="ans-acts">${pg?`<a href="${read(a.slug,a.page)}">Read here ↗</a> <span class="ans-at">${esc(at)}</span>`:''}${secs.length?`${pg?' · ':''}It answers ${secs.map(n=>`<a href="#${esc([S.deck,S.part,S.place,`s${n}`].join('/'))}">section ${esc(n)}</a>`).join(', ')}`:''}</p></article>`;
 }
 // AMONG THE THOMISTS (and so on): a school divided, each side's holders and view, and the opinion each side holds
 function intraHTML(intra,s,side,n){
@@ -1155,37 +1110,43 @@ function intraHTML(intra,s,side,n){
     +`<ul class="in-sides">${(x.sides||[]).map(sd=>`<li><p class="in-who">${(sd.holders||[]).map(h=>`<span class="adv" style="--sc:${mcol(k)}"><i class="dot" aria-hidden="true"></i>${esc(h)}</span>`).join(' ')}</p>`
       +`<p class="in-v">${esc(sd.view||'')}${sd.opinion!=null&&lab(sd.opinion)?` <button type="button" class="res-of" data-op="${side}-s${esc(n)}-o${esc(sd.opinion)}">${esc(lab(sd.opinion))}</button>`:''}</p></li>`).join('')}</ul></div>`;}).join('');
 }
-// AMONG THE REFORMED AND LUTHERANS, in the controversies page's row: the author with his tradition's swatch, the path he takes, his
-// position, his words, the page with Preview
-function pathRowsHTML(paths){
-  const yr=e=>Number(e.year)||Number((D.texts.works[e.slug]||[])[4])||9999;
-  const es=paths.slice().sort((a,b)=>(PATHO.indexOf(a.path)-PATHO.indexOf(b.path))||(yr(a)-yr(b))||String(a.author).localeCompare(String(b.author)));
-  return `<ol class="pth-rows">${es.map(e=>{const w=D.texts.works[e.slug]||[],t=e.tradition||'',sw=/luther/i.test(t)?'var(--tg-lu)':/reform|calvin/i.test(t)?'var(--tg-rf)':'var(--s-other)',lab=PATHW[e.path]||'',pg=e.page!=null&&e.page!=='';
-    return `<li data-sc="protestant"${e.quote?` data-tg-pv-hl="${esc(String(e.quote).slice(0,400))}"`:''}><p class="pth-who"><i class="sw" style="--c:${sw}" aria-hidden="true"></i>${esc(e.author||'')}${t?` <small>${esc(t)}</small>`:''}${lab?` <small>${esc(lab)}</small>`:''}</p>`
-      +`<div class="pth-b">${e.position?`<p>${esc(e.position)}</p>`:''}${e.quote?`<p class="pth-q">“${esc(e.quote)}”</p>`:''}${w[1]?`<p class="pth-src"><em>${esc(w[1])}</em></p>`:''}</div>`
-      +`${pg&&e.slug?`<p class="pth-pg"><a href="${read(e.slug,e.page)}">p. ${esc(e.page)}</a> ${pvBtn(e.slug,e.page)}</p>`:''}</li>`;}).join('')}</ol>`;
-}
-// the section's own rows: the views with their holders and Suárez's verdict, his resolution (the compact view, and a section the
-// controversies have not reached)
-function secCore(side,s,ctx,n){
-  const ops=Array.isArray(s.opinions)?s.opinions:[];
-  return `${ops.length?`<ol class="ops tg">${ops.map(o=>opHTML(o,s,ctx,side,n)).join('')}</ol>`:''}<div class="tg">${resHTML(s,ctx,side,n)}</div>`;
-}
+// ── THE LIST AND THE READING (2026-10-22; owner: "like this is insane scrolling", "does apple do this? is this a dashboard where u can
+// quickly see whats going on?", and "i love suarez explaining, listing out opinions, his own resolution and our quotes"). The main pane
+// is a list to scan: a section is one line (its number, its question, how the schools stand, how many opinions, Suárez's verdict, a dot
+// for each school); open, its opinions one line each and his resolution in two or three lines, with their counts. Every piece is read
+// in full in the pane beside (the sheet on a phone): the position as Suárez states it, the arguments with their pages, the words as
+// Suárez reports them and in the holder's own, his resolution with its reasons and his words; the receivers there too, by school.
+const KSHORT={contradiction:'Contradict',distinction:'Distinction',emphasis:'Emphasis',agreement:'Agree'};
+const dotsHTML=ks=>{const set=MSCH.filter(([k])=>ks.includes(k));return set.length?`<span class="row-dots" role="img" aria-label="${esc(set.map(([,l])=>l).join(', '))}">${set.map(([k])=>`<i style="--c:${mcol(k)}"></i>`).join('')}</span>`:'';};
+const cnt=(n,one,many)=>(n?`${n} ${n===1?one:many}`:'');
 function secRow(side,s,i,ctx){
-  const n=String(s.n??i+1),pr=(s.schools||[]).find(x=>x&&x.school==='protestant'),paths=pr&&Array.isArray(pr.paths)?pr.paths:[],intra=Array.isArray(s.intra)?s.intra:[];
-  const pg=s.page!=null&&s.page!=='',same=fold(s.place)===fold(s.q),acts=[],folds=[];
-  const btn=(k,label)=>`<button type="button" class="pr-t" data-pt="${k}" aria-expanded="false" aria-controls="${side}-s${k}${i}">${label}</button>`;
-  const terms=(s.terms||[]).filter(Boolean),links=[s.question?`<a href="${CONTRO}#debate/thomists-scotists/${encodeURIComponent(s.question)}">The same question in the controversies</a>`:'',s.map?`<a href="${MAPSP}#${encodeURIComponent(s.map)}">On the map</a>`:''].filter(Boolean);
-  const head=`<li class="pr sec" id="${side}-s${esc(n)}" data-i="${i}"><div class="pr-m"><a class="pr-n" href="#${esc([S.deck,S.part,S.place,`s${n}`].join('/'))}" data-n="${esc(n)}" aria-label="Section ${esc(n)}"></a></div>`
-    +`<div class="pr-b"><p class="pr-q"><button type="button" class="cc-sel" data-osel="s${esc(n)}/">${esc(s.q||s.place||'')}</button></p>`
-    +`<p class="sec-at tg">${same||!s.place?'':`<i>${esc(s.place)}</i> · `}${pg?`<a href="${read(ctx.slug,s.page)}">${esc(ctx.short)}, ${s.end&&s.end!==s.page?`pp. ${esc(s.page)}–${esc(s.end)}`:`p. ${esc(s.page)}`}</a> ${pvBtn(ctx.slug,s.page)}`:''}${MKIND[s.kind]?`<span class="sec-k"> · ${MKIND[s.kind]}</span>`:''}</p>`;
-  const tail=`${links.length||terms.length?`<p class="sec-links">${links.join(' · ')}${terms.length?`${links.length?' · ':''}<span class="sec-lk">Terms</span> ${terms.map(t=>`<a href="${LEXP}#${encodeURIComponent(t)}">${esc(String(t).replace(/-/g,' '))}</a>`).join(', ')}`:''}</p>`:''}</div></li>`;
-  // in full: the section's controversy card as the controversies page draws it (filled when the pair file arrives), then its reception
-  if(!COMPACT)return `${head}${s.controversy?`<div class="cc-full tg" data-ctl="${esc(s.controversy)}" data-n="${esc(n)}"><p class="rec-note">Loading Suárez’s discussion…</p></div>`:secCore(side,s,ctx,n)}${rcpHTML(s)}${tail}`;
-  if(intra.length){acts.push(btn('i',intra.length===1?`Among the ${esc(intra[0].school)}`:`Within the schools <span>(${intra.length})</span>`));folds.push(`<div class="intras" id="${side}-si${i}" hidden>${intraHTML(intra,s,side,n)}</div>`);}
-  if(paths.length){acts.push(btn('r',`Among the Reformed and Lutherans <span>(${paths.length})</span>`));folds.push(`<div class="pths tg" id="${side}-sr${i}" hidden>${pathRowsHTML(paths)}</div>`);}
-  if(s.controversy){acts.push(btn('d','Suárez’s discussion in full'));folds.push(`<div class="cc-inline tg" id="${side}-sd${i}" data-ctl="${esc(s.controversy)}" data-n="${esc(n)}" hidden></div>`);}
-  return `${head+secCore(side,s,ctx,n)+rcpHTML(s)}${acts.length?`<div class="pr-acts">${acts.join('')}</div>`:''}${folds.join('')}${tail}`;
+  const n=String(s.n??i+1),ops=Array.isArray(s.opinions)?s.opinions:[],bid=`${side}-sb${esc(n)}`,ks=[...new Set(ops.flatMap(o=>opSchools(o)))],pg=s.page!=null&&s.page!=='';
+  const links=[pg?`<a class="pg" href="${read(ctx.slug,s.page)}" data-pw="${esc(ctx.slug)}|${esc(s.page)}">${esc(ctx.short)}, ${s.end&&s.end!==s.page?`pp. ${esc(s.page)}–${esc(s.end)}`:`p. ${esc(s.page)}`}</a>`:'',s.question?`<a href="${CONTRO}#debate/thomists-scotists/${encodeURIComponent(s.question)}">Controversies</a>`:'',s.map?`<a href="${MAPSP}#${encodeURIComponent(s.map)}">Map</a>`:''].filter(Boolean);
+  return `<li class="pr sec ln1" id="${side}-s${esc(n)}" data-i="${i}"><div class="pr-m"><a class="pr-n" href="#${esc([S.deck,S.part,S.place,`s${n}`].join('/'))}" data-n="${esc(n)}" aria-label="Section ${esc(n)}"></a></div>`
+    +`<div class="pr-b"><p class="row1"><button type="button" class="acc-t" aria-expanded="false" aria-controls="${bid}">${esc(s.q||s.place||'')}</button>`
+    +`<span class="row-meta">${KSHORT[s.kind]?`<span>${KSHORT[s.kind]}</span>`:''}${ops.length?`<span>${cnt(ops.length,'opinion','opinions')}</span>`:''}<span class="row-v" data-v>${s.controversy?'':rowVerdict(s,null)}</span>${dotsHTML(ks)}</span></p>`
+    +`<div class="acc-b" id="${bid}" hidden>${s.controversy?`<div class="cc-main" data-ctl="${esc(s.controversy)}" data-n="${esc(n)}"><p class="rec-note">Loading Suárez’s discussion…</p></div>`:viewsBoard(s,n)}${rowCounts(s,n,links)}</div></div></li>`;
+}
+// the section's verdict, in a word or two: whom Suárez sides with, or his own way
+function rowVerdict(s,c){
+  if(c){const ops=ccOps(c),r=c.resolution||{},h=String(r.holder||'').trim(),side=!h||/^his own\b/i.test(h)?'':h,o=side?ops.find(x=>fold(x.holder)===fold(side)):null;
+    if(!ops.length)return 'he concludes';
+    return side?`${o?ccDot(o.school):''}with ${esc(side.split(/\s*\/\s*/)[0])}`:'his own way';}
+  const ops=s.opinions||[],ad=s.resolution_of!=null?ops.find(o=>Number(o.i)===Number(s.resolution_of)):null;
+  return ad?`adopts ${esc(lowerThe(ad.label||''))}`:(s.suarez&&s.suarez.resolution?'his own way':'');
+}
+// a section the controversies have not reached: the views Suárez sets out (one line each, with his verdict) and his resolution
+function viewsBoard(s,n){
+  const ops=s.opinions||[],r=s.suarez||{},ad=s.resolution_of!=null?ops.find(o=>Number(o.i)===Number(s.resolution_of)):null;
+  return `${ops.length?`<ol class="op-rows">${ops.map(o=>{const sv=SV[o.suarez_on],ks=opSchools(o),who=(o.holders||[]).map(h=>h.name||h.author).filter(Boolean).slice(0,3).join(', ');
+    return `<li><button type="button" class="op-row" data-osel="s${esc(n)}/o${esc(o.i)}" data-sc="${ks.join(' ')}"><span class="op-row-h">${ks.filter(k=>k!=='others').map(k=>`<i class="dot" style="--sc:${mcol(k)}" aria-hidden="true"></i>`).join('')}${esc(o.label||`Opinion ${Number(o.i)+1}`)}${who?`<span class="cc-sch">, ${esc(who)}</span>`:''}</span><span class="op-row-p">${esc(o.position||'')}</span>${sv?`<span class="op-row-n"><span class="sv sv-${esc(o.suarez_on)}">${sv[0]}</span></span>`:''}</button></li>`;}).join('')}</ol>`:''}`
+    +`${r.resolution?`<button type="button" class="jd-row" data-osel="s${esc(n)}/r"><span class="jd-h">Suárez resolves${ad?`, adopting ${esc(lowerThe(ad.label||''))}`:''}</span><span class="jd-p">${esc(r.resolution)}</span>${r.quote?'<span class="op-row-n">1 passage</span>':''}</button>`:''}`;
+}
+// under the open section: who received him (a step to them, beside) and its pages, its question in the controversies and on the map
+function rowCounts(s,n,links){
+  const R=recOf(s),nr=R?R.reception.length+(Number(R.reception_more)||0):0,pr=(s.schools||[]).find(x=>x&&x.school==='protestant'),np=pr&&Array.isArray(pr.paths)?pr.paths.length:0;
+  const na=(PL.rec&&Array.isArray(PL.rec.answers)?PL.rec.answers:[]).filter(a=>(a.sections||[]).map(String).includes(String(s.n))).length,all=nr+np+na;
+  return `<p class="row-cts">${all?`<button type="button" class="res-of" data-osel="s${esc(n)}/" data-sheet="1" data-to="recv">Received by ${fmtN(all)}</button>`:''}${links.length?`${all?' · ':''}${links.join(' · ')}`:''}</p>`;
 }
 // THE BAND under the disputation's head: the opinions' holders by school (a share bar), Suárez's verdicts on the opinions (a tally in the
 // verdict colours), and the holders through time (the module's era strip: a holder once, at his birth year, in his school's colour, the
@@ -1214,64 +1175,64 @@ function mGraphHTML(P){
     +`${strip?`<div class="pg-wide"><h3 class="pg-h">Before and after Suárez: the authors he cites and those who received him</h3>${strip}${early.length?`<p class="pg-note">Born before the axis, not drawn: ${esc(early.join(', '))}</p>`:''}</div>`:''}</section>`;
 }
 async function paneSections(side){
-  const host=PANE[side],P=PL.props,cfg=PRB(),cs=commentators(true),key=['secs',PL.key,LANE,COMPACT,PL.rec?1:0].join('|');
+  const host=PANE[side],P=PL.props,cfg=PRB(),cs=commentators(true),key=['secs',PL.key,LANE,PL.rec?1:0].join('|');
   RUN[side]++;
-  if(SHOWN[side]===key){if(host._art!==S.art){host._art=S.art;jumpProb(side);}return;}
+  if(SHOWN[side]===key){if(host._art!==S.art){host._art=S.art;accOpen(host,accKey());jumpProb(side);}return;}
   SHOWN[side]=key;host.dataset.moved='';host._art=S.art;host._P=P;host._mv=[];host._q='';host._secs=true;host._rid=++RID;
   TEXTNAME[S.deck]=baseName();
   const [h2g,subg]=heading(),ss=P.sections,ctx={slug:P.slug,short:cfg.short};
   host._pi=ss.map(s=>({hay:fold([s.q,s.place,...(s.opinions||[]).flatMap(o=>[o.label,o.position,...(o.holders||[]).map(h=>`${h.name} ${h.author}`)]),(s.suarez||{}).resolution,...(s.terms||[]),...((recOf(s)||{}).reception||[]).flatMap(r=>[r.author,r.work,r.claim])].join(' '))}));
   const opsAll=ss.flatMap(s=>s.opinions||[]),nPaths=ss.reduce((a,s)=>a+(((s.schools||[]).find(x=>x&&x.school==='protestant')||{}).paths||[]).length,0);
-  const bySch={},bySv={};
-  for(const o of opsAll){for(const k of opSchools(o))bySch[k]=(bySch[k]||0)+1;if(SV[o.suarez_on])bySv[o.suarez_on]=(bySv[o.suarez_on]||0)+1;}
+  const bySch={};
+  for(const o of opsAll)for(const k of opSchools(o))bySch[k]=(bySch[k]||0)+1;
   if(nPaths)bySch.protestant=nPaths;
   const schoolT=MSCH.filter(([k])=>bySch[k]).map(([k,l])=>`<button type="button" class="ptog mtog" data-ms="${k}" aria-pressed="true"><i class="tg-sw" style="--c:${mcol(k)}" aria-hidden="true"></i>${l} <small>${bySch[k]}</small></button>`).join('');
-  const verdictT=COMPACT?SVORDER.filter(k=>bySv[k]).map(k=>`<button type="button" class="ptog mtog" data-msv="${k}" aria-pressed="true"><span class="sv sv-${k}">${k}</span> <small>${bySv[k]}</small></button>`).join(''):'';
   const pages=ss.map(s=>Number(s.page)).filter(x=>Number.isFinite(x)&&x>0),from=Number(P.from)||(pages.length?Math.min(...pages):null),to=Number(P.to)||(pages.length?Math.max(...pages):null);
   host.innerHTML=`<header class="ph"><div class="ph-row">${sourceSelect(side,cs,'')}${P.slug&&from?`<a class="open" href="${read(P.slug,from)}">Open in the reader ↗</a>`:''}</div>
     <h2>${esc(P.title||h2g)}</h2><p class="what">${esc([P.title_la,partName(S.part)].filter(Boolean).join(' · ')||subg)}</p>
     <p class="pbase">${esc(baseLabel())}${from?`, ${from===to?`p. ${from}`:`pp. ${from}–${to}`}`:''}</p></header>`
-    +`<div class="scroll pscroll${COMPACT?' is-compact':''}">${P.summary?`<p class="psum">${esc(P.summary)}</p>`:''}${mGraphHTML(P)}${ansHTML()}`
-    +`<div class="pctl">${schoolT?`<div class="pfilter" role="group" aria-label="The schools shown"><span class="pf-k">Schools</span>${schoolT}</div>`:''}${verdictT?`<div class="pfilter" role="group" aria-label="Suárez’s verdicts shown"><span class="pf-k">Suárez</span>${verdictT}</div>`:''}`
-    +`<div class="prow"><input class="pfind" type="search" autocomplete="off" spellcheck="false" placeholder="Find a section…" aria-label="Find a section in this ${noun()}"><p class="pcount" role="status"></p>${compactBtn()}</div></div>`
-    +`<ol class="probs secs">${ss.map((s,i)=>secRow(side,s,i,ctx)).join('')}</ol><p class="note pnone" hidden>None of the sections in this ${noun()} match.</p>`
+    +`<div class="scroll pscroll">${P.summary?`<p class="psum" id="${side}-psum">${esc(P.summary)}</p><button type="button" class="psum-more" aria-expanded="false" aria-controls="${side}-psum" hidden>More</button>`:''}${mGraphHTML(P)}`
+    +`<div class="pctl">${schoolT?`<div class="pfilter" role="group" aria-label="The schools shown"><span class="pf-k">Schools</span>${schoolT}</div>`:''}`
+    +`<div class="prow"><input class="pfind" type="search" autocomplete="off" spellcheck="false" placeholder="Find a section…" aria-label="Find a section in this ${noun()}"><p class="pcount" role="status"></p></div></div>`
+    +`<ol class="probs secs acc">${ss.map((s,i)=>secRow(side,s,i,ctx)).join('')}</ol><p class="note pnone" hidden>None of the sections in this ${noun()} match.</p>`
     +`${P.slug&&to?`<p class="end"><a href="${read(P.slug,to)}">Read on in the reader ↗</a></p>`:''}</div>`;
   const sc=host.querySelector('.pscroll'),ctl=host.querySelector('.pctl');
   if(host._ro)host._ro.disconnect();
   if(sc&&ctl&&typeof ResizeObserver==='function'){host._ro=new ResizeObserver(()=>{sc.style.scrollPaddingTop=getComputedStyle(ctl).position==='sticky'?`${ctl.offsetHeight+8}px`:'';});host._ro.observe(ctl);}
   if(TG){TG.mount(host);TG.layout(host);}
+  clampMore(host);
   applySections(side);
+  accOpen(host,accKey());
   markSel();
-  qbAuto(host);
   jumpProb(side);
-  if(!COMPACT)fillCards(side);
+  fillCards(side);
 }
-// the cards come with the pair file: each section's controversy drawn in its row, its words added to what Find reads; a section the
-// controversies have not reached keeps its own rows. The view chosen is then marked and, on a landing, brought into view.
+// the summary in three lines, the rest a step away
+function clampMore(host){
+  requestAnimationFrame(()=>{const p=host.querySelector('.psum'),b=host.querySelector('.psum-more');if(p&&b)b.hidden=p.scrollHeight<=p.clientHeight+2;});
+}
+// the cards come with the pair file: each section's opinions and resolution drawn in its row, its verdict on its line, its words added
+// to what Find reads; a section the controversies have not reached keeps the views of the props
 async function fillCards(side){
   const host=PANE[side],rid=host._rid,pf=await pairFile();
   if(host._rid!==rid)return;
-  const P=host._P,ctx={slug:P.slug,short:PRB().short};
-  host.querySelectorAll('.cc-full[data-ctl]').forEach(box=>{
-    const li=box.closest('.pr'),i=Number(li.dataset.i),s=P.sections[i],c=pf&&pf._by.get(box.dataset.ctl);
-    if(!c){box.outerHTML=secCore(side,s,ctx,box.dataset.n);return;}
-    box.innerHTML=ccBodyHTML(c,box.dataset.n,s);
+  const P=host._P;
+  host.querySelectorAll('.cc-main[data-ctl]').forEach(box=>{
+    const li=box.closest('.pr'),i=Number(li.dataset.i),s=P.sections[i],c=pf&&pf._by.get(box.dataset.ctl),v=li.querySelector('.row-v');
+    if(!c){box.outerHTML=viewsBoard(s,box.dataset.n);if(v)v.innerHTML=rowVerdict(s,null);return;}
+    box.innerHTML=ccMainHTML(c,box.dataset.n,s);
+    if(v)v.innerHTML=rowVerdict(s,c);
     if(host._pi[i])host._pi[i].hay+=` ${fold(ccText(c))}`;
   });
   applySections(side);
   markSel();
-  qbAuto(host);
-  if(S.art&&!host.dataset.moved)jumpProb(side);
 }
 function applySections(side){
   const host=PANE[side],info=host._pi||[],q=fold(host._q||'');
   let shown=0;
   host.querySelectorAll('.secs>.pr').forEach(li=>{const x=info[Number(li.dataset.i)]||{hay:''},ok=!q||x.hay.includes(q);li.hidden=!ok;if(ok)shown++;});
-  host.querySelectorAll('.op').forEach(o=>{o.toggleAttribute('data-dim',String(o.dataset.sc).split(' ').every(k=>MOFF.has(k))||VOFF.has(o.dataset.sv));});
-  host.querySelectorAll('.cc-full .cc-op,.rcp-r').forEach(o=>{o.toggleAttribute('data-dim',MOFF.has(o.dataset.sc));});
-  host.querySelectorAll('.pth-rows>li').forEach(li=>{li.toggleAttribute('data-dim',MOFF.has('protestant'));});
+  host.querySelectorAll('.op-row').forEach(o=>{o.toggleAttribute('data-dim',String(o.dataset.sc||'others').split(' ').every(k=>MOFF.has(k)));});
   host.querySelectorAll('[data-ms]').forEach(b=>b.setAttribute('aria-pressed',String(!MOFF.has(b.dataset.ms))));
-  host.querySelectorAll('[data-msv]').forEach(b=>b.setAttribute('aria-pressed',String(!VOFF.has(b.dataset.msv))));
   const n=info.length,c=host.querySelector('.pcount'),none=host.querySelector('.pnone');
   if(c)c.textContent=`${shown===n?n:`${shown} of ${n}`} ${n===1?'section':'sections'} in this ${noun()}`;
   if(none)none.hidden=shown>0;
@@ -1287,7 +1248,7 @@ const applyView=side=>(PANE[side]._secs?applySections(side):applyProbs(side));
 // chosen on the left has his own dossier. On a phone the dossier rises in the sheet the page window uses.
 const DOSDECK=()=>S.deck==='metaphysics'||S.deck==='reformed'||S.deck==='lutheran';
 const RMODE={};
-const rmode=()=>isPhone()?'works':RMODE[S.deck]||(S.deck==='metaphysics'||/^p\d+$/.test(S.art||'')?'dossier':'works');
+const rmode=()=>isPhone()?'works':RMODE[S.deck]||'dossier';
 // the controversies' Suárez pair, the maps' and the atlas's question files: each fetched once
 let PAIRP=null,PAIRD=null;
 const pairFile=()=>PAIRP||(PAIRP=J('/v1/enrich/controversies/suarez-schools.json').then(d=>{if(!d||!Array.isArray(d.controversies)){PAIRP=null;return null;}d._by=new Map(d.controversies.map(c=>[c.id,c]));PAIRD=d;return d;}));
@@ -1302,7 +1263,7 @@ const CC_SCHOOL=[[/thomist/i,'thomist'],[/scotist/i,'scotist'],[/nominalist/i,'n
 const ccKey=s=>(CC_SCHOOL.find(([re])=>re.test(s||''))||[])[1]||'others';
 const ccDot=s=>(s?`<i class="dot" style="--sc:${mcol(ccKey(s))}" aria-hidden="true"></i>`:'');
 const ccSch=s=>(s?`<span class="cc-sch">, ${esc(s)}</span>`:'');
-const ccPg=(w,p,label)=>(p!=null&&p!==''&&w?`<span class="pgs"><a class="pg" href="${read(w,p)}">${esc(label||`p. ${p}`)}</a> ${pvBtn(w,p)}</span>`:'');
+const ccPg=(w,p,label)=>(p!=null&&p!==''&&w?`<span class="pgs"><a class="pg" href="${read(w,p)}" data-pw="${esc(w)}|${esc(p)}">${esc(label||`p. ${p}`)}</a> ${pvBtn(w,p)}</span>`:'');
 const CC_WORDS=[[/thomist/i,'Thomist'],[/scotist/i,'Scotist'],[/nominalist/i,'Nominalist'],[/jesuit/i,'Jesuit'],[/augustinian/i,'Augustinian']];
 const ccOps=c=>(c.opinions||[]).map(o=>{const au=o.author||'';let s=o.school||'';if(!s&&!au)for(const [re,x] of CC_WORDS)if(re.test(o.holder||'')){s=x;break;}
   return {holder:o.holder||au||'',author:au,school:s,reported:o.reported||'',args:o.arguments||[],position:o.position||'',picks:o.picks||[]};});
@@ -1334,16 +1295,15 @@ function ccJudgHTML(c,n,s){
 }
 const ccPicksN=c=>['a','b'].reduce((n,k)=>n+(((c[k]||{}).picks)||[]).length,0)+(c.opinions||[]).reduce((n,o)=>n+(o.picks||[]).length,0);
 const ccText=c=>[c.question,c.place,...ccOps(c).flatMap(o=>[o.holder,o.author,o.school,o.reported,...o.args.map(a=>a.arg)]),(c.resolution||{}).why,(c.a||{}).reported,(c.b||{}).reported].join(' ');
-// the card's body: the opinions in the work's order (or its two sides), then the judgment; a card with no passage says so
-function ccBodyHTML(c,n,s){
-  const ops=ccOps(c),none=!ccPicksN(c)&&!(s&&s.suarez&&s.suarez.quote);
-  return `${ops.length?`<div class="cc-ops">${ops.map((x,i)=>ccOpHTML(c,x,i,n)).join('')}</div>`:`<div class="cc-ops">${ccSideHTML(c,'a')}${ccSideHTML(c,'b')}</div>`}${ccJudgHTML(c,n,s)}${none?'<p class="qb-none">No passage picked</p>':''}`;
-}
-function ccCardHTML(c,n,s){
-  const src=c.source||{},range=src.p1&&String(src.p1)!==String(src.p0)?`pp. ${src.p0}–${src.p1}`:`p. ${src.p0}`;
-  return `<article class="cc"><header class="cc-head"><h3 class="cc-qh">${esc(c.question)}</h3><dl class="cc-lab"><div><dt>Between them</dt><dd><span class="cc-kind">${esc(MKIND[c.kind]||c.kind||'')}</span></dd></div>`
-    +`${c.place?`<div><dt>Treated at</dt><dd>${esc(c.place)}</dd></div>`:''}<div><dt>Source</dt><dd class="cc-r1"><span>Controversy ${esc(c.n)}${src.title?`: <em>${esc(src.title)}</em>`:''}</span>${ccPg(src.w,src.p0,range)}</dd></div></dl></header>`
-    +`${ccBodyHTML(c,n,s)}</article>`;
+// Suárez's exposition of a section in the list: the opinions he weighs, one line each (the holder, his school, the position as Suárez
+// states it, what the reading holds), then his resolution in two or three lines; each read in full beside
+function ccMainHTML(c,n,s){
+  const ops=ccOps(c),r=c.resolution||{},jd=c.judgment||{},h=String(r.holder||'').trim(),side=!h||/^his own\b/i.test(h)?'':h,a=c.a||{},why=r.why||jd.why||'';
+  const rows=ops.length?`<ol class="op-rows">${ops.map((o,k)=>{const views=(s.opinions||[]).filter(v=>v.quote&&ccMatch(c,s,v)===k).length,cts=[cnt(o.args.length,'argument','arguments'),cnt(o.picks.length+views,'passage','passages')].filter(Boolean).join(' · ');
+    return `<li><button type="button" class="op-row" data-osel="s${esc(n)}/c${k}" data-cco="${k}" data-sc="${ccKey(o.school)}"><span class="op-row-h">${ccDot(o.school)}${esc(o.holder)}${o.school?`<span class="cc-sch">, ${esc(o.school)}</span>`:''}</span><span class="op-row-p">${esc(o.reported||'')}</span>${cts?`<span class="op-row-n">${cts}</span>`:''}</button></li>`;}).join('')}</ol>`
+    :`<ol class="op-rows">${['a','b'].map(k=>{const x=c[k]||{},nm=k==='a'?'Suárez':(x.name||'The schools');return `<li><button type="button" class="op-row" data-osel="s${esc(n)}/r"><span class="op-row-h">${esc(nm)}</span><span class="op-row-p">${esc(x.reported||'')}</span><span class="op-row-n">${[cnt((x.arguments||[]).length,'argument','arguments'),cnt((x.picks||[]).length,'passage','passages')].filter(Boolean).join(' · ')}</span></button></li>`;}).join('')}</ol>`;
+  const np=(a.picks||[]).length||((s&&s.suarez&&s.suarez.quote)?1:0),cts=[cnt((a.arguments||[]).length,'argument','arguments'),cnt(np,'passage','passages')].filter(Boolean).join(' · ');
+  return `${rows}<button type="button" class="jd-row" data-osel="s${esc(n)}/r"><span class="jd-h">Suárez ${ops.length?(side?`sides with ${esc(side)}`:'resolves it his own way'):'concludes'}</span>${why?`<span class="jd-p">${esc(why)}</span>`:''}${cts?`<span class="op-row-n">${cts}</span>`:''}</button>`;
 }
 // a view on the left and an opinion of the card: the names they share (the view's first holder counting most), how near the card's
 // arguments stand to the view's page, and the words their statements share; the card's opinion for a view, the view for a card's opinion
@@ -1363,13 +1323,6 @@ function ccMatch(c,s,o){
   ccOps(c).forEach((p,i)=>{const n=ccScore(p,o);if(n>score){score=n;best=i;}});
   return score>=3?best:-1;
 }
-function viewOfCard(c,s,k){
-  const p=ccOps(c)[k];
-  if(!p)return null;
-  let best=null,score=0;
-  for(const o of s.opinions||[]){const n=ccScore(p,o);if(n>score){score=n;best=o;}}
-  return score>=3?best:null;
-}
 // ── RECEPTION: who holds the view (his school, his birth year, a small strip of them in time), the map's position for it, the atlas's
 // answers to the question, the Reformed and Lutheran metaphysicians who take its path or another, the splits inside a school; links
 const PATHFOR={thomist:['thomist'],scotist:['scotist'],nominalist:['nominalist'],jesuit:['suarezian']};
@@ -1377,12 +1330,6 @@ function holdersBy(hs){
   const seen=new Set(),by=new Map();
   for(const h of hs||[]){const name=String(h.name||h.author||'').trim(),k=`${name}|${h.slug||''}`;if(!name||seen.has(k))continue;seen.add(k);const sc=mschool(h.school);if(!by.has(sc))by.set(sc,[]);by.get(sc).push(h);}
   return by;
-}
-function whoHolds(hs,sn){
-  const by=holdersBy(hs),items=[];
-  for(const [sc,list] of by)for(const h of list){const y=Number(h.year);if(y>0&&y<2100)items.push({y,t:TGK[sc],name:h.author||h.name});}
-  const strip=TG&&items.length?`<div class="rec-strip pg-schools">${TG.eraMini(TG.bin(items,50),{label:'The holders at their birth years'})}${TG.miniAxis()}</div>`:'';
-  return `${strip}<ul class="rec-who">${MSCH.filter(([k])=>by.has(k)).map(([k,l])=>`<li><span class="hg-k">${l}</span> ${by.get(k).map(h=>`<span class="rec-h1">${holderChip(h,k,h._plain?null:sn)}${h.year!=null&&h.year!==''?` <small>${esc(yearOf(h.year))}</small>`:''}</span>`).join(' ')}</li>`).join('')}</ul>`;
 }
 // the holders the props name in a section, once each; those a card's opinion names, by its author or a name in its heading (a name the
 // props do not hold stands as a plain chip)
@@ -1401,41 +1348,77 @@ function selInfo(s,sel,c){
   if(sel==='r')return {kind:'r',label:'Suárez’s resolution',holders:null,ways:['suarezian']};
   return null;
 }
-// THE RECEPTION OF A SECTION, A VIEW OR SUÁREZ'S RESOLUTION, in the pane beside the sections: who holds it (his school, his year, a strip
-// of them in time), the authors who answer the section (by school, by century, by stance), its place on the map of the tradition, the
-// atlas's answers, the Reformed and Lutherans on its path or another, the splits inside the schools, the links, and the whole works
-// written against Suárez. Never the card again: the card is on the left.
+// BEFORE AND AFTER SUÁREZ, under the reading: one strip of the authors he cites and those who received him; whom he cites by school;
+// who received him by school or tradition, one chip each with his year and his pages here (a whole work marked as one), each read beside;
+// the map, the atlas and the other addresses of the question
 function recHTML(s,sel,c){
-  const pr=(s.schools||[]).find(x=>x&&x.school==='protestant'),paths=pr&&Array.isArray(pr.paths)?pr.paths:[],info=selInfo(s,sel,c);
-  const ways=info?info.ways:[],on=info?paths.filter(e=>ways.includes(e.path)):paths.filter(e=>e.path==='suarezian'),off=info?paths.filter(e=>!ways.includes(e.path)):paths.filter(e=>e.path!=='suarezian');
-  const hs=info?info.holders:secHolders(s),R=recOf(s);
+  const info=selInfo(s,sel,c),hs=info?info.holders:secHolders(s);
   const links=[s.question?`<a href="${CONTRO}#debate/thomists-scotists/${encodeURIComponent(s.question)}">the same question in the controversies</a>`:'',s.map?`<a href="${MAPSP}#${encodeURIComponent(s.map)}">on the map</a>`:'',s.question?`<a href="${ATLASP}#${encodeURIComponent(s.question)}">in the atlas</a>`:''].filter(Boolean);
-  const terms=(s.terms||[]).filter(Boolean),title=info?info.label:`Section ${s.n}`;
-  const onL=info?(info.kind==='r'?'Who follow his resolution':'On this view’s path'):'Who follow Suárez',offL=on.length?'On another path':'Their paths';
-  return `<section class="rec" aria-labelledby="rec-h"><h3 class="rec-hh" id="rec-h">Before and after Suárez</h3>${info?`<p class="rec-for">${esc(title)}</p>`:''}`
+  const terms=(s.terms||[]).filter(Boolean);
+  return `<section class="rec" aria-labelledby="rec-h"><h3 class="rec-hh" id="rec-h">Before and after Suárez</h3>${info?`<p class="rec-for">${esc(info.label)}</p>`:''}`
     +`<div class="pv-box" data-pv><p class="rec-note">Drawing the authors in time…</p></div>`
     +`<h4 class="pv-h">Whom he cites</h4>`
-    +`${info&&info.kind==='r'?'<p class="rec-note">His resolution is his own; the authors he weighs are under the views.</p>':hs&&hs.length?citedHTML(hs,s.n):'<p class="rec-note">Suárez names no holder we can place.</p>'}`
+    +`${info&&info.kind==='r'?'<p class="rec-note">The authors he weighs are under the opinions.</p>':hs&&hs.length?citedHTML(hs,s.n):'<p class="rec-note">Suárez names no holder we can place.</p>'}`
     +`${(s.intra||[]).length?`<p class="rec-sub">Divided inside a school</p><div class="intras">${intraHTML(s.intra,s,'b',String(s.n))}</div>`:''}`
-    +`<h4 class="pv-h">Who received him</h4>`
-    +`<div class="rec-advs" data-adv data-d="${esc(S.place)}" data-n="${esc(s.n)}"></div>`
-    +`${R?`${recLineHTML(R)}<ol class="rcp-rows rcp-pane">${R.reception.map(r=>rcpLineHTML(r)).join('')}</ol>${Number(R.reception_more)>0?`<p class="rcp-more">${setHref(R.reception_set)?`<a href="${esc(setHref(R.reception_set))}">+${fmtN(R.reception_more)} more</a>`:`+${fmtN(R.reception_more)} more`}</p>`:''}`:''}`
-    +`${paths.length?`<p class="rec-sub">Among the Reformed and Lutherans</p>${on.length?`<p class="rec-sub rec-sub2">${onL} <span class="cc-ct">${on.length}</span></p><div class="pths tg">${pathRowsHTML(on)}</div>`:''}${off.length?`<p class="rec-sub rec-sub2">${offL} <span class="cc-ct">${off.length}</span></p><div class="pths tg">${pathRowsHTML(off)}</div>`:''}`:''}`
-    +`${!R&&!paths.length?'<p class="rec-note rec-none">No reader of Suárez is recorded on this section.</p>':''}`
+    +`<h4 class="pv-h" id="rcv-h">Who received him</h4><div class="rcv-box" data-rcv><p class="rec-note">Gathering his readers…</p></div>`
     +`<h4 class="pv-h">Across the tradition</h4>`
     +`${s.map?`<div class="rec-map tg" data-map="${esc(s.map)}"><p class="rec-note">Loading the map…</p></div>`:''}`
     +`${s.question?`<div class="rec-atlas tg" data-atlas="${esc(s.question)}"><p class="rec-note">Loading the answers…</p></div>`:''}`
     +`${links.length||terms.length?`<p class="sec-links rec-links">${links.length?`Elsewhere: ${links.join(', ')}.`:''}${terms.length?` <span class="sec-lk">Terms</span> ${terms.map(t=>`<a href="${LEXP}#${encodeURIComponent(t)}">${esc(String(t).replace(/-/g,' '))}</a>`).join(', ')}`:''}</p>`:''}</section>`;
 }
+// THE READERS OF A SECTION, by school or tradition: the reception rows, the works that answer the disputation at length, the whole
+// works and courses written against Suárez (adversaries.json), the Reformed and Lutheran metaphysicians on the question; one entry an
+// author, his pages here counted once
+const RGROUPS=[['thomist','Thomists'],['scotist','Scotists'],['nominalist','Nominalists'],['jesuit','Jesuits'],['reformed','Reformed'],['lutheran','Lutherans'],['others','Others']];
+const RCOL={reformed:'var(--tg-rf)',lutheran:'var(--tg-lu)'};
+function rgroup(x){
+  const t=`${x.school||''} ${x.tradition||''}`.toLowerCase();
+  if(/luther/.test(t))return 'lutheran';
+  if(/reform|calvin|puritan|english/.test(t))return 'reformed';
+  const k=mschool(x.school||'');
+  if(k!=='others'&&k!=='protestant')return k;
+  return /thomist|dominican/.test(t)?'thomist':/scotist|franciscan/.test(t)?'scotist':/jesuit/.test(t)?'jesuit':/nominalist/.test(t)?'nominalist':'others';
+}
+function receiversOf(s,A){
+  const map=new Map(),R=recOf(s),pr=(s.schools||[]).find(x=>x&&x.school==='protestant'),paths=pr&&Array.isArray(pr.paths)?pr.paths:[];
+  const get=(author,src)=>{const k=hslug({author});if(!k)return null;if(!map.has(k))map.set(k,{key:k,author,year:null,school:'',tradition:'',pages:new Set(),rows:[],answers:[],works:[],paths:[],whole:false});const x=map.get(k);
+    if(!x.year&&Number(src.year))x.year=Number(src.year);if(!x.school&&src.school)x.school=src.school;if(!x.tradition&&src.tradition)x.tradition=src.tradition;return x;};
+  for(const r of R?R.reception:[]){const x=get(r.author,r);if(!x)continue;x.rows.push(r);if(r.slug&&r.page!=null)x.pages.add(`${r.slug}|${r.page}`);}
+  for(const a of (PL.rec&&Array.isArray(PL.rec.answers)?PL.rec.answers:[]))if((a.sections||[]).map(String).includes(String(s.n))){const x=get(a.author,a);if(!x)continue;x.answers.push(a);if(a.slug&&a.page!=null)x.pages.add(`${a.slug}|${a.page}`);}
+  for(const w of advFor(A,S.place,s.n)){const x=get(w.author,w);if(!x)continue;x.works.push(w);if(w.kind==='whole work')x.whole=true;for(const e of w.entries||[])if(e&&String(e.d)===String(S.place)&&e.page!=null)x.pages.add(`${w.slug}|${e.page}`);}
+  for(const e of paths){const x=get(e.author,e);if(!x)continue;x.paths.push(e);if(e.slug&&e.page!=null)x.pages.add(`${e.slug}|${e.page}`);}
+  return [...map.values()];
+}
+function receiversHTML(s,list){
+  if(!list.length)return '<p class="rec-note rec-none">No reader of Suárez is recorded on this section.</p>';
+  const by=new Map();for(const x of list){const g=rgroup(x);if(!by.has(g))by.set(g,[]);by.get(g).push(x);}
+  const yr=x=>x.year||(TG&&TG.dates?TG.dates.year(x.author):0)||0;
+  return `<ul class="rcv">${RGROUPS.filter(([g])=>by.has(g)).map(([g,l])=>`<li><span class="hg-k">${l}</span> ${by.get(g).sort((a,b)=>(yr(a)||9999)-(yr(b)||9999)).map(x=>{const y=yr(x),n=x.pages.size;
+    return `<span class="rcv-a"><button type="button" class="adv rcv-b" data-dsel="s${esc(s.n)}/w${esc(x.key)}" style="--sc:${RCOL[g]||mcol(g==='others'?'others':g)}"><i class="dot" aria-hidden="true"></i>${esc(x.author)}</button>${y||n?` <small>${[y?yearOf(y):'',n?`${n} ${n===1?'page':'pages'}`:''].filter(Boolean).join(' · ')}</small>`:''}${x.whole?' <small class="rcv-tag">whole work</small>':''}</span>`;}).join(' ')}</li>`).join('')}</ul>`;
+}
+// A READER OF SUÁREZ, read beside the section: his work and its places on this disputation, his words at length, his answers on this
+// section with their passages, his path; then the section's before and after
+function rcvDossier(s,key,pf){
+  const c=pf&&s.controversy?pf._by.get(s.controversy)||null:null;
+  return {kind:'section',s,sel:`w${key}`,c,rcv:key,title:`Section ${s.n}`,html:`<section class="read-op rcv-read" data-who="${esc(key)}"><p class="rec-note">Gathering his pages…</p></section>${recHTML(s,'',c)}`};
+}
+function rcvReadHTML(s,x){
+  const w0=D.texts.works[(x.works[0]||x.answers[0]||x.rows[0]||x.paths[0]||{}).slug]||[],g=rgroup(x),gl=(RGROUPS.find(([k])=>k===g)||[])[1]||'';
+  const work=x.works.map(w=>`<li><p class="rcv-w"><em>${esc(w.title||'')}</em>${w.year?`, ${esc(yearOf(w.year))}`:''}${w.kind?` <small class="rcv-tag">${esc(w.kind)}</small>`:''}</p>${w.scope?`<p class="rec-note">${esc(w.scope)}</p>`:''}`
+    +`<ol class="cc-rows">${(w.entries||[]).filter(e=>e&&String(e.d)===String(S.place)).map(e=>`<li><span>${esc(e.heading||'')}${Array.isArray(e.sections)&&e.sections.length?` <small>sections ${e.sections.map(esc).join(', ')}</small>`:''}</span>${ccPg(w.slug,e.page,e.end!=null&&e.end!==''&&String(e.end)!==String(e.page)?`pp. ${e.page}–${e.end}`:`p. ${e.page}`)}</li>`).join('')}</ol>`
+    +`${(w.quotes||[]).map(q=>qbHTML({quote:q.en,la:q.la,w:w.slug,p:q.page,label:q.head||''})).join('')}</li>`).join('');
+  const ans=x.answers.map(a=>`<section class="rcv-ans"><h5 class="cc-lbl">${esc(a.heading||'')}</h5>${a.gist?`<p class="dos-p">${esc(a.gist)}</p>`:''}${(a.quotes||[]).map(q=>qbHTML({quote:q.en,la:q.la,w:a.slug,p:q.page})).join('')}${a.page!=null&&a.page!==''?`<p class="ob-pg">${ccPg(a.slug,a.page,a.end!=null&&a.end!==''&&String(a.end)!==String(a.page)?`pp. ${a.page}–${a.end}`:`p. ${a.page}`)}</p>`:''}</section>`).join('');
+  const paths=x.paths.map(e=>`<section class="rcv-ans"><h5 class="cc-lbl">${esc(PATHW[e.path]?cap1(PATHW[e.path]):'His path')}</h5>${e.position?`<p class="dos-p">${esc(e.position)}</p>`:''}${e.quote?qbHTML({quote:e.quote,w:e.slug,p:e.page}):e.page!=null&&e.slug?`<p class="ob-pg">${ccPg(e.slug,e.page)}</p>`:''}</section>`).join('');
+  return `<div class="dos-hd"><h3 class="dos-h">${esc(x.author)}</h3><p class="dos-sub">${[gl.replace(/s$/,''),x.year?yearOf(x.year):'',w0[1]&&!x.works.length?w0[1]:''].filter(Boolean).map(esc).join(', ')}${x.whole?' <small class="rcv-tag">whole work</small>':''}</p></div>`
+    +`${work?`<h4>His work on this disputation</h4><ul class="rcv-works">${work}</ul>`:''}`
+    +`${ans?`<h4>At length</h4>${ans}`:''}`
+    +`${x.rows.length?`<h4>On this section <span class="cc-ct">${x.rows.length}</span></h4><ol class="rcp-rows">${x.rows.map(r=>rcpRowHTML(r)).join('')}</ol>`:''}`
+    +`${paths?`<h4>His path on the question</h4>${paths}`:''}`;
+}
 // the holders he cites, by school, each with his year (a chip opens his dossier)
 function citedHTML(hs,sn){
   const by=holdersBy(hs);
   return `<ul class="rec-who">${MSCH.filter(([k])=>by.has(k)).map(([k,l])=>`<li><span class="hg-k">${l}</span> ${by.get(k).map(h=>`<span class="rec-h1">${holderChip(h,k,h._plain?null:sn)}${h.year!=null&&h.year!==''?` <small>${esc(yearOf(h.year))}</small>`:''}</span>`).join(' ')}</li>`).join('')}</ul>`;
-}
-// a reader's line in the pane: his stance, his name, work and year, his claim, the page (his words are on the left, under the card)
-function rcpLineHTML(r){
-  const st=STANCE[r.stance],w=D.texts.works[r.slug]||[],work=r.work||w[1]||'',yr=r.year||w[4]||'',pg=r.page!=null&&r.page!==''&&!!r.slug;
-  return `<li class="rcp-r" data-sc="${esc(mschool(r.school))}"><p class="rcp-h">${st?`<span class="sv sv-${st[1]}">${st[0]}</span> `:''}<b>${esc(r.author||w[0]||'')}</b>${work?`, <em>${esc(work)}</em>`:''}${yr?`, ${esc(yearOf(yr))}`:''}</p>${r.claim?`<p class="rcp-c">${esc(r.claim)}</p>`:''}${pg||r.locator?`<p class="ob-pg">${r.locator?`<span class="qb-t">${esc(r.locator)}</span> `:''}${pg?ccPg(r.slug,r.page):''}</p>`:''}</li>`;
 }
 // BEFORE AND AFTER SUÁREZ (2026-10-22; owner: "all im assking for is people who recieve suarez opinion and deal with it alongside people
 // whom suaurez cites"). One axis of years with Suárez's birth on it: above it a dot for each author he cites, below it one for each who
@@ -1460,34 +1443,15 @@ function pivotHTML(before,after){
     +`<i class="pv-axis"></i><span class="pv-piv" style="left:${X(SUAREZ_Y).toFixed(2)}%"></span>${place(bd,-1)}${place(ad,1)}</div>`
     +`<div class="pv-ax" aria-hidden="true">${ticks.join('')}</div><figcaption class="pg-note">${bd.length?`Those he cites born ${span(bd)}`:''}${bd.length&&ad.length?'; ':''}${ad.length?`those who received him ${span(ad)}`:''}${und?`; ${und} undated, counted and not drawn`:''}.</figcaption></figure>`;
 }
-function recLineHTML(R){
-  const rows=R.reception,bt=new Map(),bs=new Map();
-  for(const r of rows){if(STANCE[r.stance])bt.set(r.stance,(bt.get(r.stance)||0)+1);const k=mschool(r.school);bs.set(k,(bs.get(k)||0)+1);}
-  return `<p class="rec-sub">Answering this section <span class="cc-ct">${fmtN(rows.length+(Number(R.reception_more)||0))}</span></p>`
-    +`<p class="rec-sub rec-sub2">${['against','for','qualifies'].filter(k=>bt.has(k)).map(k=>`<span class="sv sv-${STANCE[k][1]}">${STANCE[k][0]}</span> <span class="cc-ct">${bt.get(k)}</span>`).join(' ')}${bs.size?` <span class="rec-cs">${MSCH.filter(([k])=>bs.has(k)).map(([k,l])=>`<span class="rec-c"><i class="tg-sw" style="--c:${mcol(k)}" aria-hidden="true"></i>${l} <span class="cc-ct">${bs.get(k)}</span></span>`).join(' ')}</span>`:''}</p>`;
-}
-// the authors who answer a section, counted: their stances, their schools, their centuries, and a strip of them in time
-function recCountsHTML(R){
-  const rows=R.reception,more=Number(R.reception_more)||0,items=[],bs=new Map(),bc=new Map(),bt=new Map();
-  for(const r of rows){const k=mschool(r.school),y=Number(r.year);bs.set(k,(bs.get(k)||0)+1);if(y>0&&y<2100){items.push({y,t:TGK[k],name:r.author});const cn=Math.floor((y-1)/100)+1;bc.set(cn,(bc.get(cn)||0)+1);}if(STANCE[r.stance])bt.set(r.stance,(bt.get(r.stance)||0)+1);}
-  const ord=n=>`${n}${n%100>=11&&n%100<=13?'th':({1:'st',2:'nd',3:'rd'})[n%10]||'th'}`;
-  return `<h4>Who answers this section <span class="cc-ct">${fmtN(rows.length+more)}</span></h4>`
-    +`${bt.size?`<p class="rec-sub">${['against','for','qualifies'].filter(k=>bt.has(k)).map(k=>`<span class="sv sv-${STANCE[k][1]}">${STANCE[k][0]}</span> <span class="cc-ct">${bt.get(k)}</span>`).join(' ')}</p>`:''}`
-    +`${TG&&items.length?`<div class="rec-strip pg-schools">${TG.eraMini(TG.bin(items,50),{label:'The authors who answer this section, at their years'})}${TG.miniAxis()}</div>`:''}`
-    +`<p class="rec-sub">${MSCH.filter(([k])=>bs.has(k)).map(([k,l])=>`<span class="rec-c"><i class="tg-sw" style="--c:${mcol(k)}" aria-hidden="true"></i>${l} <span class="cc-ct">${bs.get(k)}</span></span>`).join(' ')}</p>`
-    +`${bc.size?`<p class="rec-sub">${[...bc].sort((a,b)=>a[0]-b[0]).map(([n,k])=>`${ord(n)} century <span class="cc-ct">${k}</span>`).join(' ')}</p>`:''}`
-    +`${more?`<p class="rec-note">${fmtN(rows.length)} shown beside the section, ${fmtN(more)} more in the set.</p>`:''}`;
-}
-// the map's position for the choice: the one whose authors include most of its holders, drawn by the shared module; else the map's
-// positions with their counts. The atlas's answers to the question with their counts. The whole works against Suárez.
 async function recFill(root,s,sel,c){
-  const info=selInfo(s,sel,c),mapBox=root.querySelector('.rec-map'),atBox=root.querySelector('.rec-atlas'),advBox=root.querySelector('.rec-advs[data-adv]'),pv=root.querySelector('.pv-box[data-pv]');
-  const pr=(s.schools||[]).find(x=>x&&x.school==='protestant'),paths=pr&&Array.isArray(pr.paths)?pr.paths:[],R=recOf(s);
+  const info=selInfo(s,sel,c),mapBox=root.querySelector('.rec-map'),atBox=root.querySelector('.rec-atlas'),rcvBox=root.querySelector('.rcv-box[data-rcv]'),pv=root.querySelector('.pv-box[data-pv]'),rd=root.querySelector('.rcv-read[data-who]');
   const before=(info?info.holders:secHolders(s))||[];
   advFile().then(A=>{
-    const rows=advFor(A,S.place,s.n);
-    if(advBox&&advBox.isConnected)advBox.innerHTML=rows.length?advListHTML({rows},true):'';
-    if(pv&&pv.isConnected){const after=[...rows.map(r=>({author:r.author,year:r.year,tradition:r.tradition,school:r.tradition})),...(R?R.reception:[]),...paths];pv.innerHTML=pivotHTML(before,after);}
+    const list=receiversOf(s,A);
+    if(rcvBox&&rcvBox.isConnected)rcvBox.innerHTML=receiversHTML(s,list);
+    if(pv&&pv.isConnected)pv.innerHTML=pivotHTML(before,list);
+    if(rd&&rd.isConnected){const x=list.find(y=>y.key===rd.dataset.who);rd.innerHTML=x?rcvReadHTML(s,x):'<p class="rec-note">He is not among the readers of this section.</p>';if(TG)TG.layout(rd);qbAuto(rd);qbFullAll(rd);}
+    detailFocus(root);
   });
   if(mapBox){
     const m=await qfile('maps',mapBox.dataset.map);
@@ -1521,31 +1485,6 @@ function advFor(A,d,n){
   const rows=A&&Array.isArray(A.rows)?A.rows:[];
   return rows.filter(r=>(r.entries||[]).some(e=>e&&String(e.d)===String(d)&&(n==null||!Array.isArray(e.sections)||!e.sections.length||e.sections.map(String).includes(String(n)))));
 }
-function advListHTML(A,here){
-  const rows=A&&Array.isArray(A.rows)?A.rows:[];
-  if(!rows.length)return '';
-  return `<${here?'p class="rec-sub"':'h4'}>${here?'Whole works against him on this disputation':'Whole works against Suárez'} <span class="cc-ct">${rows.length}</span></${here?'p':'h4'}><ol class="cc-rows adv-rows">${rows.map(r=>{
-    const es=(Array.isArray(r.entries)?r.entries:[]).filter(e=>e&&e.d!=null),yr=r.year?`, ${esc(yearOf(r.year))}`:'';
-    return `<li><div><p class="adv-w"><b>${esc(r.author||'')}</b>${r.title?`, <em>${esc(r.title)}</em>`:''}${yr}${r.tradition?` <small>${esc(r.tradition)}</small>`:''}${r.kind?` <small>${esc(r.kind)}</small>`:''}</p>${r.scope?`<p class="rec-note">${esc(r.scope)}</p>`:''}`
-      +`${es.length?`<ul class="adv-es">${es.map(e=>{const part=placePart(e.d),here=part===S.part&&String(e.d)===String(S.place),pg=e.page!=null&&e.page!==''&&r.slug,secs=Array.isArray(e.sections)?e.sections:[];
-        return `<li${here?' class="here"':''}>${part?`<a href="#${esc([S.deck,part,e.d].join('/'))}">Disputation ${esc(e.d)}</a>`:`Disputation ${esc(e.d)}`}${secs.length&&part?` (${secs.map(n=>`<a href="#${esc([S.deck,part,e.d,`s${n}`].join('/'))}">section ${esc(n)}</a>`).join(', ')})`:''}${e.heading?`: ${esc(e.heading)}`:''}${pg?` ${ccPg(r.slug,e.page,e.end!=null&&e.end!==''&&String(e.end)!==String(e.page)?`pp. ${e.page}–${e.end}`:`p. ${e.page}`)}`:''}${here?' <small>this disputation</small>':''}</li>`;}).join('')}</ul>`:''}</div></li>`;}).join('')}</ol>`;
-}
-async function advFill(box){
-  const A=await advFile();
-  if(box.isConnected)box.innerHTML=advListHTML(A);
-}
-// AN ANSWER'S DOSSIER: the work, its heading and gist, the sections it answers, its answers section by section, the whole works
-function ansDossierHTML(k){
-  const A=PL.rec&&Array.isArray(PL.rec.answers)?PL.rec.answers:[],a=A[k];
-  if(!a)return null;
-  const w=D.texts.works[a.slug]||[],work=a.work||w[1]||'',yr=a.year||w[4]||'',secs=Array.isArray(a.sections)?a.sections:[],ss=(PL.props&&PL.props.sections)||[],rows=[];
-  for(const s of ss){const R=recOf(s);if(R)for(const r of R.reception)if((a.slug&&r.slug===a.slug)||(a.author&&fold(r.author||'')===fold(a.author)))rows.push({s,r});}
-  const html=`<div class="dos-hd"><h3 class="dos-h">${esc(a.author||w[0]||'')}</h3><p class="dos-sub">${work?`<em>${esc(work)}</em>`:''}${yr?`, ${esc(yearOf(yr))}`:''}${a.tradition?`; ${esc(a.tradition)}`:''}</p>${a.heading?`<p class="dos-la">${esc(a.heading)}</p>`:''}${a.gist?`<p class="dos-p">${esc(a.gist)}</p>`:''}</div>`
-    +`${secs.length?`<h4>The sections it answers <span class="cc-ct">${secs.length}</span></h4><ol class="cc-rows">${secs.map(n=>{const s=ss.find(x=>String(x.n)===String(n));return `<li><span><button type="button" class="res-of" data-dsel="s${esc(n)}/">Section ${esc(n)}</button>${s&&s.q?` ${esc(s.q)}`:''}</span></li>`;}).join('')}</ol>`:''}`
-    +`${rows.length?`<h4>Its answers, section by section <span class="cc-ct">${rows.length}</span></h4><ol class="rcp-rows">${rows.map(({s,r})=>rcpRowHTML(r,s)).join('')}</ol>`:''}`
-    +'<div class="rec-advs" data-adv></div>';
-  return {title:a.author||w[0]||'',sub:work,html};
-}
 // ── A HOLDER'S DOSSIER: the views he holds in this disputation and Suárez's verdict on each, his pages, his place on the maps
 function holderDossierHTML(slug){
   const P=PL.props,hits=[];
@@ -1570,14 +1509,20 @@ async function holderFill(root){
 }
 // ── A PROBLEM'S DOSSIER (the problems decks): the question in both languages, the verdict in words, its statement, who agrees, the
 // objections it answers, its distinction, the disputations that argue it, where the systems argue it, its other addresses
+// a problem read in full beside the list: the question, the verdict and the answer; the question stated; the objections it answers, each
+// passage set in; its distinction; the disputations that argue it at length; who agrees with it, where the systems argue it
 function probDossierHTML(p,i){
-  const cfg=PRB(),P=PL.props,host=PANE.b,mv=p.moves||p.voetius||[],obs=Array.isArray(p.objections)?p.objections:[],ag=Array.isArray(p.argued)?p.argued.filter(x=>x&&x.slug):[];
+  const cfg=PRB(),P=PL.props,host=PANE.b,mv=p.moves||p.voetius||[],obs=Array.isArray(p.objections)?p.objections:[],ag=Array.isArray(p.argued)?p.argued.filter(x=>x&&x.slug):[],fm=mv.filter(m=>branches(m).length>1);
   host._mv=host._mv||[];
-  const fm=mv.filter(m=>branches(m).length>1),qpg=p.quote_page!=null&&p.quote_page!==''?p.quote_page:p.page,quoted=!!p.quote||obs.some(o=>o.quote)||mv.some(m=>m.quote);
-  return {title:`${cap1(cfg.one)} ${p.n??i+1}`,html:`${probHeadHTML(p,i)}`
-    +`${p.status||p.quote?`<h4>The question stated</h4>${p.status?`<p class="dos-p">${esc(p.status)}</p>`:''}${p.quote?qbHTML({quote:p.quote,w:P.slug,p:qpg,pl:`${cfg.short}, ${atw(P.slug)} ${qpg}`}):''}`:''}`
+  const ctx={host,slug:P.slug,marks:P.marks||{},adv:'',authors:[]},adv=advOf(p,ctx),sl=sealOf(p),qpg=p.quote_page!=null&&p.quote_page!==''?p.quote_page:p.page;
+  const anti=adv&&Array.isArray(p.antithesis)&&p.antithesis.length&&String(p.against||'').trim()?advPairs(p.antithesis):'';
+  const pg=p.page!=null&&p.page!==''?ccPg(P.slug,p.page,`${cfg.short}, ${p.num?`${p.kind==='porisma'?'Corollary':'Question'} ${p.num}, `:''}p. ${p.page}`):'';
+  const quoted=!!p.quote||obs.some(o=>o.quote)||mv.some(m=>m.quote);
+  return {title:`${cap1(cfg.one)} ${p.n??i+1}`,html:`<div class="dos-hd"><p class="dos-sub">${esc(cap1(cfg.one))} ${esc(p.n??i+1)} ${pg}</p><h3 class="dos-h">${esc(p.q||'')}</h3>${p.la?`<p class="dos-la" lang="la">${esc(p.la)}${p.mark_la?` <span class="pr-mk">${esc(p.mark_la)}</span>`:''}</p>`:''}`
+    +`<p class="pr-v">${sl?`<span class="seal sm s-${sl[1]}" data-s="${esc(sl[0])}" aria-hidden="true"></span> `:''}<span class="pr-vw">${esc(p.verdict||ctx.marks[p.mark]||'')}</span>${adv?`<span class="pr-adv">, against ${adv}</span>`:''}</p>${p.answer?`<p class="dos-p">${esc(p.answer)}</p>`:''}</div>`
+    +`${p.status||p.quote||anti?`<h4>The question stated</h4>${p.status?`<p class="dos-p">${esc(p.status)}</p>`:''}${anti?`<p class="mv-adv">The antithesis: ${anti}</p>`:''}${p.quote?qbHTML({quote:p.quote,w:P.slug,p:qpg,pl:`${cfg.short}, ${atw(P.slug)} ${qpg}`}):''}`:''}`
     +`${obs.length?`<h4>Objections answered <span class="cc-ct">${obs.length}</span></h4><ol class="objs tg">${obs.map(o=>objHTML(o,{slug:P.slug})).join('')}</ol>`:''}`
-    +`${fm.length?`<h4>The distinction</h4>${fm.map(m=>`<p class="fk-h">As ${esc(moveWho(m).s||'the disputation')} distinguishes it in ${moveLink(m,host)}</p>${forkHTML(m.distinguo)}`).join('')}`:''}`
+    +`${fm.length?`<h4>The distinction${fm.length>1?'s':''}</h4>${fm.map(m=>`<p class="fk-h">As ${esc(moveWho(m).s||'the disputation')} distinguishes it in ${moveLink(m,host)}</p>${forkHTML(m.distinguo)}`).join('')}`:''}`
     +`${mv.length?`<h4>Argued at length <span class="cc-ct">${mv.length}</span></h4><ol class="argued tg">${mv.map(m=>moveHTML(m,host)).join('')}</ol>`:''}`
     +`${quoted||!(p.status||obs.length||mv.length)?'':'<p class="qb-none">No passage picked</p>'}${
     probRecBody(p,ag)}`};
@@ -1607,61 +1552,83 @@ function dossierOf(pf){
   const P=PL.props;
   if(!P)return null;
   if(S.deck==='metaphysics'){
-    if(/^a\d+$/.test(S.art||'')){const d=ansDossierHTML(Number(S.art.slice(1)));if(d)return {...d,kind:'answer'};}
-    const ss=P.sections||[],m=/^s(\d+)$/.exec(S.art||''),s=(m&&ss.find(x=>String(x.n)===m[1]))||ss[0];
+    const ss=P.sections||[];
+    // an answering work's old address reads its author beside the first section it answers
+    if(/^a\d+$/.test(S.art||'')){const a=((PL.rec||{}).answers||[])[Number(S.art.slice(1))];if(a){const s=ss.find(x=>(a.sections||[]).map(String).includes(String(x.n)))||ss[0];if(s)return rcvDossier(s,hslug({author:a.author}),pf);}}
+    const m=/^s(\d+)$/.exec(S.art||''),s=(m&&ss.find(x=>String(x.n)===m[1]))||ss[0];
     if(!s)return null;
     if(/^h[a-z0-9-]+$/.test(S.sel||'')){const d=holderDossierHTML(S.sel.slice(1));return {...d,kind:'holder',s};}
-    const c=pf&&s.controversy?pf._by.get(s.controversy)||null:null,sel=S.sel||(COMPACT&&s.opinions&&s.opinions.length?`o${s.opinions[0].i}`:'');
-    return {kind:'section',s,sel,c,title:`Section ${s.n}`,html:`${COMPACT?`<div class="cc-slot" data-ctl="${esc(s.controversy||'')}"><p class="rec-note">Loading Suárez’s discussion…</p></div>`:''}${recHTML(s,sel,c)}`};
+    if(/^w[a-z0-9-]+$/.test(S.sel||''))return rcvDossier(s,S.sel.slice(1),pf);
+    const c=pf&&s.controversy?pf._by.get(s.controversy)||null:null,sel=S.sel||'';
+    return {kind:'section',s,sel,c,title:`Section ${s.n}`,html:`<section class="read-op">${readingHTML(s,sel,c)}</section>${recHTML(s,sel,c)}`};
   }
   const ps=P.problems||[],m=/^p(\d+)$/.exec(S.art||''),i=m?ps.findIndex(x=>String(x.n)===m[1]):0,k=i<0?0:i,p=ps[k];
   if(!p)return null;
-  if(COMPACT)return {...probDossierHTML(p,k),kind:'problem'};
-  const ag=Array.isArray(p.argued)?p.argued.filter(x=>x&&x.slug):[];
-  return {title:`${cap1(PRB().one)} ${p.n??k+1}`,html:probHeadHTML(p,k)+probRecBody(p,ag),kind:'problem'};
+  return {...probDossierHTML(p,k),kind:'problem'};
 }
-// what arrives later: the map, the atlas and the whole works against Suárez; in the compact view the card, its chosen part marked
+// what is read beside a section: an opinion in full (the position as Suárez states it, the arguments with their pages, the words as
+// Suárez reports them, the holder's own words), or Suárez's resolution in full (his reasons, his arguments, his words)
+function readingHTML(s,sel,c){
+  const P=PL.props,ops=c?ccOps(c):[];
+  const reported=views=>views.filter(v=>v.quote).map(v=>`<h5 class="cc-lbl">As Suárez reports it${views.length>1?`: ${esc(lowerThe(v.label||''))}`:''}</h5>${qbHTML({quote:v.quote,w:P.slug,p:v.page,label:`${PRB().short}, ${lowerThe(v.label||'')}`})}`).join('');
+  if(c&&/^c\d+$/.test(sel)){const k=Number(sel.slice(1)),o=ops[k];if(o)return ccOpHTML(c,o,k,null)+reported((s.opinions||[]).filter(v=>ccMatch(c,s,v)===k));}
+  if(/^o\d+$/.test(sel)){
+    const v=(s.opinions||[]).find(x=>`o${x.i}`===sel);
+    if(v){const k=c?ccMatch(c,s,v):-1,sv=SV[v.suarez_on];
+      return `<section class="cc-op"><p class="cc-opn">${esc(cap1(v.label||''))}</p><h4 class="cc-oph">${holdersHTML(v.holders,s.n)||esc(cap1(v.label||''))}</h4>${sv?`<p class="op-v"><span class="sv sv-${esc(v.suarez_on)}">${sv[0]}</span></p>`:''}`
+        +`<h5 class="cc-lbl">Position, as Suárez states it</h5><p class="cc-pos">${esc(v.position||'')}</p>${reported([v])}${v.page!=null&&v.page!==''&&!v.quote?`<p class="ob-pg">${ccPg(P.slug,v.page,`${PRB().short}, p. ${v.page}`)}</p>`:''}</section>${
+        k>=0?ccOpHTML(c,ops[k],k,null):''}`;}
+  }
+  if(c&&!ops.length)return ccSideHTML(c,'a')+ccSideHTML(c,'b')+ccJudgHTML(c,null,s);
+  if(c)return ccJudgHTML(c,null,s);
+  const r=s.suarez||{};
+  return r.resolution||r.quote?`<section class="cc-judgment"><h4 class="cc-jdh">Suárez resolves</h4>${r.resolution?`<p class="dos-p">${esc(r.resolution)}</p>`:''}${r.quote?qbHTML({quote:r.quote,w:P.slug,p:r.page,pl:`${PRB().short}, p. ${r.page}`,clip:true,full:true}):''}</section>`:'';
+}
+// what arrives later: the readers, the strip, the map and the atlas; a split inside a school marked and brought into view
 async function dossierFill(root,d,scroller){
   if(d.kind==='holder'){holderFill(root);return;}
-  if(d.kind==='answer'){const b=root.querySelector('.rec-advs[data-adv]');if(b)advFill(b);return;}
   if(d.kind!=='section')return;
   recFill(root,d.s,d.sel,d.c);
-  const slot=root.querySelector('.cc-slot');
   root.querySelectorAll('.is-sel').forEach(x=>x.classList.remove('is-sel'));
-  if(/^i\d+$/.test(d.sel||'')){const ib=root.querySelectorAll('.rec .intra')[Number(d.sel.slice(1))];if(ib){ib.classList.add('is-sel');intoView(scroller,ib);}return;}
-  if(!slot)return;
-  const pf=await pairFile(),c=pf&&pf._by.get(slot.dataset.ctl);
-  if(!slot.isConnected)return;
-  slot.innerHTML=c?ccCardHTML(c,d.s.n,d.s):'<p class="rec-note">Suárez’s discussion of this section is not in the controversies yet.</p>';
-  qbAuto(slot);
-  if(!c)return;
-  const {s} = d,op=/^o\d+$/.test(d.sel)?(s.opinions||[]).find(o=>`o${o.i}`===d.sel):null,k=d.sel==='r'?'r':/^c\d+$/.test(d.sel)?d.sel.slice(1):op?ccMatch(c,s,op):-1;
-  const el=k==='r'?slot.querySelector('[data-cco="r"]'):k!==-1?slot.querySelector(`[data-cco="${k}"]`):null;
-  if(el){el.classList.add('is-sel');intoView(scroller,el);}
+  if(/^i\d+$/.test(d.sel||'')){const ib=root.querySelectorAll('.rec .intra')[Number(d.sel.slice(1))];if(ib){ib.classList.add('is-sel');intoView(scroller,ib);}}
 }
 const intoView=(sc,el)=>{if(!sc||!el)return;sc.scrollTop+=el.getBoundingClientRect().top-sc.getBoundingClientRect().top-12;};
 function rmodeHTML(){
   const n=foldCopies(commentators().map(c=>({...c,also:[]}))).length;
   return `<div class="seg rmode" role="group" aria-label="What this pane shows"><button type="button" data-rm="dossier" aria-pressed="${rmode()==='dossier'}">${S.deck==='metaphysics'?'This section':`This ${PRB().one}`}</button><button type="button" data-rm="works" aria-pressed="${rmode()==='works'}">Works beside <small>${n}</small></button></div>`;
 }
+// where the reading should open: at the readers, at an objection; kept until the pane or the sheet has drawn the reading
+let DFOCUS=null;
+function detailFocus(root){
+  if(!DFOCUS||!root||!root.isConnected)return;
+  const sc=root.classList.contains('dos')||root.classList.contains('bb')?root:root.querySelector('.dos')||root;
+  const el=DFOCUS.to==='recv'?root.querySelector('#rcv-h'):DFOCUS.ob!=null?root.querySelectorAll('.objs>li')[DFOCUS.ob]:null;
+  if(!el)return;
+  DFOCUS=null;
+  root.querySelectorAll('.is-sel').forEach(x=>x.classList.remove('is-sel'));
+  if(el.tagName==='LI')el.classList.add('is-sel');
+  intoView(sc,el);
+}
 async function paneDossier(side){
-  const host=PANE[side],key=['dos',PL.key,S.art||'',S.sel||'',LANE,COMPACT].join('|');
-  if(SHOWN[side]===key)return;
+  const host=PANE[side],key=['dos',PL.key,S.art||'',S.sel||'',LANE].join('|');
+  if(SHOWN[side]===key){detailFocus(host.querySelector('.dos'));return;}
   SHOWN[side]=key;RUN[side]++;
-  const token=RUN[side],pf=S.deck==='metaphysics'&&(COMPACT||/^c\d+$/.test(S.sel||''))?await pairFile():PAIRD;
+  const token=RUN[side],pf=S.deck==='metaphysics'?await pairFile():PAIRD;
   if(token!==RUN[side])return;
   const d=dossierOf(pf);
-  if(!d){host.innerHTML=`<header class="ph"><div class="ph-row">${rmodeHTML()}</div></header><div class="scroll"><p class="note">Choose a ${S.deck==='metaphysics'?'view':PRB().one} on the left.</p></div>`;return;}
-  host.innerHTML=`<header class="ph"><div class="ph-row">${rmodeHTML()}</div><p class="dos-ctx" aria-live="polite">${dosCtx(d)}</p></header><div class="scroll dos tg">${d.html}</div>`;
+  if(!d){host.innerHTML=`<header class="ph"><div class="ph-row">${rmodeHTML()}</div></header><div class="scroll"><p class="note">Choose a ${S.deck==='metaphysics'?'section':PRB().one} on the left.</p></div>`;return;}
+  host.innerHTML=`<header class="ph"><div class="ph-row">${rmodeHTML()}</div><p class="dos-ctx" aria-live="polite">${dosCtx(d)}</p></header><div class="scroll dos tg" tabindex="-1">${d.html}</div>`;
   host._mv=host._mv||[];
   if(TG){TG.mount(host);TG.layout(host);}
   qbAuto(host);
+  qbFullAll(host);
+  detailFocus(host.querySelector('.dos'));
   await dossierFill(host,d,host.querySelector('.scroll'));
 }
 const dosCtx=d=>(d.kind==='section'?`Section ${esc(d.s.n)}, ${esc(d.s.q||'')}`:d.kind==='holder'?`${esc(d.title)} in this disputation`:esc(d.title));
 // on a phone the dossier rises in the sheet
 async function dossierSheet(from){
-  const pf=S.deck==='metaphysics'&&(COMPACT||/^c\d+$/.test(S.sel||''))?await pairFile():PAIRD,d=dossierOf(pf);
+  const pf=S.deck==='metaphysics'?await pairFile():PAIRD,d=dossierOf(pf);
   if(!d)return;
   const sh=sheetEl();
   sh.querySelector('.who').textContent=d.kind==='section'?`Section ${d.s.n}`:d.title;
@@ -1671,49 +1638,42 @@ async function dossierSheet(from){
   if(TG){TG.mount(sh);TG.layout(sh);}
   sheetUp(from||null);
   qbAuto(bb);
+  qbFullAll(bb);
+  detailFocus(bb);
   dossierFill(bb,d,bb);
 }
 // a choice on the left: the address keeps it (the left pane stays where it is), the right pane or the sheet shows its dossier
 let DOSBACK=null;
-function selectDos(art,sel,from){
+function selectDos(art,sel,from,opt){
   if(/^h/.test(sel||'')&&!/^h/.test(S.sel||'')&&S.art)DOSBACK={art:S.art,sel:S.sel||''};
   S.art=art;S.sel=/^s\d+$/.test(art)&&sel?sel:null;S.r=null;S.i=null;PANE.a._art=art;
   history.replaceState(null,'',`#${hashOf()}`);
+  const row=/^[ps]\d+$/.test(art)?accOpen(PANE.a,art,false):null;
+  if(row&&opt&&opt.reveal)probInView('a',row,false);
+  DFOCUS=opt&&(opt.to||opt.ob!=null)?{to:opt.to||null,ob:opt.ob!=null?Number(opt.ob):null}:null;
   markSel();
   RMODE[S.deck]='dossier';
   SHOWN.b='';
-  if(isPhone())dossierSheet(from);
+  if(isPhone()){if(!opt||opt.sheet!==false)dossierSheet(from);}
   else paneDossier('b');
 }
-// the chosen view, problem, holder or answer marked on the left: in full on the card (a view of the props on the card's
-// opinion that answers to it), in the compact view on its row
+// the chosen section, opinion, objection or problem marked in the list
 function markSel(){
   const A=PANE.a;
-  A.querySelectorAll('[aria-current="true"]').forEach(x=>{if(x.closest('.secs,.probs,.ansb'))x.removeAttribute('aria-current');});
-  const m=/^([psa])(\d+)$/.exec(S.art||'');
+  A.querySelectorAll('[aria-current="true"]').forEach(x=>{if(x.closest('.secs,.probs'))x.removeAttribute('aria-current');});
+  const m=/^([ps])(\d+)$/.exec(S.art||'');
   if(!m)return;
   const row=document.getElementById(`a-${m[1]}${m[2]}`);
   if(!row)return;
-  if(m[1]!=='s'){row.setAttribute('aria-current','true');return;}
-  const sel=S.sel||'',full=row.querySelector('.cc-full .cc-op,.cc-full .cc-judgment'),s=((PANE.a._P||{}).sections||[]).find(x=>String(x.n)===m[2]),box=row.querySelector('.cc-full');
-  const c=s&&s.controversy&&PAIRD?PAIRD._by.get(s.controversy):null,mark=x=>{if(x)x.setAttribute('aria-current','true');};
-  if(!sel){mark(row.querySelector('.pr-n'));return;}
-  if(/^h/.test(sel)){
-    row.querySelectorAll(`a[data-hsel="s${m[2]}/${sel}"]`).forEach(mark);
-    if(full&&c){const hits=(s.opinions||[]).flatMap(o=>o.holders||[]).filter(h=>`h${hslug(h)}`===sel),names=new Set(hits.flatMap(h=>[fold(h.author||''),nmf(h.name||'')]).filter(x=>x.length>2));
-      ccOps(c).forEach((p,i)=>{const hay=` ${fold(p.holder)} ${fold(p.author||'')} `;if([...names].some(x=>hay.includes(` ${x} `)))mark(row.querySelector(`.cc-op[data-cco="${i}"]`));});}
-    return;
-  }
-  if(full||(box&&!COMPACT)){
-    if(/^c\d+$/.test(sel))mark(row.querySelector(`.cc-op[data-cco="${sel.slice(1)}"]`));
-    else if(sel==='r')mark(row.querySelector('.cc-judgment'));
-    else if(/^o\d+$/.test(sel)&&c){const o=(s.opinions||[]).find(x=>`o${x.i}`===sel),k=o?ccMatch(c,s,o):-1;if(k>=0)mark(row.querySelector(`.cc-op[data-cco="${k}"]`));}
-    return;
-  }
-  if(/^o\d+$/.test(sel))mark(row.querySelector(`#a-s${m[2]}-${sel}`));
-  else if(sel==='r')mark(row.querySelector('.res'));
-  else if(/^i\d+$/.test(sel))mark(row.querySelectorAll('.intra')[Number(sel.slice(1))]);
-  else if(/^c\d+$/.test(sel)&&c){const o=viewOfCard(c,s,Number(sel.slice(1)));if(o)mark(row.querySelector(`#a-s${m[2]}-o${o.i}`));}
+  const mark=x=>{if(x)x.setAttribute('aria-current','true');};
+  mark(row.querySelector('.pr-n'));
+  if(m[1]==='p'){if(DFOCUS&&DFOCUS.ob!=null)mark(row.querySelectorAll('.ob-row')[DFOCUS.ob]);return;}
+  const sel=S.sel||'',s=((A._P||{}).sections||[]).find(x=>String(x.n)===m[2]),c=s&&s.controversy&&PAIRD?PAIRD._by.get(s.controversy):null;
+  if(/^h/.test(sel)&&c){const hits=(s.opinions||[]).flatMap(o=>o.holders||[]).filter(h=>`h${hslug(h)}`===sel),names=new Set(hits.flatMap(h=>[fold(h.author||''),nmf(h.name||'')]).filter(x=>x.length>2));
+    ccOps(c).forEach((p,i)=>{const hay=` ${fold(p.holder)} ${fold(p.author||'')} `;if([...names].some(x=>hay.includes(` ${x} `)))mark(row.querySelector(`.op-row[data-cco="${i}"]`));});return;}
+  if(/^c\d+$/.test(sel))mark(row.querySelector(`.op-row[data-cco="${sel.slice(1)}"]`));
+  else if(sel==='r')mark(row.querySelector('.jd-row'));
+  else if(/^o\d+$/.test(sel)){const o=(s.opinions||[]).find(x=>`o${x.i}`===sel),k=c&&o?ccMatch(c,s,o):-1;mark(k>=0?row.querySelector(`.op-row[data-cco="${k}"]`):row.querySelector(`.op-row[data-osel="s${m[2]}/${sel}"]`));}
 }
 // a chip opens the page it cites beside the text: the page window's own open() once page-window.js has one; until then the page
 // window drawn in the right pane on a wide screen, in a sheet from the foot of the screen on a phone. A work cited without a page
@@ -1738,7 +1698,7 @@ function sheetUp(from){
 function besideBox(chip){
   if(!isPhone()){
     const host=PANE.b;SHOWN.b='';RUN.b++;
-    host.innerHTML=`<header class="ph bh"><button type="button" class="back" data-beside-back>← ${S.deck==='vitringa'?'All works beside this chapter':S.r?'Back':`All ${esc(WHO())}`}</button><p class="who"></p><p class="what"></p><a class="open" target="_blank" rel="noopener" hidden>Open in the reader ↗</a></header><div class="scroll bb"></div>`;
+    host.innerHTML=`<header class="ph bh"><button type="button" class="back" data-beside-back>← ${S.deck==='vitringa'?'All works beside this chapter':S.r||(DOSDECK()&&rmode()==='dossier')?'Back':`All ${esc(WHO())}`}</button><p class="who"></p><p class="what"></p><a class="open" target="_blank" rel="noopener" hidden>Open in the reader ↗</a></header><div class="scroll bb"></div>`;
     return host;
   }
   const sh=sheetUp(chip),bb=sh.querySelector('.bb');bb.classList.remove('dos','tg');delete bb.dataset.kind;
@@ -1844,11 +1804,16 @@ document.addEventListener('click',e=>{
   if(!host||!host._pi||!host.querySelector('.probs'))return;
   const side=host===PANE.b?'b':'a',plain=!(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button!==0);
   // a view, its holder, Suárez's resolution or a school's split chosen on the Suárez deck; a problem chosen on the problems decks
+  const at=e.target.closest('.acc-t');
+  if(at&&side==='a'){const row=at.closest('.pr'),m=/^a-([ps]\d+)$/.exec(row.id||'');if(!m)return;
+    if(at.getAttribute('aria-expanded')==='true'){accOpen(host,m[1],true);return;}
+    selectDos(m[1],null,at,{sheet:false,reveal:true});return;}
   const os=e.target.closest('[data-osel]');
-  if(os&&side==='a'){const [a,b]=os.dataset.osel.split('/');selectDos(a,b||null,os);return;}
+  if(os&&side==='a'){const [a,b]=os.dataset.osel.split('/');selectDos(a,b||null,os,{sheet:true,to:os.dataset.to||null,ob:os.dataset.ob!=null?os.dataset.ob:null});return;}
   const as=e.target.closest('[data-asel]');
-  if(as&&side==='a'){selectDos(as.dataset.asel,null,as);return;}
-  if(e.target.closest('.pcompact')){COMPACT=!COMPACT;try{localStorage.setItem('fr_course_compact',COMPACT?'1':'0');}catch(_){}SHOWN.a='';SHOWN.b='';render();return;}
+  if(as&&side==='a'){selectDos(as.dataset.asel,null,as,{sheet:true});return;}
+  const pw=e.target.closest('a.pg[data-pw]');
+  if(pw&&plain&&side==='a'){e.preventDefault();const [sl,pg]=pw.dataset.pw.split('|'),w=D.texts.works[sl]||[],hl=((pw.closest('[data-tg-pv-hl]')||{}).dataset||{}).tgPvHl||'';besideOpen([pw.textContent.trim(),sl,pg,w[1]||'',w[0]||''],pw,hl);return;}
   const hs=e.target.closest('a[data-hsel]');
   if(hs&&plain&&side==='a'){e.preventDefault();const [a,b]=hs.dataset.hsel.split('/');selectDos(a,b,hs);return;}
   const ms=e.target.closest('[data-ms],[data-msv]');
@@ -1861,21 +1826,16 @@ document.addEventListener('click',e=>{
   if(ro){const el=document.getElementById(ro.dataset.op);if(el)probInView(side,el,true);return;}
   // a wide screen chooses by the body of a card, a view, a problem; a phone by their own buttons, so that reading by touch opens nothing
   if(side==='a'&&!isPhone()&&!e.target.closest('a,button,select,input,summary,label,.tg-pvw,.qb-src')&&!(window.getSelection&&String(window.getSelection()).trim())){
-    const rowN=x=>(/^a-s(\d+)$/.exec((x.closest('.pr')||{}).id||'')||[])[1],cco=e.target.closest('.cc-full .cc-op'),jd=e.target.closest('.cc-full .cc-judgment'),an=e.target.closest('.ansb .ans');
-    if(cco&&/^\d+$/.test(cco.dataset.cco||'')&&rowN(cco)){selectDos(`s${rowN(cco)}`,`c${cco.dataset.cco}`,cco.querySelector('.cc-sel'));return;}
+    const rowN=x=>(/^a-s(\d+)$/.exec((x.closest('.pr')||{}).id||'')||[])[1],jd=e.target.closest('.cc-main .cc-judgment'),op=e.target.closest('.secs .op'),res=e.target.closest('.secs .res');
     if(jd&&rowN(jd)){selectDos(`s${rowN(jd)}`,'r',jd.querySelector('.cc-sel'));return;}
-    if(an){selectDos(`a${an.dataset.ai}`,null,an.querySelector('.cc-sel'));return;}
-    if(!COMPACT||!e.target.closest('.ob,.mv,.pths,.intras,.fork-w,.stated,.objs,.argued,.cc-inline,.rcp')){
-      const op=e.target.closest('.secs .op'),res=e.target.closest('.secs .res'),pr=e.target.closest('.probs:not(.secs)>.pr');
-      if(op){const row=op.closest('.pr'),m=/^a-s(\d+)-o(\d+)$/.exec(op.id||'');if(row&&m){selectDos(`s${m[1]}`,`o${m[2]}`,op.querySelector('.op-l'));return;}}
-      if(res){const m=/^a-s(\d+)$/.exec((res.closest('.pr')||{}).id||'');if(m){selectDos(`s${m[1]}`,'r',res.querySelector('.res-b'));return;}}
-      if(pr&&DOSDECK()){const m=/^a-p(\d+)$/.exec(pr.id||'');if(m){selectDos(`p${m[1]}`,null,pr.querySelector('.pr-n'));return;}}
-    }
+    if(op){const m=/^a-s(\d+)-o(\d+)$/.exec(op.id||'');if(m){selectDos(`s${m[1]}`,`o${m[2]}`,op.querySelector('.op-l'));return;}}
+    if(res){const m=/^a-s(\d+)$/.exec((res.closest('.pr')||{}).id||'');if(m){selectDos(`s${m[1]}`,'r',res.querySelector('.res-b'));return;}}
+    // a collapsed row opens by any of its line; the open one's board is for choosing
+    const head=e.target.closest('.probs>.pr');
+    if(head&&!e.target.closest('.acc-b')){const m=/^a-([ps]\d+)$/.exec(head.id||''),bt=head.querySelector('.acc-t');if(m&&bt&&bt.getAttribute('aria-expanded')!=='true'){selectDos(m[1],null,bt,{sheet:false,reveal:true});return;}}
   }
   const hol=e.target.closest('a.hol');
   if(hol&&plain){e.preventDefault();const [sl,pg]=String(hol.dataset.hol).split('|'),w=D.texts.works[sl]||[];besideOpen([hol.textContent.trim(),sl,pg,w[1]||'',hol.dataset.who||w[0]||''],hol,'');return;}
-  const pt=e.target.closest('.pr-t');
-  if(pt){probPanel(pt,pt.getAttribute('aria-expanded')!=='true');return;}
   const pp=e.target.closest('a.pr-pg');
   if(pp&&plain){e.preventDefault();const P=host._P,p=P&&P.problems[Number(pp.dataset.pp)],w=(P&&D.texts.works[P.slug])||[];if(p)besideOpen([PRB().short,P.slug,p.page,w[1]||PRB().base,w[0]||''],pp,p.q);return;}
   const mo=e.target.closest('a.mv-open');
@@ -2136,8 +2096,8 @@ document.addEventListener('click',e=>{
   const r=e.target.closest('[data-read]');if(r){S.r=r.dataset.read;S.i=r.dataset.i!=null?+r.dataset.i:null;show('b');go();return;}
   if(e.target.closest('[data-back]')){S.r=null;S.i=null;go();return;}
   const rm=e.target.closest('[data-rm]');
-  if(rm&&rm.dataset.rm==='dossier'&&DOSDECK()&&S.deck!=='metaphysics'&&!/^p\d+$/.test(S.art||'')){const p0=((PL.props||{}).problems||[])[0];if(p0){selectDos(`p${p0.n??1}`,null,rm);return;}}
   if(rm){RMODE[S.deck]=rm.dataset.rm;SHOWN.b='';if(rm.dataset.rm==='dossier'){S.r=null;S.i=null;}render();return;}
+  const sm=e.target.closest('.psum-more');if(sm){const p=document.getElementById(sm.getAttribute('aria-controls')),open=sm.getAttribute('aria-expanded')!=='true';if(p)p.classList.toggle('is-open',open);sm.setAttribute('aria-expanded',String(open));sm.textContent=open?'Less':'More';return;}
   const dm=e.target.closest('#dlMore');if(dm){const dl=$('#dlede'),open=dm.getAttribute('aria-expanded')!=='true';dl.classList.toggle('is-open',open);dm.setAttribute('aria-expanded',String(open));dm.textContent=open?'Less':'More';return;}
   const tc=e.target.closest('.c-toc');if(tc){const box=document.getElementById(tc.getAttribute('aria-controls')),open=tc.getAttribute('aria-expanded')!=='true';tc.setAttribute('aria-expanded',String(open));if(box)box.hidden=!open;return;}
   const w=e.target.closest('.switch [data-show]');if(w){show(w.dataset.show);return;}
@@ -2191,6 +2151,31 @@ document.addEventListener('keydown',e=>{
   const list=[...t.closest('.tabs').querySelectorAll('[role="tab"]')],i=list.indexOf(t),n=list.length;
   list[e.key==='Home'?0:e.key==='End'?n-1:(i+(e.key==='ArrowRight'?1:-1)+n)%n].focus();
   e.preventDefault();
+},true);
+document.addEventListener('keydown',e=>{
+  if(e.altKey||e.ctrlKey||e.metaKey||!e.target||!e.target.closest)return;
+  const t=e.target,head=t.closest('#paneA .probs .acc-t'),item=t.closest('#paneA .op-row,#paneA .jd-row');
+  if((head||item)&&(e.key==='ArrowDown'||e.key==='ArrowUp')){
+    const list=head?[...PANE.a.querySelectorAll('.probs>.pr:not([hidden]) .acc-t')]:[...t.closest('.acc-b').querySelectorAll('.op-row,.jd-row')];
+    const nx=list[list.indexOf(head||item)+(e.key==='ArrowDown'?1:-1)];
+    e.preventDefault();
+    if(!nx)return;
+    nx.focus();
+    if(head){const m=/^a-([ps]\d+)$/.exec(nx.closest('.pr').id||'');if(m)selectDos(m[1],null,nx,{sheet:false,reveal:true});}
+    return;
+  }
+  if((head||item)&&e.key==='ArrowRight'){
+    e.preventDefault();
+    if(item){item.click();if(!isPhone()){const d=PANE.b.querySelector('.dos');if(d)d.focus({preventScroll:true});}return;}
+    const bd=document.getElementById(head.getAttribute('aria-controls')),first=bd&&!bd.hidden&&bd.querySelector('.op-row,.jd-row');
+    if(first)first.focus();else head.click();
+    return;
+  }
+  if(item&&e.key==='ArrowLeft'){e.preventDefault();const h=item.closest('.pr').querySelector('.acc-t');if(h)h.focus();return;}
+  if(e.key==='ArrowLeft'&&t.closest('#paneB .dos')&&!t.closest('input,textarea,select,[contenteditable]')){
+    const back=PANE.a.querySelector('.op-row[aria-current="true"],.jd-row[aria-current="true"]')||PANE.a.querySelector('.acc-t[aria-expanded="true"]');
+    if(back){e.preventDefault();back.focus();}
+  }
 },true);
 window.addEventListener('hashchange',()=>{state();render();});
 Promise.all([J(`/v1/sentences.json${VER}`),J(`/v1/summa.json${VER}`),J(`/v1/decks/texts.json${VER}`),J(`/v1/decks/canon.json${VER}`)])
