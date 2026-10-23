@@ -10,7 +10,7 @@ const $=s=>document.querySelector(s),esc=v=>String(v==null?'':v).replace(/[&<>"'
 const J=u=>fetch(u).then(r=>r.ok?r.json():null).catch(()=>null);
 const READER=(window.__FR_READER_PATH__||'/read');
 const read=(w,p)=>`${READER}?w=${encodeURIComponent(w)}#b${encodeURIComponent(p)}-0`;
-const MAPS='/the-faith-received/maps/',ATLAS='/the-faith-received/disputed-questions/',COURSES='/the-faith-received/courses/',TAIL=' | Controversies | The Faith Received | Mere Orthodoxy';
+const MAPS='/the-faith-received/maps/',ATLAS='/the-faith-received/disputed-questions/',DECKS='/the-faith-received/commentary-decks/',TAIL=' | Controversies | The Faith Received | Mere Orthodoxy';
 /* an author's page on this site, by his name folded as the author page folds it */
 const roomHref=r=>`/the-faith-received/author/?a=${encodeURIComponent(fold(r.a))}`;
 /* the library searched for a man no room holds (his name in every page), and the lexicon's entry for a term; on Mere Orthodoxy the port
@@ -30,7 +30,7 @@ const shortTitle=t=>String(t||'').replace(/\s*\(.*$/,'');
    `schools`). A name in two schools (Gregory of Rimini) takes the later, as the build does. SAME: the name the library's rooms and maps
    give a man the school map names otherwise (one person, two spellings). */
 const SCHOOLS={"Thomist":["Thomas Aquinas","Johannes Capreolus","Thomas Cajetan","Sylvester of Ferrara","Domingo Báñez","John of St. Thomas","Poinsot / John of St. Thomas","Jean-Baptiste Gonet","Charles René Billuart","Domingo de Soto","Francisco de Vitoria","Melchior Cano","Salamanticenses","Vincent Contenson","Antoine Goudin","Thomas of Strasbourg","Charles-René Billuart","Franciscus Sylvius","Norberto del Prado","Tommaso Zigliara","Francisco Zumel"],"Scotist":["John Duns Scotus","Juan de Rada","Johannes Maria Zamora","Claude Frassen","Bartolomeo Mastri","Francis of Meyronnes","Antonius Andreas","William of Vaurouillon","Hugh Cavellus","Luke Wadding","John Punch","Francis Lychetus","Joannes Poncius","Mastri / Mastrius","Joannes de Bassolis","Bonaventura Baro, O.F.M.","Juan de Rada Obs."],"Nominalist":["William of Ockham","Gabriel Biel","Gregory of Rimini","Pierre d'Ailly","Adam Wodeham","Marsilius of Inghen"],"Jesuit":["Francisco Suárez","Gabriel Vásquez","Luis de Molina","Robert Bellarmine","Leonard Lessius","Martin Becanus","Juan de Lugo","Diego Laínez","Alfonso Salmerón","Francisco de Toledo","Martínez de Ripalda","Jakob Gretser","Adam Tanner","Gregory of Valencia"],"Augustinian":["Giles of Rome","Gregory of Rimini","Cornelius Jansen","Henry Noris","Lorenzo Berti"],"Other medieval":["Durand of Saint-Pourçain","Peter Aureol","Henry of Ghent","Godfrey of Fontaines","Richard of Middleton","Bonaventure","Albertus Magnus","Alexander of Hales"]};
-const SAME={'John of St. Thomas':'Poinsot / John of St. Thomas','Juan de Rada':'Juan de Rada Obs.','Bartolomeo Mastri':'Mastri / Mastrius','Melchior Cano':'Melchor Cano','Albertus Magnus':'Albert the Great','Lorenzo Berti':'Giovanni Lorenzo Berti','Henry Noris':'Enrico Noris','John Punch':'Joannes Poncius','John Punch (Poncius)':'Joannes Poncius','Bonaventura Baro':'Bonaventura Baro, O.F.M.','Sylvester of Ferrara (Ferrariensis)':'Sylvester of Ferrara'};
+const SAME={'John of St. Thomas':'Poinsot / John of St. Thomas','Juan de Rada':'Juan de Rada Obs.','Bartolomeo Mastri':'Mastri / Mastrius','Melchior Cano':'Melchor Cano','Albertus Magnus':'Albert the Great','Lorenzo Berti':'Giovanni Lorenzo Berti','Henry Noris':'Enrico Noris','John Punch':'Joannes Poncius','John Punch (Poncius)':'Joannes Poncius','Bonaventura Baro':'Bonaventura Baro, O.F.M.','Sylvester of Ferrara (Ferrariensis)':'Sylvester of Ferrara','Salmanticenses':'Salamanticenses'};
 /* WHOSE WORDS: a pair file's own-words passages carry the work, not its author. own.py chose them from one catalogue author's works a
    side: the pair's own author for side a and for a fixed side b; for a side b that varies by question, the first opponent its name
    mentions (NAMES, in order) whom the library holds. AUTH and NAMES are copied from pairs.py. NOTHELD is a snapshot of the NAMES authors
@@ -61,7 +61,15 @@ function netHolder(h,deb){
   const ws=wordsOf(h),hits=Object.keys(N).filter(n=>!isGroup(n)&&ws.every(w=>wordsOf(n).includes(w)));
   return hits.length===1?hits[0]:'';
 }
-const holderMan=(o,deb)=>o.author||(oneName(o.holder)?nameKey(o.holder)||netHolder(o.holder,deb):'');
+/* a holder the debate's network, the library's rooms or the author dates know by his whole name is that man, before the school map's
+   names are tried (its "thomas" is Aquinas, never Thomas Cartwright) */
+const holderMan=(o,deb)=>{
+  if(o.author)return o.author;if(!oneName(o.holder))return '';
+  const h=String(o.holder).trim(),N=netNodesOf(deb);
+  if(N&&N[h]&&!isGroup(h))return h;
+  if(wordsOf(h).length>1&&(roomOf(h)||datesOf(h)))return h;
+  return nameKey(h)||netHolder(h,deb);
+};
 /* the one school a debate's network is of (the Thomists among themselves), else none */
 const intraNet=deb=>{const N=netNodesOf(deb);if(!N)return '';const ks=new Set(Object.values(N).map(n=>fold(n.school)));if(ks.size!==1)return '';const k=[...ks][0];return Object.keys(SCHOOLS).find(x=>fold(x)===k)||'';};
 function schoolFor(name,deb,given){
@@ -78,6 +86,10 @@ const ROOMS_P=Promise.all(SHELVES.map(sh=>J(`${BASE}/v1/bible/${sh}/rooms/index.
 const roomOf=n=>ROOMS.get(pkey(n))||ROOMS.get(fold(n));
 const datesOf=n=>{const T=window.FRTraditionGraphics;return n&&T&&T.dates?T.dates.get(n):null;};
 const who=(n,label)=>{const r=n&&roomOf(n);if(r)return `<a href="${roomHref(r)}">${esc(label||n)}</a>`;return datesOf(n)?`<a href="${esc(searchHref(n))}" title="${esc(`Search the library for ${n}`)}">${esc(label||n)}</a>`:`<span>${esc(label||n)}</span>`;};
+/* the controversies a work shows: the data hides a second reading of one already shown (`dup_of` the one kept) and one with no
+   opposed position; an address that names a hidden one opens the one it repeats */
+const shownCs=d=>d._S||(d._S=d.controversies.filter(c=>!c.hide));
+const liveId=(d,id)=>{const c=cOf(d,id);return c&&c.hide&&c.dup_of&&cOf(d,c.dup_of)?String(c.dup_of):id;};
 const sidesOf=d=>{if(!d._A)d._A=AUTH[d.pair]||[[d.a],d.controversies.some(c=>c.b&&c.b.name)?'varies':d.b];return d._A;};
 function authorOf(d,c,side){
   const A=sidesOf(d);
@@ -109,7 +121,7 @@ const holderAuthor=h=>{const nm=String(h||'').toLowerCase();for(const [k,v] of N
 const opsOf=(c,d)=>{
   const deb=debId((c&&c.debate)||(d&&d.debate)||'');
   return (c.opinions||[]).map(o=>{
-    const au=o.author||'',man=holderMan(o,deb);let s=schoolFor(man||au,deb,o.school||'');
+    const au=o.author||'',man=holderMan(o,deb),given=String(o.school||'').toLowerCase()==='other'?'':o.school||'';let s=schoolFor(man||au,deb,given);
     if(!s&&!au){for(const [re,x] of SCHOOL_WORDS)if(re.test(o.holder||'')){s=x;break;}if(!s)s=schoolOf(holderAuthor(o.holder));}
     return {holder:o.holder||au||'',author:au,man,school:s,party:partyOf(o.party),parts_from:o.parts_from||null,reported:o.reported||'',args:o.arguments||[],position:o.position||'',picks:o.picks||[]};
   });
@@ -162,14 +174,9 @@ function bookOf(d,b){
 function volFetch(slug){if(VOLM.has(slug))return;VOLM.set(slug,null);J(`${BASE}/v1/works/${encodeURIComponent(slug)}/meta.json`).then(m=>{if(!m)return;VOLM.set(slug,[volLike(m.volume)?String(m.volume):'',String(m.title||'')]);if(VIEW==='pair'&&D&&Object.values(D.books||{}).includes(slug)){list();if(CUR)show(CUR,false);}});}
 const bookLabel=(d,c)=>byAuthor(d)&&c.a&&c.a.name?c.a.name:bookOf(d,c.book);
 /* the metaphysical questions are also mapped across the whole tradition (v1/maps q294 onward) and answered in the atlas */
-const ALSO={'suarez-schools':`The same questions across the tradition: <a href="${MAPS}#q294">maps of the metaphysical questions</a> · <a href="${ATLAS}#q294">every answer in the atlas</a>. Read the disputation as a course: <a href="${COURSES}#metaphysics">Metaphysics with Suárez</a>`};
+const ALSO={'suarez-schools':`The same questions across the tradition: <a href="${MAPS}#q294">maps of the metaphysical questions</a> · <a href="${ATLAS}#q294">every answer in the atlas</a>. Read the disputation as a course: <a href="${DECKS}#metaphysics">Metaphysics with Suárez</a>`};
 let IX=null,LIVE=[],DS=[],D=null,CUR=null,PAIR=null,OPEN=null,LUOPEN=null,PMOPEN=null,LAND=false,VIEW='',DEB=null,RUN=0,AMONG=false,NET=null;const KINDS=new Set(),DSCH=new Set();
 const AMONG_LABEL='Among the English divines themselves';
-/* COMPACT OR IN FULL (2026-10-22, owner: "i dont want just two sentences i like the depth the old controversies had"): a question's
-   controversies open in full, each the card the work's own view draws; "Compact" folds them to their questions, the first of each work
-   open in brief. The reader's choice is kept in this browser where it can be, and the page reads right without it. */
-let COMPACT=(()=>{try{return localStorage.getItem('fr_contro_compact')==='1';}catch(_){return false;}})();
-const setCompact=v=>{COMPACT=!!v;try{localStorage.setItem('fr_contro_compact',COMPACT?'1':'0');}catch(_){}};
 /* what is shown, said to a screen reader in a line (the cards are not a live region); a list a filter changed, faded in once */
 const say=t=>{const el=$('#say');if(el)el.textContent=String(t||'');};
 const flash=(el,c)=>{if(!el)return;el.classList.remove(c);void el.offsetWidth;el.classList.add(c);};
@@ -308,7 +315,7 @@ function pairHead(){
   const row=LIVE.find(p=>p.pair===D.pair)||{},dm0=row.debates||D.debates||(D.debate?{[D.debate]:D.n}:{}),dm={};
   for(const [id,n] of Object.entries(dm0))dm[debId(id)]=(dm[debId(id)]||0)+n;
   const ds=Object.entries(dm).filter(([,n])=>n).sort((a,b)=>b[1]-a[1]);
-  $('#src').innerHTML=`<h2 id="pairH">${esc(labelOf(D))}<span class="ct"><span class="sr">, </span>${fmt(D.n)}<span class="sr"> controversies</span></span></h2>
+  $('#src').innerHTML=`<h2 id="pairH">${esc(labelOf(D))}<span class="ct"><span class="sr">, </span>${fmt(shownCs(D).length)}<span class="sr"> controversies</span></span></h2>
     <dl class="lab">${ds.length?`<div><dt>${ds.length>1?'Debates':'Debate'}</dt><dd>${ds.map(([id,n])=>`<a href="#debate/${esc(id)}">${esc(ds.length>1?shortTitle(debTitle(id)):debTitle(id))}</a>${ds.length>1?`<span class="ct"> ${fmt(n)}</span>`:''}`).join(' · ')}</dd></div>`:''}<div><dt>Sides</dt><dd>${sides[0]} and ${sides[1]}</dd></div>
     <div><dt>Argued in</dt><dd><em>${esc(D.source_title)}</em>, ${esc(D.source)}${D.source_note?` (${esc(D.source_note)})`:''}</dd></div></dl>${alsoHTML([D.pair])}`;
 }
@@ -403,9 +410,9 @@ function fillHolders(root,bySchool,here){
   });
 }
 function show(id,push){
-  const i=D.controversies.findIndex(c=>c.id===id);if(i<0)return;const c=D.controversies[i];CUR=id;
+  id=liveId(D,id);const S=shownCs(D),i=S.findIndex(c=>c.id===id);if(i<0)return;const c=S[i];CUR=id;
   document.querySelectorAll('#books button[data-id]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.id===id)));
-  const prev=D.controversies[i-1],next=D.controversies[i+1];
+  const prev=S[i-1],next=S[i+1];
   $('#c').innerHTML=`<header class="c-head"><h3 class="qh">${esc(c.question)}</h3>
     <dl class="lab"><div class="partof" hidden><dt>Part of</dt><dd></dd></div><div><dt>Between them</dt><dd><span class="kind">${esc(KIND[c.kind]||c.kind)}</span></dd></div>${factsHTML(D,c)}
     ${c.place?`<div><dt>Treated at</dt><dd>${esc(c.place)}</dd></div>`:''}
@@ -442,7 +449,7 @@ function partOf(c){
 function list(){
   const q=($('#find').value||'').trim().toLowerCase(),ba=byAuthor(D);
   const byBook=new Map();
-  for(const c of D.controversies){
+  for(const c of shownCs(D)){
     if(KINDS.size&&!KINDS.has(c.kind))continue;
     if(AMONG&&c.among!==true)continue;
     if(q&&!(c.question.toLowerCase().includes(q)||(c.keywords||[]).some(k=>k.toLowerCase().includes(q))||(c.opinions||[]).some(o=>`${o.holder} ${o.author}`.toLowerCase().includes(q))||(ba&&String(c.a.name||'').toLowerCase().includes(q))))continue;
@@ -455,8 +462,11 @@ function list(){
   $('#books').innerHTML=[...byBook.entries()].map(([b,cs])=>`<li><details open><summary>${esc((ba?b:bookOf(D,b))||`Book ${b}`)}<small>${cs.length}</small></summary><ul>${cs.map(c=>`<li><button type="button" data-id="${esc(c.id)}" aria-current="${String(c.id===CUR)}">${esc(c.question)}<small>${esc(KIND[c.kind]||c.kind)}${hasOps(c)?` · ${c.opinions.length} ${c.opinions.length===1?'opinion':'opinions'}`:''}${several&&c.debate?` · ${esc(shortTitle(debTitle(c.debate)))}`:''}</small></button></li>`).join('')}</ul></details></li>`).join('')||'<li class="muted">Nothing matches.</li>';
 }
 /* the address: #<pair>, #<controversy id> (it begins with its pair: thomas-scotus-1-01), #<pair>/<controversy id>; a debate is
-   #debate/<debate>, one of its questions #debate/<debate>/<classic question id, or the first controversy's id>; no address is the first debate */
-function want(){let h='';try{h=decodeURIComponent(location.hash.slice(1));}catch(_){}return h;}
+   #debate/<debate>, one of its questions #debate/<debate>/<question id>[/<n>] (n the controversy shown, from 1; in Suárez's debate a
+   disputation, d31, and its section), one controversy #debate/<debate>/<controversy id>, its works #debate/<debate>/works; the topic and
+   the among toggle ride in the query, as the decks keep their filters (?topic=church+government&among=1); no address is the first debate */
+function want(){let h='';try{h=decodeURIComponent(location.hash.slice(1).split('?')[0]);}catch(_){}return h;}
+const wantQ=()=>{const raw=location.hash.slice(1),i=raw.indexOf('?');return new URLSearchParams(i<0?'':raw.slice(i+1));};
 function pairFor(h){let best=null;for(const p of LIVE){if((h===p.pair||h.startsWith(`${p.pair}-`)||h.startsWith(`${p.pair}/`))&&(!best||p.pair.length>best.pair.length))best=p;}return best;}
 function idFor(h,pair){if(!h.startsWith(`${pair}/`))return h;const rest=h.slice(pair.length+1);return rest.startsWith(`${pair}-`)?rest:`${pair}-${rest}`;}
 async function loadPair(pair,id){
@@ -469,19 +479,20 @@ async function loadPair(pair,id){
   D=d;CUR=null;KINDS.clear();AMONG=false;$('#find').value='';
   pairHead();
   /* the kinds of difference; and where the work marks them, the controversies among the Protestant divines themselves */
-  const am=D.controversies.filter(c=>c.among===true).length;
-  $('#chips').innerHTML=Object.keys(KIND).filter(k=>D.kinds[k]).map(k=>`<button type="button" data-kind="${k}" aria-pressed="false">${esc(KIND[k])} <span class="ct">${D.kinds[k]}</span></button>`).join('');
+  const SC=shownCs(D),am=SC.filter(c=>c.among===true).length,kn={};for(const c of SC)kn[c.kind]=(kn[c.kind]||0)+1;
+  $('#chips').innerHTML=Object.keys(KIND).filter(k=>kn[k]).map(k=>`<button type="button" data-kind="${k}" aria-pressed="false">${esc(KIND[k])} <span class="ct">${kn[k]}</span></button>`).join('');
   $('#cfilt').innerHTML=am?`<button type="button" class="tgl" data-among aria-pressed="false">${AMONG_LABEL}<span class="ct">${fmt(am)}</span></button>`:'';$('#cfilt').hidden=!am;
   $('#note').textContent=cleanNote(D.note);
   list();
-  const first=D.controversies.find(c=>c.id===id)||D.controversies[0];
+  const first=SC.find(c=>c.id===liveId(D,id))||SC[0];
   if(first)show(first.id,false);
 }
 function showPair(pair,id){
   viewIs('pair');
   if(!D||D.pair!==pair){if(PAIR!==pair)loadPair(pair,id);else renderBoard();return;}
   PAIR=pair;renderBoard();$('#note').textContent=cleanNote(D.note);
-  if(id!==CUR)show((D.controversies.find(c=>c.id===id)||D.controversies[0]).id,false);
+  const S=shownCs(D),lid=liveId(D,id);
+  if(lid!==CUR)show((S.find(c=>c.id===lid)||S[0]).id,false);
   else document.title=`${(D.controversies.find(c=>c.id===CUR)||{}).question||labelOf(D)}${TAIL}`;
 }
 
@@ -497,36 +508,54 @@ function showPair(pair,id){
 const schoolsMode=g=>{let t=0,k=0;const ss=new Set();for(const p of g.pairs){const A=AUTH[p.pair],s=A&&A[0].length===1?schoolOf(A[0][0]):'';t+=p.n;if(s){k+=p.n;ss.add(s);}}return t>0&&k>=t*.75&&ss.size>1;};
 /* a controversy in this debate (a file without per-controversy debates counts every one) */
 const inDeb=c=>!c.debate||!DEB||c.debate===DEB.id||debId(c.debate)===DEB.id;
+/* in the view: a controversy of the debate the data shows, of the topic chosen where one is */
+const inView=c=>inDeb(c)&&!c.hide&&(!DEB||!DEB.topic||String(c.topic||'')===DEB.topic);
 const DEBF=new Map(),DEBQ=new Map(),DEBI=new Map();
 const debFile=id=>{if(!DEBF.has(id))DEBF.set(id,J(`${BASE}/v1/enrich/controversies/debates/${encodeURIComponent(id)}.json`).then(f=>{if(f&&Array.isArray(f.questions)){DEBQ.set(id,f);return f;}DEBF.delete(id);return null;}));return DEBF.get(id);};
 const isLive=pair=>LIVE.some(p=>p.pair===pair);
 const worksOf=()=>DEB.file?DEB.file.works:DEB.g.pairs.map(p=>({pair:p.pair,label:labelOf(p),source:p.source,source_title:p.source_title,n:p.n}));
-function showDebate(id,key){
+function showDebate(id,key,nth,qp){
   viewIs('debate');
   const g=DS.find(x=>x.id===id)||DS[0];if(!g)return;
+  const topic=qp&&qp.has('topic')?String(qp.get('topic')||''):null,among=qp&&qp.has('among')?qp.get('among')==='1':null;
   if(!DEB||DEB.id!==g.id){
     const run=++RUN,sch=schoolsMode(g),one=g.pairs.length===1?g.pairs[0].pair:'';
-    DEB={id:g.id,g,run,mode:sch?'schools':'sides',file:null,fallback:false,qs:null,byQ:new Map(),byItem:new Map(),loaded:new Map(),failed:0,asked:false,docs:[],vis:[],sel:null,want:key,deep:!!key,tab:key==='works'?'w':'q',shared:sch,among:false,item:'',goItem:'',pm:null,raf:0};
+    DEB={id:g.id,g,run,mode:sch?'schools':'sides',file:null,fallback:false,qs:null,byQ:new Map(),byItem:new Map(),fileQ:null,loaded:new Map(),failed:0,asked:false,docs:[],vis:[],rows:[],groups:null,gcur:null,gopen:new Set(),gpage:new Map(),sel:null,ci:0,item:'',want:key,nth:nth||0,tab:key==='works'?'w':'q',shared:sch,among:!!among,topic:topic||'',goItem:'',pm:null,raf:0,qopen:-1,qmore:false,pane:'',digest:null,mark:null,posMore:new Set(),headAll:false,wopen:'',plrMore:new Set()};
     debateShell();
     /* a debate of one work waits for that work as well: its head counts the work's books and authors, and its questions name theirs */
     Promise.all([debFile(g.id),one?doc(one):null]).then(([f,d1])=>{
       if(!DEB||DEB.run!==run)return;
       if(d1)DEB.loaded.set(one,d1);
-      if(f){DEB.file=f;setQuestions(f.questions);debNote(f.note||'');questionsUI();}
+      if(f){DEB.file=f;DEB.fileQ=new Map(f.questions.map(x=>[x.id,x]));setQuestions(dispMode()?buildDisps(d1,f.questions):f.questions);debNote(f.note||'');questionsUI();}
       else{DEB.fallback=true;loadAll();}
       $('#dhead').innerHTML=headHTML();
       renderBoard();
     });
     pathsFile(g.id).then(f=>{if(!f||!DEB||DEB.run!==run)return;$('#dhead').innerHTML=headHTML();debNote();rcPaths($('#drcp'));});
     netFile().then(n=>{NET=n;if(DEB&&DEB.run===run)pmLoad(run);});
-  }else{DEB.want=key;debNote();if(key==='works')setTab('w',false);else{if(key||DEB.tab!=='w')setTab('q',false);if(DEB.qs&&DEB.tab==='q')pickQuestion(key,true);}}
+    digFile(g.id).then(f=>{if(!f||!DEB||DEB.run!==run)return;DEB.digest=f.questions;listQ();if(DEB.sel&&DEB.tab==='q')showQuestion(DEB.sel,false,DEB.item,DEB.item?0:DEB.nth);});
+  }else{
+    DEB.want=key;DEB.nth=nth||0;debNote();
+    /* an address that names a topic or the among toggle sets them; one that names neither keeps them */
+    let ch=false;
+    if(topic!=null&&topic!==DEB.topic){DEB.topic=topic;ch=true;}
+    if(among!=null&&among!==DEB.among){DEB.among=among;ch=true;}
+    if(ch)filtersChanged(false,false);
+    if(key==='works')setTab('w',false);
+    else{if(key||DEB.tab!=='w')setTab('q',false);if(DEB.qs&&DEB.tab==='q')pickQuestion(key,true,nth);}
+  }
   renderBoard();
   if(!DEB.sel)document.title=`${(DEB.file&&DEB.file.title)||g.title}${TAIL}`;
 }
-/* the debate's name, the company its parenthesis names under it (as the board has them), and the works it is argued in */
+/* the debate's name, the company its parenthesis names under it (as the board has them), and the works it is argued in; once every work
+   is read, its counts leave out the controversies the data hides (a second reading of one already shown) */
 function headHTML(){
-  const f=DEB.file,ws=worksOf(),[t,sub]=splitTitle((f&&f.title)||DEB.g.title);
-  return `<h2 id="debH">${esc(t)}<span class="ct"><span class="sr">, </span>${f?`${fmt(f.n_questions)} questions · ${fmt(f.n_controversies)} controversies`:`${fmt(DEB.g.n)} controversies`}</span></h2>${sub?`<p class="deb-sub">${esc(sub)}</p>`:''}
+  const f=DEB.file,ws=worksOf(),[t,sub]=splitTitle((f&&f.title)||DEB.g.title),all=!!DEB.qs&&ws.every(w=>DEB.loaded.has(w.pair));
+  const shown=x=>x.items.filter(i=>!i.hide);
+  const ct=dispMode()&&DEB.qs?`${fmt(DEB.qs.filter(x=>x.disp>0).length)} disputations · ${fmt(DEB.qs.reduce((n,x)=>n+shown(x).length,0))} sections`
+    :all?`${fmt(DEB.qs.filter(x=>shown(x).length).length)} questions · ${fmt(new Set(DEB.qs.flatMap(x=>shown(x).map(i=>i.id))).size)} controversies`
+    :f?`${fmt(f.n_questions)} questions · ${fmt(f.n_controversies)} controversies`:`${fmt(DEB.g.n)} controversies`;
+  return `<h2 id="debH">${esc(t)}<span class="ct"><span class="sr">, </span>${ct}</span></h2>${sub?`<p class="deb-sub">${esc(sub)}</p>`:''}
     <p class="argued">${arguedHTML(ws)}</p>${pathsLine()}${alsoHTML(ws.map(w=>w.pair))}`;
 }
 const nCon=n=>`<span class="ct"> ${fmt(n)}<span class="sr"> ${n===1?'controversy':'controversies'}</span></span>`;
@@ -536,7 +565,7 @@ function arguedHTML(ws){
   const one=ws.length===1?ws[0]:null,d=one&&DEB.loaded.get(one.pair);
   if(d&&byAuthor(d)){
     const m=new Map(),books=new Set();
-    for(const c of d.controversies){if(!inDeb(c)||!(c.a&&c.a.name))continue;books.add(c.book);if(!m.has(c.a.name))m.set(c.a.name,{name:c.a.name,n:0,first:c.id});m.get(c.a.name).n++;}
+    for(const c of d.controversies){if(!inDeb(c)||c.hide||!(c.a&&c.a.name))continue;books.add(c.book);if(!m.has(c.a.name))m.set(c.a.name,{name:c.a.name,n:0,first:c.id});m.get(c.a.name).n++;}
     /* the twelve who argue most of it here; the rest in the By work tab */
     const au=[...m.values()].sort((a,b)=>(b.n-a.n)||a.name.localeCompare(b.name)),top=au.slice(0,12),more=au.length-top.length;
     return `Argued in ${fmt(books.size)} works by ${fmt(au.length)} authors: ${top.map(a=>`<a href="#${esc(a.first)}">${esc(a.name)}</a>${nCon(a.n)}`).join(' · ')}${more?` · <a href="#debate/${esc(DEB.id)}/works">and ${fmt(more)} more</a>`:''}`;
@@ -545,23 +574,27 @@ function arguedHTML(ws){
   return `Argued in ${fmt(ws.length)} ${ws.length===1?'work':'works'}: ${ws.map(w=>`${isLive(w.pair)?`<a href="#${esc(w.pair)}">${esc(w.source)}</a>`:esc(w.source)}${nCon(w.n)}`).join(' · ')}`;
 }
 function debateShell(){
-  const sch=DEB.mode==='schools',luOpen=LUOPEN!=null?LUOPEN:!matchMedia('(max-width:760px)').matches&&!DEB.want;
+  const sch=DEB.mode==='schools',dm=dispMode(),unit=dm?'section':'question';
   $('#deb').innerHTML=`<header class="deb-head" id="dhead">${headHTML()}</header>
     <div id="dnet"></div>
-    <div class="dtabs"><div class="tabs" role="tablist" aria-label="The debate by its questions, or by its works"><button type="button" role="tab" id="tab-q" aria-controls="tp-q">Questions</button><button type="button" role="tab" id="tab-w" aria-controls="tp-w">By work</button></div><button type="button" class="tgl" id="dcompact" aria-pressed="${COMPACT}">Compact</button></div>
+    <div class="dtabs"><div class="tabs" role="tablist" aria-label="${dm?'The debate by its disputations, or by its works':'The debate by its questions, or by its works'}"><button type="button" role="tab" id="tab-q" aria-controls="tp-q">${dm?'Disputations':'Questions'}</button><button type="button" role="tab" id="tab-w" aria-controls="tp-w">By work</button></div></div>
     <p class="status" id="dstat" role="status" hidden></p>
     <section id="tp-q" role="tabpanel" aria-labelledby="tab-q">
-      ${sch?`<details class="lu" id="lufold"${luOpen?' open':''}><summary><h3 class="lu-h">The authors, by school</h3><span class="lu-dig" aria-hidden="true">${Object.keys(SCHOOLS).map(s=>`<span>${dot(s)}${esc(s)}</span>`).join('')}</span><span class="lu-key">Counts: the controversies that quote him</span></summary>
+      ${sch?`<details class="lu" id="lufold"${LUOPEN===true?' open':''}><summary><h3 class="lu-h">The authors, by school</h3><span class="lu-dig" aria-hidden="true">${Object.keys(SCHOOLS).map(s=>`<span>${dot(s)}${esc(s)}</span>`).join('')}</span><span class="lu-key">Counts: the controversies that quote him</span></summary>
         <div id="lu"><p class="muted">Reading the works…</p></div></details>`:''}
-      <div class="cols has-rcp"><nav class="nav" aria-label="The questions of this debate">
-        <input class="find" id="dfind" type="search" placeholder="Find a question" aria-label="Find a question" autocomplete="off">
-        <div class="qf"><select id="dloc" aria-label="Locus"><option value="">Every locus</option></select><select id="dtopic" aria-label="Topic" hidden><option value="">Every topic</option></select><button type="button" class="tgl" id="dshared" aria-pressed="${DEB.shared}">Shared by 2 or more works</button><button type="button" class="tgl" id="damong" aria-pressed="false" hidden>${AMONG_LABEL}</button></div>
-        <ol class="books" id="dlist"><li class="muted">Loading the questions…</li></ol></nav>
-      <article class="c" id="dq"></article><aside class="rcp" id="drcp" aria-label="Reception"></aside></div>
+      <div class="cols has-rcp dcols"><nav class="nav rail" aria-label="${dm?'The disputations and their sections':'The questions of this debate'}">
+        <input class="find" id="dfind" type="search" placeholder="Find a ${unit}" aria-label="Find a ${unit}" autocomplete="off">
+        <div class="qf"><button type="button" class="tgl" id="dshared" aria-pressed="${DEB.shared}" hidden>Shared by 2 or more works</button><button type="button" class="tgl" id="damong" aria-pressed="${DEB.among}" hidden>${AMONG_LABEL}</button></div>
+        <div class="rl" id="dlist"><p class="muted">Loading the ${unit}s…</p></div></nav>
+        <div class="dread" id="dread"><div class="sh-bar"><button type="button" class="sh-x" data-sheet-close>Close</button><span class="sh-t" id="dsht"></span></div>
+          <div class="sh-body"><article class="c" id="dq"></article><aside class="rcp" id="drcp" aria-label="Reception"></aside></div></div>
+      </div>
     </section>
     <section id="tp-w" role="tabpanel" aria-labelledby="tab-w" hidden>
       <div id="lw"></div>
-    </section>`;
+    </section>
+    <div class="dscrim" data-sheet-close></div>`;
+  sheetSync();
   setTab(DEB.tab,false);
   if(sch&&$('#lufold').open)loadAll();
 }
@@ -569,11 +602,19 @@ function debateShell(){
 function setTab(k,push){
   DEB.tab=k;const w=k==='w',tq=$('#tab-q'),tw=$('#tab-w');if(!tq)return;
   tq.setAttribute('aria-selected',String(!w));tw.setAttribute('aria-selected',String(w));tq.tabIndex=w?-1:0;tw.tabIndex=w?0:-1;
-  $('#tp-q').hidden=w;$('#tp-w').hidden=!w;$('#dcompact').hidden=w;
-  if(w){loadAll();debateFill();}
-  else if(DEB.qs&&!DEB.sel)pickQuestion(DEB.want,false);
-  if(push)history.replaceState(null,'',`#debate/${DEB.id}${w?'/works':DEB.sel?`/${DEB.sel.id}`:''}`);
+  $('#tp-q').hidden=w;$('#tp-w').hidden=!w;
+  if(w){sheetDown();loadAll();debateFill();}
+  else if(DEB.qs&&!DEB.sel)pickQuestion(DEB.want,false,DEB.nth);
+  if(push)setHash();
 }
+/* the address of what is shown: the debate, the question and the controversy (from 1), or its works; the topic and the among toggle in
+   the query where they are set */
+function debHash(){
+  const q=new URLSearchParams();if(DEB.topic)q.set('topic',DEB.topic);if(DEB.among)q.set('among','1');
+  const p=DEB.tab==='w'?'/works':DEB.sel?`/${DEB.sel.id}/${DEB.ci+1}`:'';
+  return `#debate/${DEB.id}${p}${q.toString()?`?${q}`:''}`;
+}
+const setHash=()=>{if(DEB&&VIEW==='debate')history.replaceState(null,'',debHash());};
 /* every work of the debate, read for the lineups (and, without the debate's file, for its questions) */
 function loadAll(){
   if(DEB.asked)return;DEB.asked=true;const {run} = DEB,ps=worksOf().map(w=>w.pair);
@@ -591,8 +632,8 @@ function debateFill(){
     st.hidden=done>=all&&!DEB.failed;
     const lu=$('#lu');if(lu&&DEB.docs.length)lu.innerHTML=lineupSchools();
     if(DEB.tab==='w')$('#lw').innerHTML=DEB.docs.length?lineupSides():'<p class="muted">Reading the works of controversy…</p>';
-    if(DEB.fallback&&done>=all&&!DEB.qs){setQuestions(questionsFromPairs(DEB.docs));if(DEB.docs[0])debNote(DEB.docs[0].note||'');if(PATHD.has(DEB.id))$('#dhead').innerHTML=headHTML();questionsUI();}
-    else if(DEB.qs){let ch=false;for(const x of DEB.qs)ch=enrich(x)||ch;if(ch){amongUI();topicUI();listQ();}}
+    if(DEB.fallback&&done>=all&&!DEB.qs){setQuestions(dispMode()?buildDisps(DEB.docs[0]||null,null):questionsFromPairs(DEB.docs));if(DEB.docs[0])debNote(DEB.docs[0].note||'');$('#dhead').innerHTML=headHTML();questionsUI();}
+    else if(DEB.qs){let ch=false;for(const x of DEB.qs)ch=enrich(x)||ch;if(ch){amongUI();listQ();}else railDraw();if(DEB.qopen>=0)qrRefresh();if(done>=all&&!DEB.headAll){DEB.headAll=true;$('#dhead').innerHTML=headHTML();}}
   });
 }
 /* without the debate's file: its questions gathered from its works, in the file's shape (the classic question, else the controversy's own);
@@ -604,15 +645,17 @@ function questionsFromPairs(docs){
     const aid=c.atlas&&c.atlas.id,k=aid?`a:${aid}`:`q:${fold(c.question)}`,who=ba&&c.a&&c.a.name||'';
     if(!by.has(k))by.set(k,{id:aid||c.id,q:aid?c.atlas.q:c.question,locus:aid?(c.atlas.locus||''):'',atlas:aid||null,works:[],n:0,items:[]});
     const x=by.get(k);x.n++;if(!x.works.includes(who||d.source))x.works.push(who||d.source);
-    x.items.push({pair:d.pair,id:c.id,source:d.source,question:c.question,kind:c.kind,place:c.place,title:c.source.title,among:typeof c.among==='boolean'?c.among:null,topic:c.topic?String(c.topic):'',who,_e:1});
+    x.items.push({pair:d.pair,id:c.id,source:d.source,question:c.question,kind:c.kind,place:c.place,title:c.source.title,among:typeof c.among==='boolean'?c.among:null,topic:c.topic?String(c.topic):'',who,hide:!!c.hide,dup:String(c.dup_of||''),weight:Number(c.weight)||0,_e:1});
   }}
   return [...by.values()].sort((a,b)=>(b.works.length-a.works.length)||(b.n-a.n));
 }
 const hayOf=x=>fold([x.q,x.locus,x.topic||'',...x.works,...x.items.map(i=>i.question)].join(' '));
-/* a question's topic (the covenant): the one most of its controversies carry */
-const topicOf=x=>{const m=new Map();for(const i of x.items)if(i.topic)m.set(i.topic,(m.get(i.topic)||0)+1);let t='',n=0;for(const [k,v] of m)if(v>n){n=v;t=k;}return t;};
+/* a question's topic (the English divines): the one most of its controversies carry ("other" names none) */
+const topicOf=x=>{const m=new Map();for(const i of x.items)if(i.topic&&i.topic!=='other'&&!i.hide)m.set(i.topic,(m.get(i.topic)||0)+1);let t='',n=0;for(const [k,v] of m)if(v>n){n=v;t=k;}return t;};
 /* what a debate's file does not carry, taken from a work once it is read: whether the difference is among the Protestant divines
-   (`among`), and in a work of many authors each controversy's author, by whom the question then counts its works */
+   (`among`), its topic, in a work of many authors each controversy's author (by whom the question then counts its works), and the
+   data's `hide` (a second reading of one already shown, `dup_of` the one kept; or one with no opposed position: never listed, paged or
+   counted) and `weight` (the order inside a question) */
 const cOf=(d,id)=>{if(!d._BY)d._BY=new Map(d.controversies.map(c=>[c.id,c]));return d._BY.get(id);};
 function enrich(x){
   let ch=false;
@@ -622,72 +665,161 @@ function enrich(x){
     if(typeof c.among==='boolean'){it.among=c.among;ch=true;}
     if(c.topic&&!it.topic){it.topic=String(c.topic);ch=true;}
     if(byAuthor(d)&&c.a&&c.a.name){it.who=c.a.name;ch=true;}
+    if(c.hide){it.hide=true;it.dup=String(c.dup_of||'');ch=true;}
+    if(c.weight!=null&&c.weight!==''){it.weight=Number(c.weight)||0;ch=true;}
   }
-  if(ch){x.among=x.items.filter(i=>i.among===true).length;x.topic=topicOf(x);if(x.items.some(i=>i.who))x.works=[...new Set(x.items.map(i=>i.who||i.source))];x.hay=hayOf(x);}
+  if(ch){x.among=x.items.filter(i=>i.among===true&&!i.hide).length;x.topic=topicOf(x);if(x.items.some(i=>i.who))x.works=[...new Set(x.items.filter(i=>!i.hide).map(i=>i.who||i.source))];x.hay=hayOf(x);}
   return ch;
 }
 function setQuestions(qs){
-  let re=false;
-  for(const x of qs){const w=x.works.length;enrich(x);x.among=x.items.filter(i=>i.among===true).length;x.topic=topicOf(x);x.hay=hayOf(x);if(x.works.length!==w)re=true;}
+  let re=false;const dm=dispMode();
+  for(const x of qs){const w=x.works.length;enrich(x);x.among=x.items.filter(i=>i.among===true&&!i.hide).length;x.topic=topicOf(x);x.hay=hayOf(x);if(!dm&&x.works.length!==w)re=true;}
   /* questions whose works were counted again (by author) are ordered again, as the file orders them: by how many works ask them */
   if(re)qs.sort((a,b)=>(b.works.length-a.works.length)||(b.n-a.n));
   DEB.qs=qs;DEB.byQ=new Map(qs.map(x=>[x.id,x]));DEB.byItem=new Map();
   for(const x of qs)for(const i of x.items)DEB.byItem.set(i.id,x);
-  if(qs.some(x=>x.topic)&&!DEB.asked)loadAll();
-}
-/* the topics (the covenant), a select beside the locus: a question has one topic, as it has one locus */
-function topicUI(){
-  const sel=$('#dtopic');if(!sel||!DEB||!DEB.qs)return;
-  const tn=new Map();for(const x of DEB.qs)if(x.topic)tn.set(x.topic,(tn.get(x.topic)||0)+1);
-  sel.hidden=!tn.size;if(!tn.size)return;
-  const cur=sel.value,ts=[...tn].sort((a,b)=>(b[1]-a[1])||a[0].localeCompare(b[0]));
-  sel.innerHTML=`<option value="">Every topic (${fmt(DEB.qs.length)})</option>${ts.map(([t,n])=>`<option value="${esc(t)}"${t===cur?' selected':''}>${esc(t)} (${fmt(n)})</option>`).join('')}`;
+  /* the topics, and the among toggle an address asks for, are read from the works: they are read at once */
+  if((qs.some(x=>x.topic)||DEB.among||DEB.topic)&&!DEB.asked)loadAll();
 }
 /* the toggle for the controversies among the Protestant divines themselves, with the number of questions it leaves; hidden where no
    controversy is so marked */
 function amongUI(){
   const b=$('#damong');if(!b||!DEB.qs)return;
-  const am=DEB.qs.filter(x=>x.among).length;if(!am)DEB.among=false;
+  /* the toggle is gone where no controversy is so marked once every work is read (until then an address's among stands) */
+  const am=DEB.qs.filter(x=>x.among).length;if(!am&&worksOf().every(w=>DEB.loaded.has(w.pair)))DEB.among=false;
   b.hidden=!am;b.innerHTML=`${AMONG_LABEL}<span class="ct">${fmt(am)}</span>`;b.setAttribute('aria-pressed',String(DEB.among));
 }
-/* the filters (a locus, or the questions not in the atlas; the questions two or more works share) and the list, then the question shown */
+/* the filters (the questions two or more works share; among the divines themselves) and the rail, then the question shown */
 function questionsUI(){
-  const {qs} = DEB,loc=new Map();for(const x of qs){const l=x.locus||'-';loc.set(l,(loc.get(l)||0)+1);}
-  const ls=[...loc].filter(([l])=>l!=='-').sort((a,b)=>(b[1]-a[1])||a[0].localeCompare(b[0]));
-  $('#dloc').innerHTML=`<option value="">Every locus (${fmt(qs.length)})</option>${ls.map(([l,n])=>`<option value="${esc(l)}">${esc(l)} (${fmt(n)})</option>`).join('')}${loc.has('-')?`<option value="-">Not in the atlas (${fmt(loc.get('-'))})</option>`:''}`;
-  const sh=qs.filter(x=>x.works.length>1).length,b=$('#dshared');
+  const {qs} = DEB,sh=dispMode()?0:qs.filter(x=>x.works.length>1).length,b=$('#dshared');
   if(!sh)DEB.shared=false;
-  b.hidden=!sh;b.innerHTML=`Shared by 2 or more works<span class="ct">${fmt(sh)}</span>`;b.setAttribute('aria-pressed',String(DEB.shared));
-  amongUI();topicUI();
+  if(b){b.hidden=!sh;b.innerHTML=`Shared by 2 or more works<span class="ct">${fmt(sh)}</span>`;b.setAttribute('aria-pressed',String(DEB.shared));}
+  amongUI();
   listQ();
-  if(DEB.tab==='q')pickQuestion(DEB.want,false);
+  if(DEB.tab==='q')pickQuestion(DEB.want,false,DEB.nth);
+  qrRefresh();
 }
+/* THE RAIL AND THE READING (2026-10-22, owner: "do more passes to make this easy to navigate, again no endless scrolling and reading
+   should happen to the side"). The rail, compact and in its own scroll: the questions in one-line rows under their locus, or under their
+   topic where the debate has topics (the English divines), each group a head that folds, with its count; fifty rows a page; the group of
+   the question shown open. Suárez's debate reads by disputation: the disputation the head, its sections the rows. The reading beside it:
+   the question, the positions taken on it (the digest's, where there is one), a pager over its controversies, one controversy in full. On
+   a phone the rail comes first and the reading rises over it as a sheet, as the decks do. Up and down in the rail move through its rows;
+   left and right through the controversies, on into the next question at the end. The address keeps the question and the controversy
+   shown (#debate/<debate>/<question>/<n>), and the topic and the among toggle where they are set (?topic=…&among=1). */
+const RAIL_PAGE=50;
+/* a controversy shown: not hidden, among the divines themselves where the toggle asks (one whose work is not read yet stands until it is),
+   of the topic chosen */
+const itemOn=i=>!i.hide&&(!DEB.among||i.among!==false)&&(!DEB.topic||i.topic===DEB.topic);
+const nVis=x=>{let n=0;for(const i of x.items)if(itemOn(i))n++;return n;};
+/* a question's controversies in the reading's order: the data's weight where it has one, the heaviest first; else, and within a weight,
+   its works' order, each work's (in a work of many authors, each author's) together */
+function itemsOf(x){
+  if(!x)return [];
+  const its=x.items.filter(itemOn);if(x.disp)return its;
+  const ws=worksOf(),rank=p=>{const r=ws.findIndex(w=>w.pair===p);return r<0?ws.length:r;},by=new Map();
+  for(const it of its){const k=it.who?`${it.pair}|${it.who}`:it.pair;if(!by.has(k))by.set(k,[]);by.get(k).push(it);}
+  const base=[...by.keys()].map((k,n)=>[k,n]).sort((a,b)=>(rank(a[0].split('|')[0])-rank(b[0].split('|')[0]))||(a[1]-b[1])).flatMap(([k])=>by.get(k));
+  return base.map((it,i)=>[it,i]).sort((a,b)=>((Number(b[0].weight)||0)-(Number(a[0].weight)||0))||(a[1]-b[1])).map(a=>a[0]);
+}
+/* a row's words: the card's short question where the data has one, else the question as it is filed; a classic question (or a
+   disputation) keeps its own */
+const cardQ=it=>{const d=it&&LOADED.get(it.pair),c=d&&cOf(d,it.id),k=c&&c.card;return k&&typeof k==='object'&&k.q?String(k.q):'';};
+const rowText=it=>cardQ(it)||(it&&it.question)||'';
+const qText=x=>x.atlas||x.disp?x.q:cardQ(itemsOf(x)[0]||x.items[0])||x.q;
+const railBy=()=>dispMode()?'disp':DEB.qs&&DEB.qs.some(x=>x.topic)?'topic':'locus';
+const posOf=x=>{const Q=DEB&&DEB.digest,e=Q&&x&&Q[x.id];return e&&Array.isArray(e.positions)&&e.positions.length?e.positions:null;};
 function listQ(){
-  if(!DEB.qs)return;
-  const q=fold($('#dfind').value),loc=$('#dloc').value,top=($('#dtopic')||{}).value||'',byTopic=DEB.qs.some(x=>x.topic);
-  let vis=DEB.qs.filter(x=>(!DEB.shared||x.works.length>1)&&(!DEB.among||x.among)&&(!loc||(loc==='-'?!x.locus:x.locus===loc))&&(!top||x.topic===top)&&(!q||x.hay.includes(q)));
-  /* the covenant's questions under their topics, the largest first (a question of no topic last); else under how many works argue each */
-  if(byTopic){const tn=new Map();for(const x of DEB.qs)if(x.topic)tn.set(x.topic,(tn.get(x.topic)||0)+1);const tk=t=>t?-(tn.get(t)||0):1;vis=vis.map((x,i)=>[x,i]).sort((a,b)=>(tk(a[0].topic)-tk(b[0].topic))||String(a[0].topic).localeCompare(String(b[0].topic))||(a[1]-b[1])).map(a=>a[0]);}
-  DEB.vis=vis;
-  const gk=x=>byTopic?(x.topic||''):x.works.length;
-  let last=null;const per=new Map();for(const x of vis)per.set(gk(x),(per.get(gk(x))||0)+1);
-  $('#dlist').innerHTML=vis.map(x=>{const g=gk(x),k=x.works.length,n=DEB.among?x.among:x.n,h=g!==last?`<li class="lh"><span>${byTopic?esc(g||'Other questions'):`Argued in ${fmt(k)} ${k===1?'work':'works'}`}</span><span class="ct">${fmt(per.get(g))}<span class="sr"> ${per.get(g)===1?'question':'questions'}</span></span></li>`:'';last=g;
-    return `${h}<li><button type="button" data-q="${esc(x.id)}" aria-current="${String(!!DEB.sel&&DEB.sel.id===x.id)}">${esc(x.q)}<small>${k>1?(byTopic?`${fmt(k)} works · `:''):`${esc(x.works[0]||'')} · `}${fmt(n)} ${n===1?'controversy':'controversies'}${x.locus?` · ${esc(x.locus)}`:''}</small></button></li>`;}).join('')||'<li class="muted">Nothing matches.</li>';
+  if(!DEB||!DEB.qs)return;
+  const q=fold(($('#dfind')||{}).value||''),by=railBy(),groups=[];
+  const vis=DEB.qs.filter(x=>(!DEB.shared||x.works.length>1)&&nVis(x)>0&&(by==='disp'||!q||x.hay.includes(q)));
+  if(by==='disp'){for(const x of vis){const rows=x.items.filter(it=>itemOn(it)&&(!q||fold(`${it.question} ${rowText(it)} ${it.title||''}`).includes(q))).map(it=>({x,it}));if(rows.length)groups.push({key:x.id,x,rows});}}
+  else{
+    /* the groups by weight, the heaviest first (its controversies shown); the questions of no locus or topic last */
+    const m=new Map();for(const x of vis){const k=by==='topic'?(DEB.topic||x.topic||''):(x.locus||'');if(!m.has(k))m.set(k,{key:k,rows:[],w:0});const g=m.get(k);g.rows.push({x});g.w+=nVis(x);}
+    groups.push(...[...m.values()].sort((a,b)=>((a.key?0:1)-(b.key?0:1))||(b.w-a.w)||a.key.localeCompare(b.key)));
+  }
+  DEB.groups=groups;DEB.rows=groups.flatMap(g=>g.rows);DEB.vis=[...new Set(DEB.rows.map(r=>r.x))];
+  railDraw();
 }
-/* the question an address names (a question's id, or one of its controversies', whose fold then opens); one the filters hide clears
-   them; else the first shown */
-function pickQuestion(key,push){
+const isCurRow=r=>r.it?r.x===DEB.sel&&r.it.id===DEB.item:r.x===DEB.sel;
+function groupHead(g,by){
+  if(by==='disp'){const {x} = g;return `<span class="rg-n">${x.disp>0?`Disputation ${fmt(x.disp)}${x.title?`<span class="rg-s">${esc(x.title)}</span>`:''}`:'Other sections'}</span>`;}
+  return `<span class="rg-n">${g.key?esc(by==='topic'?cap1(g.key):g.key):by==='topic'?'Other questions':'Not in the atlas'}</span>`;
+}
+/* a question's row: its number, the positions taken on it where the digest gives them, else its controversies where there are several */
+function rowHTML(r,cur){
+  const t=r.it?rowText(r.it):qText(r.x),P=r.it?null:posOf(r.x),n=r.it?0:P?P.length:nVis(r.x);
+  const ct=P?`${fmt(n)}<span class="sr"> positions</span>`:n>1?`${fmt(n)}<span class="sr"> controversies</span>`:'';
+  return `<li><button type="button" class="rq" data-q="${esc(r.x.id)}"${r.it?` data-i="${esc(r.it.id)}"`:''} aria-current="${cur}" tabindex="${cur?0:-1}" title="${esc(t)}"><span class="rq-t">${esc(t)}</span>${ct?`<span class="ct">${ct}</span>`:''}</button></li>`;
+}
+function railDraw(){
+  const host=$('#dlist');if(!host||!DEB||!DEB.groups)return;
+  const by=railBy(),q=!!fold(($('#dfind')||{}).value||''),G=DEB.groups;
+  if(!G.length){host.innerHTML='<p class="muted">Nothing matches.</p>';return;}
+  const key=by==='disp'?'':DEB.digest?'Each question with the number of positions taken on it.':'Each question with the number of its controversies, where it has several.';
+  let tab=false;
+  host.innerHTML=`${key?`<p class="rl-k">${key}</p>`:''}<ol class="rgs">${G.map(g=>{
+    const open=q||DEB.gopen.has(g.key),n=g.rows.length,pages=Math.ceil(n/RAIL_PAGE),p=Math.min(pages-1,Math.max(0,DEB.gpage.get(g.key)||0));
+    const rows=open?g.rows.slice(p*RAIL_PAGE,(p+1)*RAIL_PAGE):[];
+    const pager=pages>1?`<p class="rg-p"><button type="button" data-gp="${esc(g.key)}|${p-1}"${p?'':' disabled'}>Previous ${RAIL_PAGE}</button><span>${fmt(p*RAIL_PAGE+1)}–${fmt(Math.min(n,(p+1)*RAIL_PAGE))} of ${fmt(n)}</span><button type="button" data-gp="${esc(g.key)}|${p+1}"${p<pages-1?'':' disabled'}>Next ${RAIL_PAGE}</button></p>`:'';
+    return `<li class="rg"><button type="button" class="rg-h" data-g="${esc(g.key)}" aria-expanded="${open}">${groupHead(g,by)}<span class="ct">${fmt(n)}<span class="sr"> ${by==='disp'?(n===1?'section':'sections'):(n===1?'question':'questions')}</span></span></button>${open?`<ol class="rg-l">${rows.map(r=>{const c=isCurRow(r);if(c)tab=true;return rowHTML(r,c);}).join('')}</ol>${pager}`:''}</li>`;
+  }).join('')}</ol>`;
+  if(!tab){const f=host.querySelector('button.rq');if(f)f.tabIndex=0;}
+}
+/* the rail follows the reading: the group of the row shown open (the one the reading left closes, unless the reader opened it), on the
+   page that holds the row */
+function railFollow(prev){
+  const G=DEB.groups;if(!G)return;
+  const at=g=>g.rows.findIndex(isCurRow),g=G.find(x=>at(x)>=0);if(!g)return;
+  if(prev!=null&&prev!==g.key)DEB.gopen.delete(prev);
+  DEB.gopen.add(g.key);DEB.gpage.set(g.key,Math.floor(at(g)/RAIL_PAGE));DEB.gcur=g.key;
+}
+/* up and down in the rail: the row before or after, over the groups and their pages */
+function railStep(d){
+  const R=DEB.rows||[],i=R.findIndex(isCurRow),r=R[i<0?0:i+d];if(!r)return;
+  showQuestion(r.x,true,r.it?r.it.id:'',0,'rail');
+  const b=document.querySelector('#dlist button.rq[aria-current="true"]');if(b)b.focus();
+}
+/* the question an address names (a question's id, or one of its controversies', or in a debate read by disputation a question of the
+   debate's file, whose first section it opens); one the filters hide clears them; a controversy the data hides opens the one it repeats;
+   else the first row */
+function pickQuestion(key,push,nth){
   if(!DEB.qs)return;
-  const k=key&&key!=='works'?key:'',item=k&&!DEB.byQ.has(k)&&DEB.byItem.has(k)?k:'';
-  let x=k?(DEB.byQ.get(k)||DEB.byItem.get(k)):null;
-  if(x&&(!DEB.vis.includes(x)||(item&&DEB.among&&!x.items.some(i=>i.id===item&&i.among===true)))){DEB.shared=false;DEB.among=false;$('#dshared').setAttribute('aria-pressed','false');$('#damong').setAttribute('aria-pressed','false');$('#dloc').value='';$('#dfind').value='';listQ();}
-  if(!x)x=DEB.vis[0]||DEB.qs[0];
-  if(x)showQuestion(x,push&&!!k,item);
+  const k=key&&key!=='works'?key:'';let x=null,item='';
+  if(k){
+    if(DEB.byQ.has(k))x=DEB.byQ.get(k);
+    else if(DEB.byItem.has(k)){x=DEB.byItem.get(k);item=k;}
+    else if(DEB.fileQ&&DEB.fileQ.has(k)){const id=(DEB.fileQ.get(k).items||[]).map(i=>i.id).find(i=>DEB.byItem.has(i));if(id){x=DEB.byItem.get(id);item=id;}}
+  }
+  if(item){const it=x.items.find(i=>i.id===item);if(it&&it.hide&&it.dup&&DEB.byItem.has(it.dup)){if(DEB.goItem===item)DEB.goItem=it.dup;item=it.dup;x=DEB.byItem.get(item);}}
+  if(x&&(!DEB.vis.includes(x)||(item&&!x.items.some(i=>i.id===item&&itemOn(i))))){
+    DEB.shared=false;DEB.among=false;DEB.topic='';const f=$('#dfind');if(f)f.value='';
+    filtersChanged(false,false);
+  }
+  let r0=null;if(!x){r0=DEB.rows[0]||null;x=r0?r0.x:DEB.qs[0];}
+  if(x)showQuestion(x,push&&!!k,item||(r0&&r0.it?r0.it.id:''),item?0:nth);
+}
+/* a filter changed (the topic, the among toggle, the questions shared): the chips and toggles say so, the quarrels, the rail and the
+   works follow, and the reading keeps its question where the filter leaves it, else takes the first row */
+function filtersChanged(push,redraw){
+  document.querySelectorAll('#dnet button[data-topic]').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.topic||'')===DEB.topic)));
+  for(const [s,v] of [['#damong',DEB.among],['#dshared',DEB.shared]]){const b=$(s);if(b)b.setAttribute('aria-pressed',String(v));}
+  DEB.qopen=-1;qrRefresh();
+  if(DEB.tab==='w')debateFill();
+  if(!DEB.qs){if(push)setHash();return;}
+  listQ();flash($('#dlist'),'ls-in');
+  if(redraw===false)return;
+  if(DEB.tab==='q'){
+    const keep=DEB.sel&&DEB.vis.includes(DEB.sel),r0=DEB.rows[0],x=keep?DEB.sel:r0&&r0.x;
+    if(x){showQuestion(x,push,keep?DEB.item:(r0&&r0.it?r0.it.id:''));return;}
+  }
+  if(push)setHash();
 }
 /* how many of the debate's controversies quote each author (a side or an opinion his, with at least one passage) */
 function speakerCounts(docs){
   const m=new Map();
-  for(const d of docs)for(const c of d.controversies)if(inDeb(c))for(const x of speakersOf(d,c)){
+  for(const d of docs)for(const c of d.controversies)if(inDeb(c)&&!c.hide)for(const x of speakersOf(d,c)){
     const k=pkey(x.name);if(!m.has(k))m.set(k,{name:x.name,ids:new Set()});m.get(k).ids.add(c.id);
   }
   return m;
@@ -711,9 +843,14 @@ function lineupSchools(){
    of them named in one or two controversies only stands under Others, after the schools' men. */
 function lineupSides(){
   const ds=debSchools();
-  return `<ol class="plr">${DEB.docs.map(d=>{
-    const n=d.controversies.filter(inDeb).length;
-    return `<li><h3 class="plr-t"><a href="#${esc(d.pair)}">${esc(labelOf(d))}</a><span class="ct">${fmt(n)}${n<d.n?` of ${fmt(d.n)}`:''} ${n===1?'controversy':'controversies'}</span></h3><div class="plr-s">${sideCell(d,'a',ds)}${sideCell(d,'b',ds)}</div></li>`;
+  /* with a topic chosen, the works that argue it and their counts on it */
+  const docs=DEB.docs.filter(d=>d.controversies.some(inView));
+  if(!docs.length)return `<p class="muted">No work here argues ${esc(DEB.topic||'this debate')} as read now.</p>`;
+  /* each work a fold, one line with its count; one open at a time (the first, until the reader opens another) */
+  const open=docs.some(d=>d.pair===DEB.wopen)?DEB.wopen:DEB.wopen==='-'?'':docs[0].pair;
+  return `<ol class="plr">${docs.map(d=>{
+    const n=d.controversies.filter(inView).length,all=shownCs(d).length,on=d.pair===open;
+    return `<li><details class="plr-d" data-pair="${esc(d.pair)}"${on?' open':''}><summary title="${esc(labelOf(d))}"><h3 class="plr-t">${esc(labelOf(d))}</h3><span class="ct">${fmt(n)}${n<all?` of ${fmt(all)}`:''} ${n===1?'controversy':'controversies'}${DEB.topic?` on ${esc(DEB.topic)}`:''}</span></summary><div class="plr-b"><p class="plr-open"><a href="#${esc(d.pair)}">Open the work</a>, its controversies one by one</p>${on?`<div class="plr-s">${sideCell(d,'a',ds)}${sideCell(d,'b',ds)}</div>`:''}</div></details></li>`;
   }).join('')}</ol>`;
 }
 /* the schools a debate is argued among: the map's every school where its works are of several, its one school where all are of one */
@@ -727,27 +864,27 @@ function debSchools(){
    authority they comment. */
 const COMMENTED={'wadding-scotists':'John Duns Scotus'};
 function sideRows(d,s){
-  if(s==='a'&&COMMENTED[d.pair])return [{name:d.source,n:d.controversies.filter(inDeb).length,party:'',on:COMMENTED[d.pair]}];
+  if(s==='a'&&COMMENTED[d.pair])return [{name:d.source,n:d.controversies.filter(inView).length,party:'',on:COMMENTED[d.pair]}];
   const G=netOf(DEB.id),party=n=>G?partyOf(((G.nodes||{})[n]||{}).school):'';
   if(s==='a'&&byAuthor(d)){
-    const m=new Map();for(const c of d.controversies)if(inDeb(c)&&c.a&&c.a.name)m.set(c.a.name,(m.get(c.a.name)||0)+1);
+    const m=new Map();for(const c of d.controversies)if(inView(c)&&c.a&&c.a.name)m.set(c.a.name,(m.get(c.a.name)||0)+1);
     return [...m].map(([name,n])=>({name,n,party:party(name)}));
   }
   if(s==='b'&&G){
-    const ids=new Set(d.controversies.filter(inDeb).map(c=>c.id)),m=new Map();
+    const ids=new Set(d.controversies.filter(inView).map(c=>c.id)),m=new Map();
     for(const e of G.edges||[]){const xs=(e[3]||[]).filter(id=>ids.has(id));if(!xs.length)continue;if(!m.has(e[1]))m.set(e[1],new Set());for(const id of xs)m.get(e[1]).add(id);}
     if(m.size)return [...m].map(([name,set])=>({name,n:set.size,party:party(name)}));
   }
   const m=new Map();
-  for(const c of d.controversies)if(inDeb(c))for(const x of speakersOf(d,c))if(x.side===s){const k=pkey(x.name);if(!m.has(k))m.set(k,{name:x.name,n:0,party:''});m.get(k).n++;}
+  for(const c of d.controversies)if(inView(c))for(const x of speakersOf(d,c))if(x.side===s){const k=pkey(x.name);if(!m.has(k))m.set(k,{name:x.name,n:0,party:''});m.get(k).n++;}
   /* a work of one author whose own words were not read: its author, with all its controversies */
-  if(!m.size&&s==='a'){const A=sidesOf(d);if(A[0].length===1)return [{name:A[0][0],n:d.controversies.filter(inDeb).length,party:''}];}
+  if(!m.size&&s==='a'){const A=sidesOf(d);if(A[0].length===1)return [{name:A[0][0],n:d.controversies.filter(inView).length,party:''}];}
   return [...m.values()];
 }
 /* the men a side's controversies name, as the work names them (one name each), where the library has no words of theirs */
 function namedRows(d,s){
   const m=new Map();
-  for(const c of d.controversies){if(!inDeb(c))continue;
+  for(const c of d.controversies){if(!inView(c))continue;
     const ns=s==='b'&&hasOps(c)?(c.opinions||[]).map(o=>o.author||o.holder):String((c[s]||{}).name||'').split(';');
     for(const raw of ns){const n=String(raw||'').trim();if(!oneName(n))continue;const k=pkey(n);if(!m.has(k))m.set(k,{name:n,n:0,party:''});m.get(k).n++;}}
   return [...m.values()];
@@ -756,75 +893,290 @@ function sideCell(d,s,ds){
   let rows=sideRows(d,s);if(!rows.length)rows=namedRows(d,s);
   rows=rows.sort((x,y)=>(y.n-x.n)||x.name.localeCompare(y.name));
   const deb=DEB.id,on=!!ds&&ds.size>0,member=r=>!!ds&&ds.has(schoolFor(r.name,deb,''));
-  const rare=ds&&rows.some(member)?rows.filter(r=>!member(r)&&r.n<=2):[],main=rows.filter(r=>!rare.includes(r));
+  const rare=ds&&rows.some(member)?rows.filter(r=>!member(r)&&r.n<=2):[],all=rows.filter(r=>!rare.includes(r)),key=`${d.pair}|${s}`,cut=DEB.plrMore.has(key)?all.length:12,main=all.slice(0,cut),more=all.length-main.length;
   const li=r=>{const h=schoolFor(r.on||r.name,deb,'');return `<li><span>${tok(h,on&&!r.party)}${who(r.name)}${schTag(h)}${chip(r.party)}${r.on?`<small class="on-auth">on ${who(r.on)}, the authority they comment</small>`:''}</span>${nCon(r.n)}</li>`;};
-  return `<div><p class="plr-n">${esc(s==='a'?d.a:d.b)}</p>${main.length?`<ul class="spk">${main.map(li).join('')}</ul>`:''}${rare.length?`<p class="also">Others: ${rare.map(r=>`${who(r.name)}${nCon(r.n)}`).join(', ')}</p>`:''}</div>`;
+  return `<div><p class="plr-n">${esc(s==='a'?d.a:d.b)}</p>${main.length?`<ul class="spk">${main.map(li).join('')}</ul>`:''}${more?`<p class="also"><button type="button" class="rc-more" data-plr-more="${esc(key)}">and ${fmt(more)} more</button></p>`:''}${rare.length?`<p class="also">Others: ${rare.map(r=>`${who(r.name)}${nCon(r.n)}`).join(', ')}</p>`:''}</div>`;
 }
-/* ONE QUESTION: each work's controversies on it, in the works' order, each a fold that reads its controversy from its work when opened
-   (the first of each work open): where the work puts it, the two sides as it states them with each side's own words, or the opinions
-   it weighs by school, and its judgment or resolution; then the classic question across the tradition, once. A work of many authors
-   (the English divines) shows each author's controversies under his name; with the toggle on, only those among the Protestant divines.
-   An address that names one controversy opens that one alone. */
-function showQuestion(x,push,item){
-  DEB.sel=x;DEB.want=item||x.id;DEB.item=item||'';
-  document.querySelectorAll('#dlist button[data-q]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.q===x.id)));
-  const ws=worksOf(),items=DEB.among?x.items.filter(it=>it.among===true):x.items,by=new Map();
-  for(const it of items){const k=it.who?`${it.pair}|${it.who}`:it.pair;if(!by.has(k))by.set(k,[]);by.get(k).push(it);}
-  const rank=k=>{const r=ws.findIndex(w=>w.pair===k.split('|')[0]);return r<0?ws.length:r;};
-  const order=[...by.keys()].map((k,n)=>[k,n]).sort((a,b)=>(rank(a[0])-rank(b[0]))||(a[1]-b[1])).map(a=>a[0]);
-  const wk=k=>{const its=by.get(k),p=its[0].pair;return its[0].who?{pair:p,source:its[0].who,source_title:'',first:its[0].id}:(ws.find(w=>w.pair===p)||{pair:p,source:its[0].source,source_title:''});};
-  const v=DEB.vis,i=v.indexOf(x),prev=i>0?v[i-1]:null,next=i>=0?v[i+1]:null;
-  /* in full every controversy is open; Compact opens the first of each work, or the one the address names */
-  const open=(it,j)=>!COMPACT||(item?it.id===item:j===0);
-  $('#dq').innerHTML=`<header class="c-head"><h3 class="qh">${esc(x.q)}</h3><dl class="lab">${x.atlas?`<div><dt>Classic question</dt><dd>${x.locus?`${esc(x.locus)} · `:''}<a href="${MAPS}#${esc(x.atlas)}">Map of the tradition</a> · <a href="${ATLAS}#${esc(x.atlas)}">Answers in the atlas</a></dd></div>`:''}${x.topic?`<div><dt>Topic</dt><dd>${esc(x.topic)}</dd></div>`:''}<div><dt>Argued in</dt><dd>${order.map(k=>`${esc(wk(k).source)}<span class="ct"> ${by.get(k).length}</span>`).join(' · ')}</dd></div></dl></header>
-    ${order.map((k,n)=>{const w=wk(k),its=by.get(k);return `<section class="qw" aria-labelledby="qw-${n}"><h4 class="qw-h" id="qw-${n}"><span>${w.first?`<a href="#${esc(w.first)}">${esc(w.source)}</a>`:isLive(w.pair)?`<a href="#${esc(w.pair)}">${esc(w.source)}</a>`:esc(w.source)}${w.source_title?`, <em>${esc(w.source_title)}</em>`:''}</span><span class="ct">${its.length}<span class="sr"> ${its.length===1?'controversy':'controversies'}</span></span></h4>
-      <ol class="qis">${its.map((it,j)=>`<li><details class="qi" data-pair="${esc(it.pair)}" data-id="${esc(it.id)}"${open(it,j)?' open':''}><summary><span class="qi-q">${esc(it.question)}</span><small>${esc(KIND[it.kind]||it.kind||'')}${it.place?` · ${esc(it.place)}`:''}</small></summary><div class="qi-b"><p class="muted">Reading the controversy…</p></div></details></li>`).join('')}</ol></section>`;}).join('')}
-    <nav class="next" aria-label="Previous and next question">${prev?`<button type="button" data-q="${esc(prev.id)}"><small>Previous question</small><span>${esc(prev.q)}</span></button>`:'<span></span>'}${next?`<button type="button" data-q="${esc(next.id)}"><small>Next question</small><span>${esc(next.q)}</span></button>`:'<span></span>'}</nav>`;
-  /* a controversy chosen from the grid's list: in view once its card is drawn */
-  if(item&&DEB.goItem===item){DEB.goItem='';DEB.scrollTo=item;}
-  fillOpen();
-  /* the reception reads every work of the question, folded or not */
-  for(const p of new Set(items.map(it=>it.pair)))doc(p).then(rcSoon);
-  paneFor($('#drcp'),{atlas:x.atlas||'',q:x.q,deb:DEB.id,items:items.map(it=>({pair:it.pair,id:it.id}))});
-  say(x.q);
-  if(LAND){LAND=false;$('#dq').scrollIntoView({block:'start'});}
-  if(push)history.replaceState(null,'',`#debate/${DEB.id}/${item||x.id}`);
+/* ONE QUESTION, IN THE READING: the question and where it is filed, the positions taken on it, then its controversies one at a time
+   behind a pager (each work's in the works' order, or by the data's weight), each read from its work: where the work puts it, its card's
+   brief, its sides with every argument and its page and its own words, or the opinions it weighs, and its judgment or resolution. A
+   controversy the address names opens at its place in the pager. Its reception is the pane beside it. The hide and weight of each
+   controversy come with its work: a question whose works are not read yet waits for them before its pager is drawn. */
+function showQuestion(x,push,item,nth,how){
+  const prevG=DEB.gcur,moved=DEB.sel!==x;
+  DEB.sel=x;DEB.want=x.id;
+  if(moved){DEB.posMore=new Set();if(DEB.mark&&!x.items.some(i=>i.id===DEB.mark.cid))DEB.mark=null;}
+  const wait=[...new Set(x.items.filter(i=>!i._e).map(i=>i.pair))];
+  if(wait.length&&!x.disp){
+    /* what was asked for is kept for when the works come (the digest or a filter may draw the question again meanwhile) */
+    DEB.item=item||'';DEB.nth=nth||0;DEB.ci=0;DEB.req={item:item||'',nth:nth||0,push,how};
+    railFollow(prevG);railDraw();
+    readHead(x);posDraw(x);DEB.headStale=true;
+    $('#dq .qcur').innerHTML='<p class="muted">Reading the controversies…</p>';
+    if(DEB.waiting!==x){
+      DEB.waiting=x;
+      Promise.all(wait.map(p=>doc(p))).then(()=>{
+        for(const it of x.items)if(!it._e&&!LOADED.get(it.pair))it._e=1;
+        enrich(x);
+        /* a question with controversies among the divines themselves: every work is read, so the toggle can count them */
+        if(DEB&&x.among>0&&!DEB.asked)loadAll();
+        if(!DEB||DEB.waiting!==x)return;
+        DEB.waiting=null;
+        if(DEB.sel===x){const r=DEB.req||{};listQ();showQuestion(x,r.push,r.item,r.nth,r.how);}
+      });
+    }
+    return;
+  }
+  const its=itemsOf(x);
+  let ci=item?its.findIndex(i=>i.id===item):nth?Number(nth)-1:0;
+  if(!(ci>=0))ci=0;if(ci>=its.length)ci=Math.max(0,its.length-1);
+  DEB.ci=ci;DEB.item=(its[ci]||{}).id||'';DEB.nth=ci+1;
+  if(DEB.mark&&DEB.mark.cid!==DEB.item)DEB.mark=null;
+  railFollow(prevG);railDraw();
+  inSight(document.querySelector('#dlist button.rq[aria-current="true"]'),[$('#dlist'),$('#deb .rail')]);
+  /* the head is drawn again for a question chosen or a filter changed, not for a step in the pager */
+  if(moved||DEB.headStale||(how!=='step'&&how!=='mark')||!$('#dq .qcur'))readHead(x);
+  DEB.headStale=false;
+  readItem(x,its);
+  paneSync(x,its);
+  say(moved?x.q:`${x.disp?'Section':'Controversy'} ${ci+1} of ${its.length}`);
+  if(push)setHash();
   if(VIEW==='debate')document.title=`${x.q}${TAIL}`;
-  inSight(document.querySelector(`#dlist button[data-q="${CSS.escape(x.id)}"]`),[$('#dlist'),$('#deb .nav')]);
+  if(LAND){LAND=false;readingInView();}
+  else if(item&&DEB.goItem===item){DEB.goItem='';readingInView();}
+  else if(how==='step')readingTop();
+  else if(how==='mark')DEB.scrollMark=DEB.item;
 }
-/* the open cards are drawn as their works come, a few at a time so a long question never holds the page; a fold opened later is drawn
-   when it opens */
-const FILLQ=[];let FILLR=0;
-function fillItem(det){if(det.dataset.filled)return;det.dataset.filled='1';doc(det.dataset.pair).then(()=>{FILLQ.push(det);if(!FILLR)FILLR=requestAnimationFrame(drainFill);});}
-function fillOpen(){document.querySelectorAll('#dq details.qi[open]').forEach(fillItem);}
-function drainFill(){
-  FILLR=0;const t=performance.now();
-  while(FILLQ.length&&performance.now()-t<14){const det=FILLQ.shift();if(det.isConnected)renderItem(det);}
-  if(FILLQ.length)FILLR=requestAnimationFrame(drainFill);else rcSoon();
+/* the question's head: its words, where it is filed (the classic question, the course, the topic), the works that argue it, each a door
+   to its first controversy in the pager; then the positions, the pager, the controversy and the steps before and after */
+function readHead(x){
+  const dm=!!x.disp,its=itemsOf(x),m=new Map();let wsN=[];
+  if(!dm)its.forEach((i,k)=>{const w=workName(i);if(!m.has(w)){m.set(w,{w,k,n:0});wsN.push(m.get(w));}m.get(w).n++;});
+  /* the works (in a work of many authors, the authors) that argue it, the most first: eight, and the rest a click away */
+  wsN=wsN.map((o,i)=>[o,i]).sort((a,b)=>(b[0].n-a[0].n)||(a[1]-b[1])).map(a=>a[0]);
+  const wsMore=DEB.awAll===x.id?0:Math.max(0,wsN.length-8);if(wsMore)wsN=wsN.slice(0,8);
+  const tp=DEB.topic||x.topic||'';
+  const dl=[
+    x.atlas?`<div><dt>Classic question</dt><dd>${x.locus?`${esc(x.locus)} · `:''}<a href="${MAPS}#${esc(x.atlas)}">Map of the tradition</a> · <a href="${ATLAS}#${esc(x.atlas)}">Answers in the atlas</a></dd></div>`:'',
+    dm&&x.disp>0?`<div><dt>In the course</dt><dd><a href="${DECKS}#metaphysics${x.part?`/${x.part}/${x.disp}`:''}">Metaphysics with Suárez, disputation ${fmt(x.disp)}</a></dd></div>`:'',
+    tp?`<div><dt>Topic</dt><dd>${esc(cap1(tp))}</dd></div>`:'',
+    wsN.length>1?`<div><dt>Argued in</dt><dd>${wsN.map(o=>`<button type="button" class="aw" data-cj="${o.k}">${esc(o.w)}</button><span class="ct"> ${fmt(o.n)}</span>`).join(' · ')}${wsMore?` · <button type="button" class="aw" data-aw-all>and ${fmt(wsMore)} more</button>`:''}</dd></div>`
+      :wsN.length?`<div><dt>Argued in</dt><dd>${esc(wsN[0].w)}<span class="ct"> ${fmt(wsN[0].n)}</span></dd></div>`:''
+  ].join('');
+  $('#dq').innerHTML=`<header class="c-head"><h3 class="qh" id="dqh" tabindex="-1" data-q="${esc(x.id)}">${esc(x.q)}</h3>${dl?`<dl class="lab">${dl}</dl>`:''}</header>
+    <div id="dpos"></div><div id="dpg"></div><section class="qcur" aria-labelledby="dqh"></section><div id="dnav"></div>`;
+  const t=$('#dsht');if(t)t.textContent=x.q;
 }
-function renderItem(det){
-  const box=det.querySelector('.qi-b'),{id} = det.dataset,d=LOADED.get(det.dataset.pair),c=d&&cOf(d,id);
-  if(!c){delete det.dataset.filled;box.innerHTML=`<p class="muted">${d?'This controversy has not been read yet.':'This work could not be read. Open the question again to retry.'}</p>`;return;}
-  box.innerHTML=itemBody(d,c);
-  if(DEB&&DEB.scrollTo===id){DEB.scrollTo='';det.scrollIntoView({block:'start'});}
+const workName=it=>it.who||((worksOf().find(w=>w.pair===it.pair)||{}).source)||it.source||'';
+/* THE POSITIONS (2026-10-22, owner: "clearly laid out"): v1/enrich/controversies/digest/<debate>.json, where a debate has one, gives each
+   question the positions taken on it, the most held first: its label, what it holds, its men (`people`: each once under his canonical
+   name, in order of birth, with the controversies where he holds it) and its parties and schools (`parties`, apart). The reading opens on
+   them: a man or a party chosen opens the first of his controversies in the pager with his side marked, chosen again the next. A file of
+   the older shape (`holders` alone) is read the same way. DIGESTS names the debates that have one (no index lists them); a file that does
+   not come shows nothing, and the reading opens on the first controversy. */
+const DIGESTS=new Set(['thomists-thomists','scotists-scotists','covenant','english-divines','bonaventurians']),DIGF=new Map();
+const digFile=id=>{if(!DIGESTS.has(id))return Promise.resolve(null);if(!DIGF.has(id))DIGF.set(id,J(`${BASE}/v1/enrich/controversies/digest/${encodeURIComponent(id)}.json`).then(f=>f&&f.questions&&typeof f.questions==='object'?f:null));return DIGF.get(id);};
+const HOLD_TOP=10,PARTY_TOP=3;
+/* a position's men and parties: the digest's, else its holders gathered by name (a party where the name is a group's) */
+function posPeople(p){
+  if(Array.isArray(p.people)||Array.isArray(p.parties))return {men:(p.people||[]).filter(o=>o&&o.name),groups:(p.parties||[]).filter(o=>o&&o.name)};
+  const m=new Map();for(const h of p.holders||[]){if(!h||!h.who)continue;const k=fold(dname(h.who));if(!m.has(k))m.set(k,{name:dname(h.who),n:0,cids:[]});const o=m.get(k);o.n++;o.cids.push(String(h.cid||''));}
+  const all=[...m.values()];return {men:all.filter(o=>oneName(o.name)&&!isGroup(o.name)),groups:all.filter(o=>!oneName(o.name)||isGroup(o.name))};
 }
-/* a controversy in a debate's question: where its work puts it, then its card in full (Compact: each side in brief) */
-function itemBody(d,c){
-  const b=bookLabel(d,c);
-  const src=`<p class="qi-src"><span>${b?`${esc(b)}, `:''}controversy ${c.n}${c.source.title?`: <em>${esc(c.source.title)}</em>`:''}</span>${pg(c.source.w,c.source.p0,range(c.source),c.source.title)}<a class="qi-open" href="#${esc(c.id)}">Open in the work</a></p>`;
-  if(COMPACT)return src+compactBody(d,c);
-  const facts=factsHTML(d,c);
-  return `${src}${facts?`<dl class="lab">${facts}</dl>`:''}${articlesHTML(d,c)}${cardHTML(d,c,5)}`;
+/* the side a position's holder takes in one of its controversies (the digest's raw holders carry it) */
+const posSide=(p,cid)=>{const h=(p.holders||[]).find(z=>z&&String(z.cid)===cid);return h?String(h.side||''):'';};
+function posDraw(x){
+  const box=$('#dpos');if(!box)return;
+  const P=posOf(x);if(!P){box.innerHTML='';return;}
+  const cur=DEB.item;
+  const ids=o=>(o.cids||[]).map(String).filter(id=>id&&DEB.byItem.has(id)&&!hiddenId(id));
+  const door=(o,k,cls,inner)=>{const cs=ids(o);if(!cs.length)return `<span class="${cls}">${inner}</span>`;
+    return `<a class="${cls}" href="#debate/${esc(DEB.id)}/${esc(cs[0])}" data-cids="${esc(cs.join(','))}" data-who="${esc(o.name)}" data-pos="${k}"${cs.includes(cur)?' aria-current="true"':''}${o.year?` title="${esc(`${o.name}, b. ${o.year}`)}"`:''}>${inner}</a>`;};
+  box.innerHTML=`<section class="psn" aria-labelledby="psnH"><h4 class="psn-h" id="psnH">The positions<span class="ct">${fmt(P.length)}</span></h4><ol class="psn-l">${P.map((p,k)=>{
+    const {men,groups}=posPeople(p),all=DEB.posMore.has(k),M=all?men:men.slice(0,HOLD_TOP),G=all?groups:groups.slice(0,PARTY_TOP),more=men.length-M.length+groups.length-G.length;
+    const nc=new Set([...men,...groups].flatMap(o=>(o.cids||[]).map(String))).size;
+    const man=o=>`${door(o,k,'psn-m',esc(dname(o.name)))}${Number(o.n)>1?`<span class="ct"> ${fmt(o.n)}</span>`:''}`;
+    const party=o=>door(o,k,'pchip',`<i class="dot ${esc(groupTone(o.name))}" aria-hidden="true"></i><span>${esc(o.name)}</span>${Number(o.n)>1?`<span class="ct">${fmt(o.n)}</span>`:''}`);
+    return `<li class="psn-i"><p class="psn-lab"><b>${esc(p.label||'')}</b>${nc?`<span class="ct">${fmt(nc)}<span class="sr"> ${nc===1?'controversy':'controversies'}</span></span>`:''}</p>${p.says?`<p class="psn-says">${esc(p.says)}</p>`:''}${M.length||G.length?`<p class="psn-who">${M.map(man).join(', ')}${G.length?`<span class="psn-g">${G.map(party).join('')}</span>`:''}${more?` <button type="button" class="rc-more" data-psn-more="${k}">and ${fmt(more)} more</button>`:''}</p>`:''}</li>`;}).join('')}</ol></section>`;
 }
-/* Compact: each side as the work states it with one passage of its own words, or the opinions grouped by school, and the judgment in a line */
-function compactBody(d,c){
-  if(hasOps(c))return opinionSides([{c}],d)+resolutionLine(d,c);
-  const A=sidesOf(d),jd=c.judgment||{},bn=c.b.name||d.b,whom=jd.side==='a'?(c.a.name||d.a):jd.side==='b'?bn:jd.side==='both'?'both':'neither',me=srcOf(d,c),deb=debOf(d,c);
-  const side=s=>{
-    const varies=s==='b'&&A[1]==='varies',name=s==='a'?(c.a.name||d.a):bn,hs=sideSchool(d,s),au=varies?authorOf(d,c,'b'):'',p=(c[s].picks||[])[0];
-    return `<section class="side"><h5 class="sd-h${String(name).length>48?' long':''}">${dot(hs)}${esc(name)}${schTag(hs)}</h5>${c[s].reported?`<p class="lbl">As ${esc(me)} states it</p><p class="pos">${esc(c[s].reported)}</p>`:''}${p?`${au?whoLine(au,deb,schooledIn(d,deb)):'<p class="lbl">In his own words</p>'}${quoteHTML(p)}`:''}</section>`;
-  };
-  return `<div class="sides">${side('a')}${side('b')}</div>${jd.why||jd.page?`<div class="res"><p class="lbl">${d.self_judge?`${esc(me)}'s conclusion`:`${esc(me)}'s judgment${whom==='both'?': they agree':whom==='neither'?'':`: for ${esc(whom)}`}`}</p><div class="r1"><p class="pos">${esc(jd.why||'')}</p>${pg(c.source.w,jd.page)}</div></div>`:''}`;
+/* the controversy shown: the pager over the question's controversies, the controversy read from its work, the steps before and after */
+function readItem(x,its){
+  const {ci} = DEB,it=its[ci],dm=!!x.disp,n=its.length,cw=it&&!dm?workName(it):'';
+  $('#dpg').innerHTML=n>1?`<nav class="cpg" aria-label="${dm?'The sections of this disputation':'The controversies on this question'}"><button type="button" data-step="-1"${ci?'':' disabled'}>Previous</button><span class="cpg-at">${dm?'Section':'Controversy'} <b>${fmt(ci+1)}</b> of ${fmt(n)}</span><button type="button" data-step="1"${ci<n-1?'':' disabled'}>Next</button>${cw?`<span class="cpg-w">${esc(cw)}</span>`:''}</nav>`:'';
+  document.querySelectorAll('#dq .aw[data-cj]').forEach(b=>{const k=Number(b.dataset.cj),w=its[k]?workName(its[k]):'';b.setAttribute('aria-current',String(!!it&&w===cw));});
+  const box=$('#dq .qcur');
+  box.dataset.pair=it?it.pair:'';box.dataset.id=it?it.id:'';
+  box.innerHTML=it?'<p class="muted">Reading the controversy…</p>':'<p class="muted">No controversy here matches the filters.</p>';
+  $('#dnav').innerHTML=navHTML(x,its);
+  posDraw(x);
+  if(it)fillCur();
+}
+function navHTML(x,its){
+  const {ci} = DEB,v=DEB.vis,i=v.indexOf(x),dm=!!x.disp,u=dm?'section':'controversy',U=dm?'disputation':'question';
+  const pq=i>0?v[i-1]:null,nq=i>=0&&i<v.length-1?v[i+1]:null;
+  const prev=ci>0?[`Previous ${u}`,rowText(its[ci-1])]:pq?[`Previous ${U}`,qText(pq)]:null;
+  const next=ci<its.length-1?[`Next ${u}`,rowText(its[ci+1])]:nq?[`Next ${U}`,qText(nq)]:null;
+  const b=(o,d)=>`<button type="button" data-step="${d}" data-cross><small>${o[0]}</small><span>${esc(o[1])}</span></button>`;
+  return prev||next?`<nav class="next" aria-label="Previous and next">${prev?b(prev,-1):'<span></span>'}${next?b(next,1):'<span></span>'}</nav>`:'';
+}
+/* left and right: the controversy before or after, on into the question before or after at either end */
+function stepItem(d){
+  const x=DEB&&DEB.sel;if(!x)return false;
+  const its=itemsOf(x),j=DEB.ci+d;
+  if(j>=0&&j<its.length){showQuestion(x,true,its[j].id,0,'step');return true;}
+  const v=DEB.vis,i=v.indexOf(x),y=i<0?null:v[i+d];if(!y)return false;
+  const ys=itemsOf(y);showQuestion(y,true,d<0&&ys.length?ys[ys.length-1].id:'',0,'step');return true;
+}
+function fillCur(){
+  const box=$('#dq .qcur');if(!box||!box.dataset.id)return;
+  const {pair} = box.dataset,{id} = box.dataset,x=DEB.sel;
+  doc(pair).then(d=>{
+    if(!box.isConnected||box.dataset.id!==id)return;
+    const c=d&&cOf(d,id);
+    if(!c){box.innerHTML=`<p class="muted">${d?'This controversy is not in its work as read now.':'This work could not be read. Choose the question again to try once more.'}</p>`;return;}
+    box.innerHTML=itemBody(d,c,x);
+    markSide(box,c);
+    flash(box,'qi-in');
+    /* a holder chosen: the controversy at the top of the reading, his side in view */
+    if(DEB.scrollMark===id){DEB.scrollMark='';const b=readScroller();if(b){if(b===$('#dq')){const t=b.getBoundingClientRect().top;if(t<-2||t>innerHeight*.6)b.scrollIntoView({block:'start'});}b.scrollTop+=box.getBoundingClientRect().top-b.getBoundingClientRect().top-8;}}
+    rcSoon();
+  });
+}
+/* a controversy in the reading: its own question (the card's, where it has one), where its work puts it, what is filed beside it (its
+   topic where it is not the question's, whom its author parts from, its classic question where it is not the question's), the brief,
+   the articles, the full card */
+function itemBody(d,c,x){
+  const b=bookLabel(d,c),k=cardOf(c),at=c.atlas&&c.atlas.id&&(!x||x.atlas!==c.atlas.id)?c.atlas:null,deb=debOf(d,c),tq=DEB&&(DEB.topic||(x&&x.topic))||'';
+  const facts=`${c.topic&&c.topic!=='other'&&String(c.topic)!==tq?`<div><dt>Topic</dt><dd>${esc(cap1(c.topic))}</dd></div>`:''}${c.parts_from?`<div><dt>Parts from</dt><dd>${partsFromHTML(c.parts_from,deb,true)}</dd></div>`:''}${at?`<div><dt>Classic question</dt><dd><a href="${MAPS}#${esc(at.id)}">${esc(at.q||'Map of the tradition')}</a>${at.locus?`<span class="muted"> · ${esc(at.locus)}</span>`:''} · <a href="${ATLAS}#${esc(at.id)}">Answers in the atlas</a></dd></div>`:''}`;
+  const place=c.place&&!(x&&x.disp)?placeOf(c.place):'';
+  return `<h4 class="ci-q">${esc((k&&k.q)||c.question)}</h4>
+    <div class="ci-src"><p class="qi-src"><span>${b?`${esc(b)}, `:''}controversy ${c.n}${c.source.title?`: <em>${esc(c.source.title)}</em>`:''}${place?`<span class="muted"> · ${esc(place)}</span>`:''}</span>${pg(c.source.w,c.source.p0,range(c.source),c.source.title)}<a class="qi-open" href="#${esc(c.id)}">Open in the work</a></p></div>
+    ${facts?`<dl class="lab">${facts}</dl>`:''}${k?briefHTML(d,c,k):''}${articlesHTML(d,c)}${cardHTML(d,c,5)}`;
+}
+/* THE CARD (2026-10-22, the data's `card` on a controversy, where it has one): its question in a line, each side's man and what he
+   holds, the verdict, the pages, each cut at a sentence's end from the full record. The brief sits over the full record, never in its
+   place; a controversy without a card shows the full record alone. */
+function cardOf(c){
+  const k=c&&c.card;if(!k||typeof k!=='object')return null;
+  const sd=v=>v&&typeof v==='object'?{who:String(v.who||''),says:String(v.says||''),side:String(v.side||'')}:{who:'',says:typeof v==='string'?v:'',side:''};
+  const a=sd(k.a),b=sd(k.b),v=sd(k.verdict);
+  if(!(k.q||a.says||b.says||v.says))return null;
+  return {q:String(k.q||''),a,b,v,pages:typeof k.pages==='string'||typeof k.pages==='number'?String(k.pages):''};
+}
+function briefHTML(d,c,k){
+  const deb=debOf(d,c),on=schooledIn(d,deb);
+  const side=(s,dflt)=>s.says||s.who?`<div class="br-x"><p class="br-who">${s.who?`${tok(oneName(s.who)?schoolFor(s.who,deb,''):'',on&&oneName(s.who))}${esc(s.who)}`:esc(dflt)}</p>${s.says?`<p class="br-says">${esc(s.says)}</p>`:''}</div>`:'';
+  const sv=k.v.side,whom=k.v.who||(sv==='a'?(k.a.who||c.a.name||d.a):sv==='b'?(k.b.who||c.b.name||d.b):'');
+  const lab=d.self_judge?`${srcOf(d,c)}'s conclusion`:`${srcOf(d,c)}'s judgment${sv==='both'?': they agree':sv==='neither'?': neither side':whom?`: for ${whom}`:''}`;
+  /* the card's pages, where they are not the controversy's own (a second reading's merged into it) */
+  const cp=k.pages.match(/\d+/g)||[],c0=cp[0]||'',c1=cp[1]||c0,s0=Number(c.source.p0)||0,s1=Number(c.source.p1||c.source.p0)||0;
+  const other=!!c0&&(Number(c0)!==s0||Number(c1)!==s1),plab=c1!==c0?`pp. ${c0}–${c1}`:`p. ${c0}`;
+  return `<div class="brief"><p class="br-l">In brief</p><div class="br-s">${side(k.a,c.a.name||d.a)}${side(k.b,c.b.name||d.b)}</div>${k.v.says?`<p class="br-v"><b>${esc(lab)}.</b> ${esc(k.v.says)}</p>`:''}${other?`<p class="br-p">Argued at ${pg(c.source.w,c0,plab)}</p>`:''}</div>`;
+}
+/* a holder chosen from the positions: his side in the controversy a sheet, named over it (in the brief and in the full record); where the
+   work weighs opinions, his opinion, or for the work's own side its resolution */
+function markSide(box,c){
+  const M=DEB&&DEB.mark;if(!M||M.cid!==c.id)return;
+  const i=M.side==='a'?0:M.side==='b'?1:-1,name=dname(M.who),lab=`<p class="mk-l">${esc(name)}'s side</p>`;
+  const bx=i>=0?box.querySelectorAll('.br-s>.br-x')[i]:null;if(bx)bx.classList.add('is-mark');
+  let el=i>=0?box.querySelectorAll('.sides>.side')[i]:null;
+  if(!el&&hasOps(c)){const f=fold(M.who);el=i===0?box.querySelector('.judgment'):[...box.querySelectorAll('.ops>.op')].find(o=>{const h=fold((o.querySelector('.op-h')||{}).textContent||'');return h&&(h.includes(f)||f.includes(h));})||null;}
+  if(el){el.classList.add('is-mark');el.insertAdjacentHTML('afterbegin',lab);}
+}
+/* the reception beside the reading: for a question, every controversy shown on it; for a section of Suárez, that section and its
+   classic question. Drawn again only when what it covers changes; it reads the works of the controversies it covers. */
+function paneSync(x,its){
+  const it=its[DEB.ci],dm=!!x.disp,key=dm?`i:${it?it.id:''}`:`q:${x.id}|${DEB.among}|${DEB.topic}`;
+  if(DEB.pane===key&&$('#drcp')&&$('#drcp').firstChild)return;
+  DEB.pane=key;
+  const items=dm?(it?[it]:[]):its;
+  paneFor($('#drcp'),{atlas:dm?((it&&it.atlas)||''):(x.atlas||''),q:dm?((it&&(it.atlasQ||it.question))||''):x.q,deb:DEB.id,items:items.map(i=>({pair:i.pair,id:i.id})),one:dm});
+  for(const p of new Set(items.map(i=>i.pair)))doc(p).then(rcSoon);
+}
+/* ON A PHONE the reading is a sheet over the rail (the decks' sheet): a question chosen raises it, Close, the scrim or Escape lowers it
+   and the focus goes back to the question's row; on a wider screen it is the column beside the rail and nothing is inert */
+const phoneNow=()=>matchMedia('(max-width:760px)').matches;
+const sheetIsUp=()=>{const r=$('#dread');return !!r&&r.classList.contains('up');};
+function sheetSync(){
+  const r=$('#dread'),s=$('#deb .dscrim');if(!r)return;
+  const ph=phoneNow();if(!ph)r.classList.remove('up');
+  const up=ph&&r.classList.contains('up');
+  r.inert=ph&&!up;
+  if(up){r.setAttribute('role','dialog');r.setAttribute('aria-modal','true');r.setAttribute('aria-labelledby','dsht');}
+  else{r.removeAttribute('role');r.removeAttribute('aria-modal');r.removeAttribute('aria-labelledby');}
+  if(s)s.classList.toggle('on',up);
+}
+function sheetUp(){
+  const r=$('#dread');if(!r||!phoneNow())return false;
+  r.classList.add('up');sheetSync();
+  const b=r.querySelector('.sh-body');if(b)b.scrollTop=0;
+  /* the focus to Close once the sheet is shown (a frame is not always enough for it to be focusable) */
+  const c=r.querySelector('.sh-x'),to=k=>setTimeout(()=>{if(c&&r.classList.contains('up')&&document.activeElement!==c){c.focus({preventScroll:true});if(document.activeElement!==c&&k<5)to(k+1);}},40);
+  to(0);
+  return true;
+}
+function sheetDown(){
+  const r=$('#dread');if(!r||!r.classList.contains('up'))return false;
+  r.classList.remove('up');sheetSync();
+  const b=document.querySelector('#dlist button.rq[aria-current="true"]');if(b)b.focus();
+  return true;
+}
+matchMedia('(max-width:760px)').addEventListener('change',sheetSync);
+/* the reading's own scroller: the sheet's body on a phone, the reading pane itself on a wider screen */
+const readScroller=()=>phoneNow()?$('#dread .sh-body'):$('#dq');
+/* the reading brought into view at its top: the sheet raised on a phone; on a wider screen the page scrolled to the pane when it is out
+   of sight, and the pane at its top */
+function readingInView(){
+  if(sheetUp())return;
+  const r=$('#dq');if(!r||r.closest('[hidden]'))return;const t=r.getBoundingClientRect().top;
+  if(t<-2||t>innerHeight*.6)r.scrollIntoView({block:'start'});
+  r.scrollTop=0;
+}
+/* a step in the pager starts the controversy at the top of the reading */
+function readingTop(){
+  const b=readScroller(),q=$('#dq .qcur');if(!b||!q)return;
+  if(b===$('#dq')){const t=b.getBoundingClientRect().top;if(t<-2||t>innerHeight*.6)b.scrollIntoView({block:'start'});}
+  const off=q.getBoundingClientRect().top-b.getBoundingClientRect().top;
+  /* the controversy's own head under the pager: in view, or brought to the top */
+  if(off<0||off>b.clientHeight*.5)b.scrollTop+=off-8;
+}
+/* SUÁREZ BY DISPUTATION (2026-10-22, owner: "take this out from thomists and make it a separate tab"): the Disputationes metaphysicae in
+   its own order, each disputation a head and its sections the rows under it, the opinions and Suárez's resolution the reading. A
+   section's disputation is the one its place names ("Disputation XXXI. On the essence…"), else the one before it in the work's order;
+   a disputation's title is the one its places give, else its number alone; each opens in the decks' course, Metaphysics with Suárez, at
+   its part of the book (DM_PARTS, the book's own division into six). DISP_WORKS names the works so read. */
+const DISP_WORKS=new Set(['suarez-schools']);
+const dispMode=()=>{if(!DEB)return false;const ws=worksOf();return ws.length>0&&ws.every(w=>DISP_WORKS.has(w.pair));};
+const DM_PARTS=[[11,1],[27,2],[30,3],[36,4],[53,5],[54,6]];
+const dmPart=n=>{for(const [hi,p] of DM_PARTS)if(n<=hi)return p;return 0;};
+const romanN=s=>{const V={I:1,V:5,X:10,L:50,C:100};let n=0,p=0;for(const ch of String(s).toUpperCase().split('').reverse()){const v=V[ch]||0;if(v<p)n-=v;else{n+=v;p=v;}}return n;};
+const DISP_RX=/\bDisputation\s+([IVXLC]+|\d+)\b/i,DISP_T=/^\s*Disputation\s+([IVXLC]+|\d+)\.\s+(.+?)\.?\s*$/i;
+const dispNum=s=>{const m=DISP_RX.exec(String(s||''));return m?(/^\d+$/.test(m[1])?Number(m[1]):romanN(m[1])):0;};
+const ordKey=id=>{const m=/-(\d+)-(\d+)$/.exec(String(id||''));return m?Number(m[1])*1e5+Number(m[2]):Infinity;};
+function buildDisps(d,fqs){
+  let secs=[];
+  if(d)secs=d.controversies.filter(inDeb).map(c=>({pair:d.pair,id:c.id,source:d.source,question:c.question,kind:c.kind,place:c.place||'',title:(c.source&&c.source.title)||'',atlas:(c.atlas&&c.atlas.id)||'',atlasQ:(c.atlas&&c.atlas.q)||'',topic:c.topic?String(c.topic):'',among:typeof c.among==='boolean'?c.among:null,hide:!!c.hide,dup:String(c.dup_of||''),weight:Number(c.weight)||0,who:'',_e:1}));
+  else{const seen=new Set();for(const x of fqs||[])for(const it of x.items)if(!seen.has(it.id)){seen.add(it.id);secs.push({...it,atlas:x.atlas||'',atlasQ:x.atlas?x.q:''});}secs.sort((a,b)=>ordKey(a.id)-ordKey(b.id));}
+  const by=new Map(),tt=new Map(),ns=secs.map(s=>dispNum(s.place));
+  secs.forEach((s,i)=>{const m=DISP_T.exec(s.place),k=ns[i];if(m&&k){let t=m[2].trim();if(!/[a-z]/.test(t))t=t.charAt(0)+t.slice(1).toLowerCase();if(!tt.has(k))tt.set(k,new Map());tt.get(k).set(t,(tt.get(k).get(t)||0)+1);}});
+  const titleOf=k=>{const T=tt.get(k);return T?[...T].sort((a,b)=>(b[1]-a[1])||(b[0].length-a[0].length))[0][0]:'';};
+  /* a section whose place names no disputation: the one before it in the work's order; where the next named is another, that one when
+     both are titled and its title shares more of the section's words */
+  const STOP=new Set(['whether','which','their','there','these','those','from','with','that','this','what','general','concerning','insofar','other']);
+  const words=t=>new Set(String(t||'').toLowerCase().split(/[^a-z]+/).filter(w=>w.length>=4&&!STOP.has(w)));
+  const share=(q,k)=>{const W=words(titleOf(k));let n=0;for(const w of words(q))if(W.has(w))n++;return n;};
+  let prev=0;
+  secs.forEach((s,i)=>{
+    let k=ns[i];
+    if(!k){const j=ns.findIndex((v,x)=>x>i&&v>0),nx=j<0?0:ns[j];k=prev;if(nx&&prev&&nx!==prev&&titleOf(prev)&&titleOf(nx)&&share(s.question,nx)>share(s.question,prev))k=nx;}
+    else prev=k;
+    if(!by.has(k))by.set(k,[]);by.get(k).push(s);
+  });
+  const src=(d&&d.source)||((secs[0]||{}).source)||'';
+  return [...by.keys()].sort((a,b)=>((a?0:1)-(b?0:1))||a-b).map(k=>{
+    const title=titleOf(k);
+    return {id:k?`d${k}`:'d0',q:k?`Disputation ${k}${title?`. ${title}`:''}`:'Other sections',disp:k||-1,title,part:k?dmPart(k):0,locus:'',atlas:null,works:[src],n:by.get(k).length,items:by.get(k)};
+  });
 }
 /* AMONG THE REFORMED AND LUTHERANS (2026-10-22, owner: "metaphysics is something that reformed and lutherans get into although they
    take the paths largely done by scotists thomists etc, this part of the map"). v1/enrich/controversies/paths/<debate>.json files under
@@ -871,7 +1223,7 @@ function pathsLine(){
   return n?`<p class="deb-also">Reformed and Lutheran metaphysicians stand on ${fmt(n)} of these questions.</p>`:'';
 }
 /* the debate's note, with the note on the Reformed and Lutherans and on who parts from whom where the debate has them: one note a page */
-const PM_NOTE='Who parts from whom is counted from the same reading as the controversies: each controversy once, from its author to each fellow its reading names on the other side.';
+const PM_NOTE='The quarrels and the table of every author are counted from the same reading as the controversies: each controversy once, from its author to each fellow its reading names on the other side.';
 /* a file's note says how it was read; the name of the model that read it is not for the page (2026-10-22): "machine reading (MiniMax,
    2026-10-22)" reads "a machine reading of the pages, checked against the page (22 October 2026)", and any other parenthesis naming a
    model keeps its date alone */
@@ -884,40 +1236,6 @@ function cleanNote(t){
   return s.replace(/\s{2,}/g,' ').trim();
 }
 function debNote(base){if(base!=null)DEB.note=cleanNote(base);$('#note').textContent=[DEB.note||'',PATHD.has(DEB.id)?PATH_NOTE:'',DEB.pm?PM_NOTE:''].filter(Boolean).join(' ');}
-/* a work's opinions as sides: the holders of one school together under it, the schools in their order, each holder with one passage of
-   his own words or else what the work reports of him; the holders of no school are named after them ("Also weighed"), or, where no
-   holder has a school, they are the sides. Where the opinions carry parties (the English divines) the parties are the sides, in their
-   order; where the work parts from fellows of its own school (the Thomists among themselves) each holder is a side, his school named only
-   where it is another. */
-function opinionSides(items,d){
-  const all=[];for(const {c} of items)for(const o of opsOf(c,d))all.push({o,c});
-  const say=(o,p)=>p?quoteHTML(p):o.reported?`<p class="pos">${esc(o.reported)}</p>`:'';
-  const named=(o,c)=>{const hl=holderLabel(o,c);return o.man?who(o.man,hl):`<span>${esc(hl)}</span>`;};
-  /* one row a holder in each group, with his first passage */
-  const group=gk=>{const m=new Map();for(const {o,c} of all){const g=gk(o,c);if(!m.has(g))m.set(g,new Map());const rows=m.get(g),k=o.author?pkey(o.author):`h:${fold(holderLabel(o,c))}`,cur=rows.get(k);if(!cur)rows.set(k,{o,c,p:o.picks[0]||null});else if(!cur.p&&o.picks[0])cur.p=o.picks[0];}return m;};
-  if(all.some(({o})=>o.party)){
-    const m=group(o=>o.party||'other'),ks=[...m.keys()].sort((a,b)=>PARTY_ORDER.indexOf(a)-PARTY_ORDER.indexOf(b));
-    return `<div class="sides">${ks.map(g=>`<section class="side"><h5 class="sd-h">${g==='other'?'Others':`<i class="dot pt-${g}" aria-hidden="true"></i>${PARTY[g]}`}</h5>${[...m.get(g).values()].map(({o,c,p})=>`<p class="who">${named(o,c)}</p>${say(o,p)}`).join('')}</section>`).join('')}</div>`;
-  }
-  if((d&&intraSchool(d))||!all.some(({o})=>o.school)){
-    const home=Object.values((d&&d.schools)||{})[0]||'',m=group((o,c)=>o.author?pkey(o.author):`h:${fold(holderLabel(o,c))}`);
-    return `<div class="sides">${[...m.values()].map(rows=>{const {o,c,p}=[...rows.values()][0],hl=holderLabel(o,c);return `<section class="side"><h5 class="sd-h${hl.length>48?' long':''}">${dot(o.school)}${named(o,c)}${o.school&&o.school!==home?schTag(o.school):''}</h5>${say(o,p)}</section>`;}).join('')}</div>`;
-  }
-  const sides=new Map(),others=new Map(),order=Object.keys(SCHOOLS);
-  for(const {o} of all){
-    const k=o.school?`s:${o.school}`:`h:${fold(o.holder)}`,m=o.school?sides:others;
-    if(!m.has(k))m.set(k,{school:o.school,label:o.school||o.holder,rows:new Map()});
-    const {rows} = m.get(k),rk=o.author?pkey(o.author):`h:${fold(o.holder)}`,cur=rows.get(rk);
-    if(!cur)rows.set(rk,{o,p:o.picks[0]||null});else if(!cur.p&&o.picks[0])cur.p=o.picks[0];
-  }
-  /* how the work names him, where that is not his own name ("the Thomists" for Thomas Aquinas) */
-  const as=o=>o.author&&!fold(o.author).includes(fold(o.holder).replace(/^(the|st|saint)/,''))?`<span class="sch"> · ${esc(o.holder)}</span>`:'';
-  const sideHTML2=sd=>`<section class="side"><h5 class="sd-h${sd.label.length>48?' long':''}">${dot(sd.school)}${esc(sd.label)}</h5>${[...sd.rows.values()].map(({o,p})=>
-    `${sd.school||o.man?`<p class="who">${o.man?who(o.man):esc(o.holder)}${as(o)}</p>`:''}${p?quoteHTML(p):o.reported?`<p class="pos">${esc(o.reported)}</p>`:''}`).join('')}</section>`;
-  const sch=[...sides.values()].sort((x,y)=>order.indexOf(x.school)-order.indexOf(y.school)),rest=[...others.values()];
-  if(!sch.length)return `<div class="sides">${rest.map(sideHTML2).join('')}</div>`;
-  return `<div class="sides">${sch.map(sideHTML2).join('')}</div>${rest.length?`<p class="also">Also weighed: ${rest.map(sd=>{const {o}=[...sd.rows.values()][0];return o.author?who(o.author,o.holder):`<span>${esc(o.holder)}</span>`;}).join(', ')}</p>`:''}`;
-}
 /* WHO PARTS FROM WHOM (2026-10-22: the Thomists among themselves, the Scotists among themselves, the covenant among the English
    divines). v1/enrich/controversies/schools_network.json gives each such debate its authors (`nodes`: name → year of birth, school or
    party, room) and who parts from whom (`edges`: [the author who parts, the one he parts from, the number of controversies, their ids]).
@@ -974,28 +1292,123 @@ function pmDraw(G){
   const rows=pmOrder([...new Set(E.map(e=>e[0]))],nodes,false),cols=pmOrder([...new Set(E.map(e=>e[1]))],nodes,gf);
   const ri=new Map(rows.map((r,i)=>[r,i])),ci=new Map(cols.map((c,j)=>[c,j])),cell=new Map();
   for(const e of E)cell.set(`${ri.get(e[0])}|${ci.get(e[1])}`,e);
-  DEB.pm={rows,cols,cell,nodes,short:pmShort([...rows,...cols]),sel:null,gf};
+  const names=[...new Set([...rows,...cols])],sm=pmShort(names.map(dname)),short=new Map(names.map(n=>[n,sm.get(dname(n))||dname(n)]));
+  DEB.pm={rows,cols,cell,nodes,short,sel:null,gf};
   const box=$('#dnet');if(!box)return;
-  box.innerHTML=pmHTML();
+  box.innerHTML=`<div class="dov tg">${quarrelsHTML(G)}${againstHTML(G)}${chipsHTML(G)}${pmHTML()}</div>`;
   const first=box.querySelector('button[data-pm]');if(first)first.tabIndex=0;
   debNote();
   if(DEB.tab==='w')debateFill();
 }
+/* the grid of every author, behind its disclosure (folded on every width; a reader's choice is kept while the page is open): a row for
+   each author who parts, a column for each one he parts from, the number of controversies in each cell */
 function pmHTML(){
-  const P=DEB.pm,{rows,cols,cell,nodes,short}=P,open=PMOPEN!=null?PMOPEN:!matchMedia('(max-width:760px)').matches&&!DEB.deep;
-  const top=[...cell.values()].sort((a,b)=>b[2]-a[2]).slice(0,3).map(e=>`${short.get(e[0])} from ${short.get(e[1])} ${fmt(e[2])}`).join(' · ');
+  const P=DEB.pm,{rows,cols,cell,nodes,short}=P,open=PMOPEN===true;
   const td=(i,j)=>{
     if(rows[i]===cols[j])return '<td class="pm-self"></td>';
     const e=cell.get(`${i}|${j}`);if(!e)return '<td></td>';
-    return `<td><button type="button" class="pm-${pmStep(e[2])}" data-pm="${i}|${j}" tabindex="-1" aria-pressed="false" aria-label="${esc(rows[i])} parts from ${esc(cols[j])} in ${fmt(e[2])} ${e[2]===1?'controversy':'controversies'}">${fmt(e[2])}</button></td>`;
+    return `<td><button type="button" class="pm-${pmStep(e[2])}" data-pm="${i}|${j}" tabindex="-1" aria-pressed="false" aria-label="${esc(dname(rows[i]))} parts from ${esc(dname(cols[j]))} in ${fmt(e[2])} ${e[2]===1?'controversy':'controversies'}">${fmt(e[2])}</button></td>`;
   };
-  const tip=n=>{const d=pmDates(n,nodes[n]);return d?`${n}, ${d}`:n;};
-  return `<details class="lu" id="pmfold"${open?' open':''}><summary><h3 class="lu-h">Who parts from whom</h3><span class="lu-dig">${esc(top)}</span><span class="lu-key">Counts: the controversies where one parts from the other</span></summary>
+  const tip=n=>{const d=pmDates(n,nodes[n]);return d?`${dname(n)}, ${d}`:dname(n);};
+  return `<details class="fold pmd" id="pmfold"${open?' open':''}><summary>Show every author (table)<span class="ct">${fmt(rows.length)} rows, ${fmt(cols.length)} columns</span></summary>
     <div class="tg pmw"><div class="pm-top"><p class="pm-key">${P.gf?'Read across: each row an author, in order of birth; each column one he parts from, the parties and schools first (most of the counts are theirs), then the men in order of birth. Choose a number to list its controversies.':'Read across: each row an author, each column one he parts from, both in order of birth, the undated and then the schools and parties after them. Choose a number to list its controversies.'}</p><p class="pm-lg" aria-hidden="true">${PM_KEY.map((l,k)=>`<span><i class="pm-${k+1}"></i>${l}</span>`).join('')}</p></div>
     <div class="pm-box"><table class="pm"><caption class="sr tg-sr">Who parts from whom: a row for each author who parts, a column for each one he parts from, in each cell the number of controversies</caption>
-      <thead><tr><td class="pm-corner"></td>${cols.map((c,j)=>`<th scope="col" data-j="${j}" title="${esc(tip(c))}"><span class="pm-ch"><span class="pm-short" aria-hidden="true">${esc(short.get(c))}</span><span class="sr">${esc(c)}</span></span></th>`).join('')}</tr></thead>
-      <tbody>${rows.map((r,i)=>{const d=pmDates(r,nodes[r]);return `<tr><th scope="row" data-i="${i}" title="${esc(tip(r))}"><span class="pm-full">${esc(r)}</span><span class="pm-short">${esc(short.get(r))}</span>${d?`<small>${esc(d)}</small>`:''}</th>${cols.map((c,j)=>td(i,j)).join('')}</tr>`;}).join('')}</tbody></table></div>
+      <thead><tr><td class="pm-corner"></td>${cols.map((c,j)=>`<th scope="col" data-j="${j}" title="${esc(tip(c))}"><span class="pm-ch"><span class="pm-short" aria-hidden="true">${esc(short.get(c))}</span><span class="sr">${esc(dname(c))}</span></span></th>`).join('')}</tr></thead>
+      <tbody>${rows.map((r,i)=>{const d=pmDates(r,nodes[r]);return `<tr><th scope="row" data-i="${i}" title="${esc(tip(r))}"><span class="pm-full">${esc(dname(r))}</span><span class="pm-short">${esc(short.get(r))}</span>${d?`<small>${esc(d)}</small>`:''}</th>${cols.map((c,j)=>td(i,j)).join('')}</tr>`;}).join('')}</tbody></table></div>
     <div class="pm-sel" id="pmsel" hidden></div></div></details>`;
+}
+/* THE GREAT QUARRELS (2026-10-22, owner on the grid: "this is unreadable not intuitive overwhelming"). schools_network.json gives each
+   debate it has its strongest quarrels, man against man with both directions merged (`quarrels`: a, b, n, a_on_b, b_on_a, years, topics,
+   ids; `n_quarrels` the number of pairs in all), the parties and schools its authors answer (`against`, [name, n]) and its topics
+   (`topics`, [topic, n], the English divines). A quarrel reads as a sentence, "Whitgift and Cartwright · 19 controversies · 8 one way, 11
+   the other · church government", or "Morley on Baxter" where one side alone argues; twelve show and the rest open under them. Chosen, a
+   quarrel lists its controversies in place, one way and then the other, each opening in the reading. Its counts leave out the controversies
+   the data hides, once their works are read. */
+const QR_SHOW=12;
+/* a name in the catalogue's form ("White, Francis") as it is read ("Francis White"), until the data names him so: one comma, a given
+   name after it; a group ("the Amyraldians (Cameron, Amyraut)") and a name with its order after the comma ("Baro, O.F.M.") stay */
+const dname=n=>{const s=String(n||'');if(isGroup(s))return s;const m=s.match(/^([^,()]+),\s*([^,()]+?)(\s*\([^)]*\))?$/);return m&&/^\p{Lu}\p{Ll}/u.test(m[2])?`${m[2].trim()} ${m[1].trim()}${m[3]||''}`:s;};
+/* a man's short name in a quarrel's sentence: the grid's (his surname, the name the works use, two of one surname with an initial),
+   and an epithet in brackets after it ("Fisher the Jesuit") */
+function qrShort(G){
+  const EP=/^(.*?)\s*\((the\s[^)]*)\)\s*$/i,names=[...new Set([...Object.keys(G.nodes||{}),...(G.quarrels||[]).flatMap(q=>[q.a,q.b])])].map(dname);
+  const bare=names.map(n=>{const m=n.match(EP);return m?m[1]:n;}),S=pmShort([...new Set(bare)]);
+  return n=>{const d=dname(n),m=d.match(EP),b=m?m[1]:d,s=S.get(b)||b;return m?`${s} ${m[2]}`:s;};
+}
+/* the tone of a party or a school, as the page's dots have them; none where the page draws no colour for it */
+const toneOf=s=>{const k=String(s||'').trim().toLowerCase();if(!k)return '';if(PARTY[k])return k==='other'?'':`pt-${k}`;const S=Object.keys(SCHOOLS).find(x=>fold(x)===fold(k));return S?`sc-${fold(S)}`:'';};
+const manTone=(G,n)=>toneOf(((G.nodes||{})[n]||{}).school);
+const groupTone=n=>{const s=String(n||'').replace(/^the\s+/i,'').replace(/\s*\(.*$/,'').trim(),one=s.replace(/s$/i,''),sch=schoolOf(s)||schoolOf(one);return toneOf(one)||toneOf(s)||(sch?`sc-${fold(sch)}`:'');};
+const toneName=t=>t.startsWith('pt-')?PARTY[t.slice(3)]||'':Object.keys(SCHOOLS).find(x=>`sc-${fold(x)}`===t)||'';
+/* a controversy the data hides, where its work is read */
+function hiddenId(id){
+  const x=DEB.byItem.get(id),it=x&&x.items.find(i=>i.id===id);if(it&&it._e)return !!it.hide;
+  const p=pairFor(id),d=p&&LOADED.get(p.pair),c=d&&cOf(d,id);return !!(c&&c.hide);
+}
+/* a quarrel's counts: the edges give each direction's controversies; the hidden left out */
+function qrCounts(G,q){
+  const E=G.edges||[],dir=(a,b)=>{const e=E.find(x=>x[0]===a&&x[1]===b);return new Set(((e&&e[3])||[]).map(String));};
+  const ids=(q.ids||[]).map(String).filter(id=>!hiddenId(id)),ab=dir(q.a,q.b),ba=dir(q.b,q.a);
+  const A=ids.filter(id=>ab.has(id)),B=ids.filter(id=>ba.has(id)&&!ab.has(id)),rest=ids.filter(id=>!ab.has(id)&&!ba.has(id));
+  const hasDir=A.length+B.length>0,na=hasDir?A.length:Number(q.a_on_b)||0,nb=hasDir?B.length:Number(q.b_on_a)||0;
+  return {ids,A,B,rest,n:ids.length||Number(q.n)||0,ab:na,ba:nb};
+}
+const qrTopics=q=>(q.topics||[]).map(String).filter(Boolean);
+function quarrelsHTML(G){
+  const all=(G.quarrels||[]).filter(q=>q&&q.a&&q.b&&Number(q.n)>0);if(!all.length)return '';
+  const Q=DEB.topic?all.filter(q=>qrTopics(q).includes(DEB.topic)):all,S=qrShort(G),cnt=new Map(all.map(q=>[q,qrCounts(G,q)]));
+  const max=Math.max(1,...all.map(q=>cnt.get(q).n)),tot=Number(G.n_quarrels)||all.length,more=Math.max(0,Q.length-QR_SHOW),shown=DEB.qmore?Q:Q.slice(0,QR_SHOW);
+  return `<section class="qr" aria-labelledby="qrH"><div class="ov-h"><h3 class="ov-t" id="qrH">The great quarrels</h3><span class="ct">${tot>all.length?`the strongest ${fmt(all.length)} of ${fmt(tot)} pairs`:`${fmt(all.length)} ${all.length===1?'pair':'pairs'}`}${DEB.topic?`, ${fmt(Q.length)} on ${esc(DEB.topic)}`:''}</span></div>
+    ${Q.length?`<ol class="qr-l">${shown.map(q=>qrRow(G,q,all.indexOf(q),S,max,cnt.get(q))).join('')}</ol><div class="qr-foot">${more?`<button type="button" class="qr-more" data-qr-more aria-expanded="${DEB.qmore}">${DEB.qmore?'Show the first twelve':`and ${fmt(more)} more ${more===1?'quarrel':'quarrels'}`}</button>`:''}${qrKey(G,shown)}</div>`:`<p class="muted">None of these quarrels is on ${esc(DEB.topic)}.</p>`}</section>`;
+}
+function qrRow(G,q,k,S,max,C){
+  const both=C.ab>0&&C.ba>0,aFirst=C.ab>0||!C.ba,A=aFirst?q.a:q.b,B=aFirst?q.b:q.a,{n} = C;
+  const names=both?`${esc(S(q.a))} and ${esc(S(q.b))}`:`${esc(S(A))} on ${esc(S(B))}`,full=both?`${dname(q.a)} and ${dname(q.b)}`:`${dname(A)} on ${dname(B)}`;
+  const meta=[`${fmt(n)} ${n===1?'controversy':'controversies'}`,both?`${fmt(C.ab)} one way, ${fmt(C.ba)} the other`:'',qrTopics(q).slice(0,3).join(', ')].filter(Boolean);
+  const seg=(who,v)=>`<i class="${esc(manTone(G,who))}" style="flex:${v} 1 0"></i>`;
+  const open=DEB.qopen===k;
+  return `<li class="qr-i"><button type="button" class="qr-b" data-qr="${k}" aria-expanded="${open}"${open?` aria-controls="qr-p${k}"`:''} title="${esc(full)}"><span class="qr-bar" aria-hidden="true"><span style="width:${Math.max(3,Math.round(n/max*100))}%">${both?seg(q.a,C.ab)+seg(q.b,C.ba):seg(A,n)}</span></span><span class="qr-s"><span class="qr-n">${names}</span><span class="qr-m"> · ${meta.map(esc).join(' · ')}</span></span></button>${open?`<div class="qr-p" id="qr-p${k}">${qrPanel(G,q,C)}</div>`:''}</li>`;
+}
+/* what the bars' colours are: the parties or schools of the men shown, the rest in ink */
+function qrKey(G,Q){
+  const seen=new Map();let ink=false;
+  for(const q of Q)for(const n of [q.a,q.b]){const t=manTone(G,n);if(!t){ink=true;continue;}if(!seen.has(t))seen.set(t,toneName(t));}
+  if(!seen.size)return '';
+  const what=[...seen.keys()].some(t=>t.startsWith('pt-'))?'parties':'schools';
+  return `<p class="qr-k"><span>The bars in the men's ${what}:</span>${[...seen].map(([t,l])=>`<span><i class="dot ${t}" aria-hidden="true"></i>${esc(l)}</span>`).join('')}${ink?'<span>the rest in ink</span>':''}</p>`;
+}
+/* a quarrel opened: its controversies one way, then the other, each with the question it is filed under, opening in the reading */
+function qrPanel(G,q,C){
+  if(!DEB.qs)return '<p class="muted">Reading the questions…</p>';
+  const parts=[[q.a,q.b,C.A],[q.b,q.a,C.B]].filter(p=>p[2].length);if(C.rest.length)parts.push(['','',C.rest]);
+  const on=id=>{if(!DEB.topic)return true;const x=DEB.byItem.get(id),it=x&&x.items.find(i=>i.id===id);return !it||!it.topic||it.topic===DEB.topic;};
+  const html=parts.map(([x,y,list])=>{const L=list.filter(on);return L.length?`${x?`<h4 class="qr-dh">${esc(dname(x))} on ${esc(dname(y))}<span class="ct">${fmt(L.length)}</span></h4>`:''}<ol class="pm-list">${L.map(qrItem).join('')}</ol>`:'';}).join('');
+  return html||'<p class="muted">These controversies are not in the debate as read now.</p>';
+}
+function qrItem(id){
+  const x=DEB.byItem.get(id),it=x&&x.items.find(i=>i.id===id);
+  if(!it)return `<li><span class="muted">Not in the debate's questions as read now.</span><a class="qi-open" href="#${esc(id)}">Open in the work</a></li>`;
+  return `<li><a href="#debate/${esc(DEB.id)}/${esc(id)}" data-pmgo="${esc(id)}">${esc(rowText(it))}</a><small>${esc(KIND[it.kind]||it.kind||'')}${x.q&&fold(x.q)!==fold(it.question)?` · on ${esc(qText(x))}`:''}</small><a class="qi-open" href="#${esc(id)}">Open in the work</a></li>`;
+}
+/* the quarrels drawn again (a filter, the questions come, one opened or closed), the focus kept on the row or the button that had it */
+function qrRefresh(){
+  const G=DEB&&netOf(DEB.id),box=$('#dnet .qr');if(!G||!box)return;
+  const a=document.activeElement,k=a&&a.matches&&a.matches('.qr-b')?a.dataset.qr:null,mo=!!(a&&a.matches&&a.matches('[data-qr-more]'));
+  const t=document.createElement('div');t.innerHTML=quarrelsHTML(G);const nb=t.firstElementChild;
+  if(nb)box.replaceWith(nb);else box.remove();
+  if(k!=null){const b=document.querySelector(`#dnet .qr-b[data-qr="${k}"]`);if(b)b.focus();}
+  else if(mo){const b=document.querySelector('#dnet [data-qr-more]');if(b)b.focus();}
+}
+/* whom they answer: one line of short labelled bars, the parties and schools the debate's authors answer most */
+function againstHTML(G){
+  const A=(G.against||[]).filter(x=>Array.isArray(x)&&x[0]&&Number(x[1])>0).slice(0,8);if(!A.length)return '';
+  const max=Math.max(...A.map(x=>Number(x[1]))),lab=n=>cap1(String(n).replace(/^the\s+/i,'').replace(/\s*\(.*\)\s*$/,''));
+  return `<section class="ag" aria-labelledby="agH"><h3 class="ov-t" id="agH">Against whom</h3><ul class="ag-l">${A.map(([n,k])=>`<li title="${esc(`${n}: ${fmt(k)} ${Number(k)===1?'controversy':'controversies'}`)}"><span class="ag-n">${esc(lab(n))}</span><span class="ag-bar" aria-hidden="true" style="width:${(Math.max(.08,Number(k)/max)*3.5).toFixed(2)}rem"><i class="${esc(groupTone(n))}"></i></span><span class="ct">${fmt(k)}<span class="sr"> controversies</span></span></li>`).join('')}</ul></section>`;
+}
+/* the topics: one at a time, a filter of the quarrels, the questions and the works together; the address keeps it */
+function chipsHTML(G){
+  const T=(G.topics||[]).filter(x=>Array.isArray(x)&&x[0]&&Number(x[1])>0);if(!T.length)return '';
+  return `<div class="tpc" role="group" aria-labelledby="tpcH"><h3 class="ov-t" id="tpcH">Topics</h3><div class="chips">${[['',0],...T].map(([t,n])=>`<button type="button" data-topic="${esc(t)}" aria-pressed="${String((DEB.topic||'')===t)}">${t?esc(cap1(t)):'Every topic'}${n?` <span class="ct">${fmt(n)}</span>`:''}</button>`).join('')}</div></div>`;
 }
 /* a cell chosen (again, it closes): its row and column named, its controversies listed, read from their works as they come */
 function pmPick(b){
@@ -1010,18 +1423,19 @@ function pmList(){
   if(!P.sel){box.hidden=true;box.innerHTML='';return;}
   const [i,j]=P.sel,e=P.cell.get(`${i}|${j}`),ids=(e&&e[3])||[],want=new Set();
   const li=id=>{
+    if(hiddenId(id))return '';
     const p=pairFor(id),d=p&&LOADED.get(p.pair),c=d&&cOf(d,id);
     if(p&&!d)want.add(p.pair);
     if(!c)return `<li><span class="muted">${d?'This controversy is not in its work as read now.':'Reading the work…'}</span><a class="qi-open" href="#${esc(id)}">Open in the work</a></li>`;
     return `<li><a href="#debate/${esc(DEB.id)}/${esc(id)}" data-pmgo="${esc(id)}">${esc(c.question)}</a><small>${esc(KIND[c.kind]||c.kind||'')}${c.place?` · ${esc(placeOf(c.place))}`:''}</small><a class="qi-open" href="#${esc(id)}">Open in the work</a></li>`;
   };
   box.hidden=false;
-  box.innerHTML=`<div class="pm-sh"><h4 class="pm-h">${esc(P.rows[i])} parts from ${esc(P.cols[j])}<span class="ct">${fmt(ids.length)} ${ids.length===1?'controversy':'controversies'}</span></h4><button type="button" class="pm-x" data-pm-close>Close the list</button></div><ol class="pm-list">${ids.map(li).join('')}</ol>`;
+  box.innerHTML=`<div class="pm-sh"><h4 class="pm-h">${esc(dname(P.rows[i]))} parts from ${esc(dname(P.cols[j]))}<span class="ct">${fmt(ids.length)} ${ids.length===1?'controversy':'controversies'}</span></h4><button type="button" class="pm-x" data-pm-close>Close the list</button></div><ol class="pm-list">${ids.map(li).join('')}</ol>`;
   for(const p of want)doc(p).then(()=>{if(DEB&&DEB.pm===P&&P.sel&&P.sel[0]===i&&P.sel[1]===j)pmList();});
 }
-/* a controversy from the list: its question in this debate, its fold open and in view */
+/* a controversy from a list (a quarrel's, a cell's): its question in the reading, the pager at it, the reading in view */
 function pmGo(id){
-  DEB.goItem=id;DEB.want=id;
+  DEB.goItem=id;DEB.want=id;DEB.nth=0;
   if(DEB.tab!=='q')setTab('q',false);
   if(DEB.qs)pickQuestion(id,true);
 }
@@ -1042,12 +1456,6 @@ function pmKey(e){
 function pmCross(b,on){
   if(!b||!b.dataset.pm)return;const [i,j]=b.dataset.pm.split('|');
   for(const h of document.querySelectorAll(`#dnet th[data-i="${i}"],#dnet th[data-j="${j}"]`))h.classList.toggle('is-on',on);
-}
-/* the side the work takes, under its opinions */
-function resolutionLine(d,c){
-  const r=c.resolution;if(!r||!(r.why||r.holder))return '';
-  const h=sidesWith(c),me=authorOf(d,c,'a'),ms=schoolOf(me);
-  return `<div class="res"><p class="lbl">${dot(ms)}${esc(srcOf(d,c))} ${h?`sides with ${esc(h)}`:'resolves it his own way'}</p><div class="r1"><p class="pos">${esc(r.why||'')}</p>${pg(c.source.w,r.page)}</div></div>`;
 }
 /* RECEPTION (2026-10-22, owner: "the side pane carries reception … never a repeat of the card"). Beside the cards from 80rem, a fold
    over them below that (open on a wide screen; folded on a narrower one until the reader opens it). For a debate's question, or one
@@ -1243,15 +1651,16 @@ function qlToggle(b,open){
   if(open){flash(box,'ql-in');if(!box.dataset.done)qlFill(fig,b,box);}
 }
 function route(){
-  const h=want();
+  const h=want(),qp=wantQ();
   if(!h||h==='debate'||h.startsWith('debate/')){
-    const rest=h.slice(7),i=rest.indexOf('/'),was=i<0?rest:rest.slice(0,i),key=i<0?'':rest.slice(i+1),id=debId(was);
+    const ps=h.slice(7).split('/'),was=ps[0]||'',key=ps[1]||'',nth=Number(ps[2])||0,id=debId(was);
     /* a renamed debate's old address keeps its question and takes the new id */
-    if(id!==was)history.replaceState(null,'',`#debate/${id}${key?`/${key}`:''}`);
-    showDebate(id,key);return;
+    if(id!==was)history.replaceState(null,'',`#debate/${id}${key?`/${key}`:''}${nth?`/${nth}`:''}${qp.toString()?`?${qp}`:''}`);
+    showDebate(id,key,nth,qp);return;
   }
+  sheetDown();
   const p=pairFor(h);
-  if(!p){showDebate('','');return;}
+  if(!p){showDebate('','',0,qp);return;}
   showPair(p.pair,idFor(h,p.pair));
 }
 $('#books').addEventListener('click',e=>{const b=e.target.closest('button[data-id]');if(b)show(b.dataset.id,true);});
@@ -1261,28 +1670,60 @@ $('#cfilt').addEventListener('click',e=>{const a=e.target.closest('button[data-a
 $('#chips').addEventListener('click',e=>{
   const b=e.target.closest('button[data-kind]');if(!b)return;const k=b.dataset.kind;if(KINDS.has(k))KINDS.delete(k);else KINDS.add(k);b.setAttribute('aria-pressed',String(KINDS.has(k)));list();
 });
+const plainClick=e=>!(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button!==0);
 $('#deb').addEventListener('click',e=>{
   if(!DEB)return;
-  /* the grid: a number chosen, the list closed, a controversy of the list opened in its question (a modified click keeps the link's way) */
+  if(e.target.closest('[data-sheet-close]')){sheetDown();return;}
+  /* the grid: a number chosen, the list closed, a controversy of the list (or of a quarrel) opened in the reading (a modified click keeps
+     the link's way) */
   const pm=e.target.closest('#dnet button[data-pm]');if(pm){pmPick(pm);return;}
   if(e.target.closest('[data-pm-close]')){const s=DEB.pm&&DEB.pm.sel,b=s&&document.querySelector(`#dnet button[data-pm="${s[0]}|${s[1]}"]`);if(b)pmPick(b);if(b)b.focus();return;}
   const go=e.target.closest('a[data-pmgo]');
-  if(go){if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button!==0)return;e.preventDefault();pmGo(go.dataset.pmgo);return;}
-  const cp=e.target.closest('#dcompact');if(cp){setCompact(!COMPACT);cp.setAttribute('aria-pressed',String(COMPACT));if(DEB.sel&&DEB.tab==='q')showQuestion(DEB.sel,false,DEB.item);return;}
-  if(e.target.closest('#damong')){DEB.among=!DEB.among;$('#damong').setAttribute('aria-pressed',String(DEB.among));listQ();flash($('#dlist'),'ls-in');if(DEB.sel&&DEB.tab==='q'){const x=DEB.vis.includes(DEB.sel)?DEB.sel:DEB.vis[0];if(x)showQuestion(x,true);}return;}
-  const q=e.target.closest('button[data-q]');
-  if(q){const x=DEB.byQ.get(q.dataset.q);if(x){showQuestion(x,true);if(q.closest('.next'))$('#dq').scrollIntoView({block:'start'});}return;}
+  if(go){if(!plainClick(e))return;e.preventDefault();pmGo(go.dataset.pmgo);return;}
+  /* the quarrels: one opened in place (again, it closes), the rest of them shown; a topic chosen (again, every topic) */
+  const qb=e.target.closest('#dnet .qr-b');if(qb){const k=Number(qb.dataset.qr);DEB.qopen=DEB.qopen===k?-1:k;qrRefresh();const p=$(`#qr-p${k}`);if(p)flash(p,'qr-in');return;}
+  if(e.target.closest('#dnet [data-qr-more]')){DEB.qmore=!DEB.qmore;qrRefresh();return;}
+  const tp=e.target.closest('#dnet button[data-topic]');if(tp){const t=tp.dataset.topic||'';DEB.topic=DEB.topic===t?'':t;filtersChanged(true);return;}
+  /* the rail: a group folded or opened, a page of it, a row chosen (on a phone the reading rises as a sheet) */
+  const rg=e.target.closest('#dlist .rg-h');if(rg){const k=rg.dataset.g;if(DEB.gopen.has(k))DEB.gopen.delete(k);else DEB.gopen=new Set([k]);railDraw();const b=document.querySelector(`#dlist .rg-h[data-g="${CSS.escape(k)}"]`);if(b)b.focus();return;}
+  const gp=e.target.closest('#dlist [data-gp]');
+  if(gp){const v=gp.dataset.gp,i=v.lastIndexOf('|'),k=v.slice(0,i),p=Number(v.slice(i+1))||0,d=gp.textContent.startsWith('Next')?1:-1;DEB.gpage.set(k,p);railDraw();
+    const b=[`${k}|${p+d}`,`${k}|${p-d}`].map(x=>document.querySelector(`#dlist [data-gp="${CSS.escape(x)}"]`)).find(x=>x&&!x.disabled)||document.querySelector(`#dlist .rg-h[data-g="${CSS.escape(k)}"]`);if(b)b.focus();return;}
+  const rq=e.target.closest('#dlist button.rq');if(rq){const x=DEB.byQ.get(rq.dataset.q);if(x){showQuestion(x,true,rq.dataset.i||'',0,'rail');readingInView();}return;}
+  /* the reading: a step, a work's first controversy, a holder's controversy with his side marked, the rest of a position's holders */
+  const st=e.target.closest('#dq [data-step]');
+  if(st){const d=Number(st.dataset.step),inPg=!!st.closest('.cpg');stepItem(d);const nb=inPg?document.querySelector(`#dq .cpg [data-step="${d}"]:not(:disabled)`):null;(nb||$('#dqh')||{focus(){}}).focus({preventScroll:!inPg&&!sheetIsUp()});return;}
+  if(e.target.closest('#dq [data-aw-all]')){DEB.awAll=DEB.sel&&DEB.sel.id;readHead(DEB.sel);readItem(DEB.sel,itemsOf(DEB.sel));const b=document.querySelectorAll('#dq .aw[data-cj]')[8];if(b)b.focus();return;}
+  const cj=e.target.closest('#dq [data-cj]');if(cj){const it=itemsOf(DEB.sel)[Number(cj.dataset.cj)];if(it)showQuestion(DEB.sel,true,it.id,0,'step');return;}
+  /* a man or a party of a position: the first of his controversies with his side marked; chosen again, the next */
+  const hd=e.target.closest('#dq a[data-cids]');
+  if(hd){if(!plainClick(e))return;e.preventDefault();
+    const cs=hd.dataset.cids.split(',').filter(Boolean),at=cs.indexOf(DEB.item);let cid=cs[at<0?0:(at+1)%cs.length];
+    const P=posOf(DEB.sel)||[],p=P[Number(hd.dataset.pos)]||{},side=posSide(p,cid);
+    const x0=DEB.byItem.get(cid),it0=x0&&x0.items.find(i=>i.id===cid);if(it0&&it0.hide&&it0.dup&&DEB.byItem.has(it0.dup))cid=it0.dup;
+    DEB.mark={cid,side,who:hd.dataset.who||''};const x=DEB.byItem.get(cid);
+    if(x){if(!x.items.some(i=>i.id===cid&&itemOn(i))){DEB.among=false;DEB.topic='';filtersChanged(false,false);}showQuestion(x,true,cid,0,'mark');}return;}
+  const pmore=e.target.closest('#dq [data-psn-more]');
+  if(pmore){const k=Number(pmore.dataset.psnMore);DEB.posMore.add(k);posDraw(DEB.sel);const li=document.querySelectorAll('#dq .psn-i')[k],a=li&&li.querySelector('.psn-who').children[HOLD_TOP];if(a&&a.matches('a'))a.focus();return;}
+  /* By work: a work opened closes the one open before it (it is drawn when opened); the rest of a side's men */
+  const ws=e.target.closest('#lw details.plr-d>summary');
+  if(ws){const d=ws.parentElement;
+    if(!d.open){DEB.wopen=d.dataset.pair;document.querySelectorAll('#lw details.plr-d[open]').forEach(o=>{if(o!==d)o.open=false;});if(!d.querySelector('.plr-s')){e.preventDefault();debateFill();}}
+    else DEB.wopen='-';
+    return;}
+  /* By work: the rest of a side's men */
+  const pm2=e.target.closest('#lw [data-plr-more]');if(pm2){DEB.plrMore.add(pm2.dataset.plrMore);debateFill();return;}
+  if(e.target.closest('#damong')){DEB.among=!DEB.among;filtersChanged(true);return;}
   const t=e.target.closest('[role="tab"]');
   if(t){setTab(t.id==='tab-w'?'w':'q',true);return;}
-  if(e.target.closest('#dshared')){DEB.shared=!DEB.shared;$('#dshared').setAttribute('aria-pressed',String(DEB.shared));listQ();}
+  if(e.target.closest('#dshared')){DEB.shared=!DEB.shared;filtersChanged(true);}
 });
 $('#deb').addEventListener('input',e=>{if(DEB&&e.target.id==='dfind')listQ();});
-$('#deb').addEventListener('change',e=>{if(DEB&&(e.target.id==='dloc'||e.target.id==='dtopic')){listQ();flash($('#dlist'),'ls-in');}});
-/* a fold opened: the authors' lineup reads every work; a controversy reads its own */
-$('#deb').addEventListener('toggle',e=>{const t=e.target;if(!DEB)return;if(t.id==='lufold')LUOPEN=t.open;if(t.id==='pmfold')PMOPEN=t.open;if(t.matches('details.rc')&&!wideNow())RCOPEN=t.open;if(!t.open)return;if(t.id==='lufold'){loadAll();debateFill();}else if(t.matches('details.qi')){fillItem(t);if(t.dataset.touched)flash(t,'qi-in');}},true);
+/* a fold opened: the authors' lineup reads every work */
+$('#deb').addEventListener('toggle',e=>{const t=e.target;if(!DEB)return;
+  if(t.id==='lufold')LUOPEN=t.open;if(t.id==='pmfold')PMOPEN=t.open;if(t.matches('details.rc')&&!wideNow())RCOPEN=t.open;if(!t.open)return;if(t.id==='lufold'){loadAll();debateFill();}},true);
 $('#pv').addEventListener('toggle',e=>{if(e.target.matches('details.rc')&&!wideNow())RCOPEN=e.target.open;},true);
-/* a card the reader opens settles in (the cards drawn open do not move); the Latin of a passage; the question in the other debates */
-document.addEventListener('click',e=>{const s=e.target.closest&&e.target.closest('details.qi>summary');if(s)s.parentElement.dataset.touched='1';},true);
+/* the Latin of a passage; the question in the other debates */
 document.addEventListener('click',e=>{
   const b=e.target.closest&&e.target.closest('button.ql');if(b){qlToggle(b,b.getAttribute('aria-expanded')!=='true');return;}
   const o=e.target.closest&&e.target.closest('button[data-rc-other]');if(o)rcOther(o);
@@ -1293,17 +1734,22 @@ $('#pairs').addEventListener('toggle',e=>{if(e.target.matches('details.pairs'))O
 /* on a phone the board folds away once a debate or a work is chosen, so it is in view */
 $('#pairs').addEventListener('click',e=>{if(e.target.closest('a.pl,a.dl')&&matchMedia('(max-width:760px)').matches)OPEN=false;});
 addEventListener('hashchange',()=>{if(IX)route();});
+/* the keys: Escape closes a preview, then the sheet; in the grid the arrows move among its numbers; in the rail up and down move through
+   its rows; elsewhere in a debate left and right move through the controversies (in a work's own view, through its controversies) */
 addEventListener('keydown',e=>{
-  if(e.key==='Escape'&&PVW.escape()){e.preventDefault();return;}
+  if(e.key==='Escape'){if(PVW.escape()||sheetDown())e.preventDefault();return;}
   if(VIEW==='debate'&&DEB&&e.target.closest&&e.target.closest('#dnet .pm')){pmKey(e);return;}
-  if(e.target.matches('input,textarea,select')||e.target.closest('.pvw')||e.altKey||e.ctrlKey||e.metaKey||(e.key!=='ArrowRight'&&e.key!=='ArrowLeft'))return;
+  if(e.altKey||e.ctrlKey||e.metaKey)return;
+  if(VIEW==='debate'&&DEB&&(e.key==='ArrowUp'||e.key==='ArrowDown')&&e.target.closest&&e.target.closest('#dlist button.rq')){e.preventDefault();railStep(e.key==='ArrowDown'?1:-1);return;}
+  if((e.target.matches&&e.target.matches('input,textarea,select'))||(e.target.closest&&e.target.closest('.pvw'))||(e.key!=='ArrowRight'&&e.key!=='ArrowLeft'))return;
   const step=e.key==='ArrowRight'?1:-1;
   if(VIEW==='debate'&&DEB){
-    if(e.target.closest('[role="tab"]')){setTab(DEB.tab==='w'?'q':'w',true);$(DEB.tab==='w'?'#tab-w':'#tab-q').focus();return;}
-    const v=DEB.vis,i=DEB.sel&&DEB.tab==='q'?v.indexOf(DEB.sel):-1,x=i<0?null:v[i+step];if(x)showQuestion(x,true);return;
+    if(e.target.closest&&e.target.closest('[role="tab"]')){setTab(DEB.tab==='w'?'q':'w',true);$(DEB.tab==='w'?'#tab-w':'#tab-q').focus();return;}
+    if(DEB.tab==='q'&&DEB.sel&&stepItem(step))e.preventDefault();
+    return;
   }
   if(VIEW!=='pair'||!D)return;
-  const i=D.controversies.findIndex(c=>c.id===CUR),c=i<0?null:D.controversies[i+step];if(c)show(c.id,true);
+  const S=shownCs(D),i=S.findIndex(c=>c.id===CUR),c=i<0?null:S[i+step];if(c)show(c.id,true);
 });
 const datesReady=()=>{const T=window.FRTraditionGraphics;return T&&T.dates?Promise.race([T.dates.ready,new Promise(r=>setTimeout(r,1500))]):null;};
 Promise.all([J(`${BASE}/v1/enrich/controversies/index.json`),ROOMS_P,netFile(),datesReady()]).then(([ix,,net])=>{
@@ -1311,7 +1757,7 @@ Promise.all([J(`${BASE}/v1/enrich/controversies/index.json`),ROOMS_P,netFile(),d
   LIVE=((ix&&ix.pairs)||[]).filter(p=>p.n>0);
   if(!LIVE.length){viewIs('pair');$('#books').innerHTML='';$('#c').innerHTML='<p class="muted">The controversies could not be loaded. Reload the page to try again.</p>';return;}
   IX=ix;DS=debates();
-  {const h=want(),p=pairFor(h);LAND=matchMedia('(max-width:760px)').matches&&(/^debate\/[^/]+\/(?!works$)./.test(h)||!!(p&&h!==p.pair));}
+  {const h=want(),p=pairFor(h);LAND=/^debate\/[^/]+\/(?!works$)./.test(h)||(matchMedia('(max-width:760px)').matches&&!!(p&&h!==p.pair));}
   route();
 });
 })();
