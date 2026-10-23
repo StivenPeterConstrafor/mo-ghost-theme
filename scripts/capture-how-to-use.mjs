@@ -18,7 +18,7 @@
  * Augustine and Calvin on grace, justification by faith), then deleted. Keep the account menu, name and saved items out of frame.
  *
  * Add a shot: append to SHOTS. url is relative to the base. prep is a JS expression run after load (click,
- * type, scroll). vh is the viewport height (default 900). inView captures only what the viewport shows (for panes sized to the viewport). wait is the milliseconds to let the page settle (default 9000). scroll is the page's scrollY before the crop. clip is {x, y, w} in viewport pixels after
+ * type, scroll). vh is the viewport height (default 900). inView captures only what the viewport shows (for panes sized to the viewport). wait is the milliseconds to let the page settle (default 9000). scroll is the page's scrollY before the crop ("prep" leaves the scroll where prep put it). clip is {x, y, w} in viewport pixels after
  * the scroll; the height is w * 0.625.
  */
 import { spawn } from "node:child_process";
@@ -39,6 +39,8 @@ const SHOTS = [
   { id: "laity-reader", url: "/the-faith-received/read/?w=calvin-institutes-of-the-christian-religion&p=6", clip: { x: 0, y: 133, w: 1440 }, sticky: true },
   { id: "laity-creeds", url: "/the-faith-received/read/?w=nicene-creed", clip: { x: 0, y: 133, w: 1440 }, sticky: true },
   { id: "laity-scripture", url: "/the-faith-received/scripture/?ref=romans.8.1", scroll: 495, clip: { x: 40, y: 0, w: 1360 } },
+  { id: "laity-one-teacher", url: "/the-faith-received/scripture/?ref=romans.8.1", scroll: "prep", clip: { x: 40, y: 0, w: 1360 },
+    prep: "(async () => { [...document.querySelectorAll('.cp-pane button, .cp-pane a')].find((b) => b.textContent.trim() === 'Keep reading').click(); await new Promise((r) => setTimeout(r, 2500)); const h = [...document.querySelectorAll('.cp-pane *')].find((e) => e.children.length === 0 && e.textContent.trim() === 'Commentary on Romans'); window.scrollTo(0, window.scrollY + h.getBoundingClientRect().top - 24); })()" },
   { id: "laity-guides", url: "/the-faith-received/guide/", scroll: 480, clip: { x: 80, y: 0, w: 1280 } },
   { id: "laity-topics", url: "/the-faith-received/topics/?t=de-justificatione", scroll: 520, clip: { x: 80, y: 0, w: 1280 } },
   { id: "laity-lexicon", url: "/the-faith-received/lexicon/#grace", scroll: 330, clip: { x: 100, y: 0, w: 1240 } },
@@ -46,6 +48,8 @@ const SHOTS = [
   // Pastors
   { id: "pastors-scripture", url: "/the-faith-received/scripture/?ref=john.1.1", scroll: 495, clip: { x: 40, y: 0, w: 1360 } },
   { id: "pastors-verse-desk", url: "/the-faith-received/scripture/desk/?ref=romans.3.28", scroll: 530, clip: { x: 80, y: 0, w: 1280 } },
+  { id: "pastors-hymns", url: "/the-faith-received/scripture/?ref=psalms.23.1", scroll: 495, clip: { x: 40, y: 0, w: 1360 },
+    prep: "[...document.querySelectorAll('button,[role=tab]')].find((b) => b.textContent.trim() === 'Hymns').click()" },
   { id: "pastors-lexicon", url: "/the-faith-received/lexicon/#fides", scroll: 330, clip: { x: 100, y: 0, w: 1240 } },
   { id: "pastors-decks", url: "/the-faith-received/commentary-decks/", scroll: 330, wait: 15000, inView: true, sticky: true, vh: 1000, clip: { x: 0, y: 45, w: 1440 } },
   { id: "pastors-repentance", url: "/the-faith-received/topics/?t=repentance", scroll: 520, clip: { x: 80, y: 0, w: 1280 } },
@@ -53,6 +57,8 @@ const SHOTS = [
   // Academics
   { id: "academics-lexicon", url: "/the-faith-received/lexicon/?q=fides", scroll: 330, clip: { x: 100, y: 0, w: 1240 } },
   { id: "academics-disputed", url: "/the-faith-received/disputed-questions/", scroll: 520, clip: { x: 120, y: 0, w: 1200 } },
+  { id: "academics-topics", url: "/the-faith-received/topics/?t=de-praedestinatione", scroll: 575, clip: { x: 80, y: 0, w: 1280 } },
+  { id: "academics-author", url: "/the-faith-received/author/?a=augustine-of-hippo", scroll: 330, clip: { x: 40, y: 0, w: 1360 } },
   { id: "academics-set-index", url: "/the-faith-received/set-index/?set=luther-wa", scroll: 360, clip: { x: 120, y: 0, w: 1200 } },
   { id: "academics-decks", url: "/the-faith-received/commentary-decks/", scroll: 330, wait: 15000, inView: true, sticky: true, vh: 1000, clip: { x: 0, y: 45, w: 1440 },
     prep: "[...document.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Both').click()" },
@@ -100,7 +106,7 @@ for (const shot of todo) {
   await wait(shot.wait || 9000);
   await ev(`localStorage.setItem("fr_sd_theme","light"); document.documentElement.setAttribute("data-sd-theme","light")`);
   if (shot.prep) { await ev(shot.prep); await wait(1500); }
-  await ev(`window.scrollTo(0, ${shot.scroll || 0})`);
+  if (shot.scroll !== "prep") await ev(`window.scrollTo(0, ${shot.scroll || 0})`);
   await wait(700);
   await ev(`(() => { for (const el of document.querySelectorAll("body *")) { const p = getComputedStyle(el).position; if (p === "fixed" || (${shot.sticky ? "false" : "true"} && p === "sticky")) el.style.visibility = "hidden"; } })()`);
   await wait(300);
