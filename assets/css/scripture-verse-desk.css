@@ -183,3 +183,6 @@ span.vdb-arrow{color:var(--vdb-line)}
 @media (prefers-reduced-motion:reduce){.vdb-g.is-open>.vdb-gp,.vdb-r.is-open>.vdb-ro{animation:none}}
 @media (prefers-reduced-motion:no-preference){.vdb-kind,.vdb-pv,.vdb-lane,.vdb-more{transition:background-color .12s var(--vdb-ease),border-color .12s var(--vdb-ease),color .12s var(--vdb-ease),box-shadow .12s var(--vdb-ease)}}
 @keyframes vdb-in{from{opacity:0;transform:translateY(-3px)}}
+/* the whole-Bible sets, by tradition (10-23) */
+.vdb-wh{margin:.85rem 0 .2rem;color:var(--vdb-muted);font:600 var(--vdb-small)/1.4 var(--vdb-body);letter-spacing:.02em}
+.vdb-gp > .vdb-wh:first-child{margin-top:.35rem}

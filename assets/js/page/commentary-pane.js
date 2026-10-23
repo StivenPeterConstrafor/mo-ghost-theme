@@ -100,13 +100,23 @@
   const loadRank = () => rankReady || (rankReady = json(`${BASE}/v1/scripture/rank.json`)
     .then((d) => { Object.assign(RANK.works, (d && d.works) || {}); Object.assign(RANK.authors, (d && d.authors) || {}); Object.assign(RANK.books, (d && d.books) || {}); })
     .catch(() => { rankReady = null; }));
+  /* THE WHOLE-BIBLE SETS (10-23, owner: "make the whole bible commentaries match and open where they need and each whole bible is grouped
+   * by tradition"; "works that are multi vol are grouped, so like grotius is a whole bible, wesley, baxters paraphrase, calov, cajetan").
+   * v1/scripture/sets.json (runs/scripture_sets_1023/build_sets.py): each set (Lapide, Migne, Poole's Synopsis, the Critici Sacri, Calov,
+   * Piscator, Grotius …) with its label, tradition, year and every volume; the strip shows one button a set, by tradition. */
+  const SETS = { list: [], of: {}, trads: [] };
+  let setsReady = null;
+  const loadSets = () => setsReady || (setsReady = json(`${BASE}/v1/scripture/sets.json`)
+    .then((d) => { SETS.list = (d && d.sets) || []; SETS.of = (d && d.of) || {}; SETS.trads = (d && d.trads) || []; })
+    .catch(() => { setsReady = null; }));
+  const setIdOf = (slug) => SETS.of[slug] || '';
   const impOf = (slug, a) => { const r = RANK.works[slug]; return r ? r[0] : (RANK.authors[a] || 0); };
   const KIND_W = { commentary: 1, sermons: 0.8, collected: 0.7 };
   function weigh(c) {
     // a series of sermons or tractates through the book (Augustine's 124 Tractates on John) is read as its commentary
     const kind = c.k === 'sermons' && c.cov >= 5 ? 1 : (KIND_W[c.k] || (c.overlay ? 1 : 0.65));
     const cov = c.cov >= 5 ? 1 : c.cov >= 2 ? 0.92 : 0.86;
-    c.wb = (RANK.works[c.slug] || [])[1] === 1 || !!c.overlay ? 1 : 0;
+    c.wb = (RANK.works[c.slug] || [])[1] === 1 || !!c.overlay || !!setIdOf(c.slug) ? 1 : 0;
     // verse notes on the chapter only break near-ties: importance leads (Augustine's Expositions before Calvin on Psalm 51)
     // (10-22) counted on the chapter file's own notes, as before the reception history's notes were read for every verse
     c.score = impOf(c.slug, c.a) * kind * cov + ((c.own != null ? c.own : Object.keys(c.notes).length) ? 0.5 : 0);
@@ -177,7 +187,7 @@
     // the map, the overlay and the reception file are the loader's own fetches (one cache): read again here, not fetched again
     const [{ works, meta, sigla }, dev, ov, rec] = await Promise.all([PG.listWorks(book, ch),
       json(`${BASE}/v1/devotion.json.gz`).catch(() => null), json(`${BASE}/v1/bible/commentary-overlay.json`).catch(() => null),
-      json(`${BASE}/v1/reception/scripture/${book}/${ch}.json`).catch(() => null), loadRank(), railReady()]);
+      json(`${BASE}/v1/reception/scripture/${book}/${ch}.json`).catch(() => null), loadRank(), loadSets(), railReady()]);
     Object.assign(S.meta, meta); Object.assign(SIGLA, sigla);
     // ONE NAME A WORK (10-21): a work takes its author as the map prints it (the map's entry is the last word in `meta`), one spelling
     // to a work; the chapter file's rows spell some differently ("Walahfrid" and "Walafrid" Strabo), which made one Glossa two
@@ -799,10 +809,20 @@
     read: SITE.read, pg: pgOf, open: S.dirOpen, place: placeNow, volOf: (slug) => S.vols.get(slug) || '',
     keyOrder: (RANK.books[w.book] || []).flatMap(([, slugs]) => slugs || []) });
   // a key button is pressed while its work is read, in whichever of its volumes
-  const isCur = (c) => !!(S.cur && (S.cur.slug === c.slug || setOf(S.cur) === setOf(c)));
+  const isCur = (c) => !!(S.cur && (S.cur.slug === c.slug || setOf(S.cur) === setOf(c) || (setIdOf(c.slug) && setIdOf(S.cur.slug) === setIdOf(c.slug))));
   function markKeys() {
     pane.querySelectorAll('.cp-key').forEach((b) => { const c = S.list.find((x) => x.slug === b.dataset.slug); b.setAttribute('aria-pressed', String(!!c && isCur(c))); });
     keyInView();
+  }
+  // the registry's sets with a volume in the chapter's list: { s, c } a set, c its volume for the verse (sermons are never a set's key)
+  function setsOn(list, v) {
+    const by = new Map();
+    // a volume that only cites the chapter in its commentary on another book (wb 2) is not the set's commentary on it
+    for (const c of list) { const id = setIdOf(c.slug); if (!id || c.kd === 'sermons' || c.wb === 2) continue; if (!by.has(id)) by.set(id, []); by.get(id).push(c); }
+    const pick = (cs) => cs.find((c) => c.notes && c.notes[v] != null) || cs.find((c) => c.open != null) || cs.find((c) => Object.keys(c.notes || {}).length) || cs.find((c) => c.bookAt != null) || cs[0];
+    const order = new Map(SETS.trads.map(([k], i) => [k, i]));
+    return SETS.list.filter((s) => by.has(s.id)).map((s) => ({ s, c: pick(by.get(s.id)) }))
+      .sort((x, y) => (order.get(x.s.trad) ?? 99) - (order.get(y.s.trad) ?? 99) || x.s.year - y.s.year);
   }
   function fillList() {
     const w = where() || {};
@@ -822,12 +842,19 @@
       .sort((x, y) => when(x) - when(y) || y.score - x.score);
     const seenA = new Set(), seenL = new Set();
     const keep = (c) => { const k = aKey(c.a) || c.slug, l = short(c.a); if (seenA.has(k) || seenL.has(l)) return false; seenA.add(k); seenL.add(l); return true; };
-    const head = (book.length ? book : firsts.slice(0, 4)).filter(keep), tail = firstsOf(whole).filter(keep).slice(0, 6);
+    const head = (book.length ? book : firsts.slice(0, 4)).filter(keep), tail = SETS.list.length ? [] : firstsOf(whole).filter(keep).slice(0, 6);
+    // THE WHOLE-BIBLE SETS ON THIS CHAPTER (10-23): every set the registry knows that has a volume here, one button a set (its volumes
+    // folded: the one that holds the chapter, else the one with notes on it, else where the book begins), by tradition in their order,
+    // each in its author's order; a book's key commentator may stand in both rows (owner: "its ok to have things appear twice")
+    const sets = setsOn(S.list, S.verse || 1);
     // (10-22, owner: "quickly go to landmark whole bible and book commentaries organized on the bar") two rows, each named once:
     // the landmark commentaries on this book, then the landmark sets on the whole Bible in their curated order
     const btn = (c) => `<button type="button" class="cp-key" data-slug="${esc(c.slug)}" aria-pressed="${isCur(c)}" title="${esc(`${c.t}${volShort(c.vol) ? ` (${volShort(c.vol)})` : ''}, ${c.a}`)}">${esc(short(c.a))}</button>`;
     const row = (label, xs) => xs.length ? `<div class="cp-keys-row" role="group" aria-label="${esc(label)}"><span class="cp-keys-lab" aria-hidden="true">${esc(label)}</span>${xs.map(btn).join('')}</div>` : '';
-    pane.querySelector('.cp-keys').innerHTML = head.length + tail.length < 2 ? '' : row(`On ${refName(w) === 'Psalm' ? 'the Psalms' : refName(w)}`, head) + row('Whole Bible', tail);
+    const setBtn = ({ s, c }) => `<button type="button" class="cp-key" data-slug="${esc(c.slug)}" data-set="${esc(s.id)}" aria-pressed="${isCur(c)}" title="${esc(`${s.title}, ${s.author}${volShort(c.vol) ? ` (${volShort(c.vol)})` : ''}`)}">${esc(s.label)}</button>`;
+    const tradRow = ([k, name]) => { const xs = sets.filter((x) => x.s.trad === k); return xs.length ? `<div class="cp-keys-row cp-keys-trad" role="group" aria-label="${esc(name)}"><span class="cp-keys-sub">${esc(name)}</span><span class="cp-keys-chips">${xs.map(setBtn).join('')}</span></div>` : ''; };
+    const wholeRows = sets.length ? `<div class="cp-keys-whole" role="group" aria-label="Whole-Bible commentaries, by tradition"><span class="cp-keys-lab cp-keys-wl">Whole Bible</span>${SETS.trads.map(tradRow).join('')}</div>` : '';
+    pane.querySelector('.cp-keys').innerHTML = head.length + tail.length + sets.length < 2 ? '' : row(`On ${refName(w) === 'Psalm' ? 'the Psalms' : refName(w)}`, head) + row('Whole Bible', tail) + wholeRows;
     keyInView();
     if (listOpen()) renderDir();
   }

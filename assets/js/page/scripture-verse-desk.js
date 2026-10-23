@@ -224,22 +224,25 @@
 
   async function chapterModel(D, cfg) {
     const book = cfg.book.slug, ch = Number(cfg.ch);
-    const [file, dev, ov, rec, rank, hitsD, pr] = await Promise.all([
+    const [file, dev, ov, rec, rank, hitsD, pr, setsD] = await Promise.all([
       cfg.chapter ? Promise.resolve(cfg.chapter) : D.json(`${D.base}/v1/bible/all/${book}/${ch}.json.gz`).catch(() => null),
       cfg.devotion ? Promise.resolve(cfg.devotion) : D.json(`${D.base}/v1/devotion.json.gz`).catch(() => null),
       D.json(`${D.base}/v1/bible/commentary-overlay.json`).catch(() => null),
       D.json(`${D.base}/v1/reception/scripture/${book}/${ch}.json`).catch(() => null),
       D.json(`${D.base}/v1/scripture/rank.json`).catch(() => null),
       D.json(`${D.base}/v1/scripture/hits/${book}/${ch}.json`).catch(() => null),
-      D.json(`${D.base}/v1/scripture/preach/${book}.json`).catch(() => null)]);
+      D.json(`${D.base}/v1/scripture/preach/${book}.json`).catch(() => null),
+      D.json(`${D.base}/v1/scripture/sets.json`).catch(() => null)]);
     const RANK = { works: (rank && rank.works) || {}, authors: (rank && rank.authors) || {}, books: (rank && rank.books) || {} };
-    const M = { book, ch, name: cfg.book.name, file, rec, RANK, meta: {}, sigla: {}, heads: new Map(), years: new Map(), list: [], hymns: [], preach: pr, pages: pageReader(D), D };
+    // the whole-Bible sets (v1/scripture/sets.json, 10-23): one row a set, by tradition (owner: "each whole bible is grouped by tradition")
+    const SETS = { list: (setsD && setsD.sets) || [], of: (setsD && setsD.of) || {}, trads: (setsD && setsD.trads) || [] };
+    const M = { book, ch, name: cfg.book.name, file, rec, RANK, SETS, meta: {}, sigla: {}, heads: new Map(), years: new Map(), list: [], hymns: [], preach: pr, pages: pageReader(D), D };
     const impOf = (slug, a) => { const r = RANK.works[slug]; return r ? r[0] : (RANK.authors[a] || 0); };
     M.impOf = impOf;
     const weigh = (c) => {
       const kind = c.k === "sermons" && c.cov >= 5 ? 1 : (KIND_W[c.k] || (c.overlay ? 1 : 0.65));
       const cov = c.cov >= 5 ? 1 : c.cov >= 2 ? 0.92 : 0.86;
-      c.wb = (RANK.works[c.slug] || [])[1] === 1 || !!c.overlay ? 1 : 0;
+      c.wb = (RANK.works[c.slug] || [])[1] === 1 || !!c.overlay || !!SETS.of[c.slug] ? 1 : 0;
       c.score = impOf(c.slug, c.a) * kind * cov + ((c.own != null ? c.own : Object.keys(c.notes).length) ? 0.5 : 0);
       return c;
     };
@@ -389,7 +392,7 @@
     const seenA = new Set(), seenL = new Set();
     const keep = (c) => { const k = authorKey(c.a) || c.slug, l = short(c.a); if (seenA.has(k) || seenL.has(l)) return false; seenA.add(k); seenL.add(l); return true; };
     M.head = (bookKeys.length ? bookKeys : firsts.slice(0, 4)).filter(keep);
-    M.tail = firstsOf(whole).filter(keep).slice(0, 6);
+    M.tail = M.SETS && M.SETS.list.length ? [] : firstsOf(whole).filter(keep).slice(0, 6);
     M.keyOrder = (M.RANK.books[M.book] || []).flatMap(([, slugs]) => slugs || []);
   }
 
@@ -610,11 +613,23 @@
     }
     const ofSlug = new Map();
     for (const w of works) for (const c of w.vols) ofSlug.set(c.slug, w);
+    // THE WHOLE-BIBLE SETS (10-23): a set's volumes, whatever their titles (Trapp's five commentaries, Lapide's twenty-one volumes), one
+    // row, the volume that holds the verse leading; by tradition in the registry's order, each by its author's year
+    const SO = (M.SETS && M.SETS.of) || {}, setVols = new Map();
+    for (const w of works) if (w.kind === "comm") for (const c of w.vols) { const id = SO[c.slug]; if (id) { if (!setVols.has(id)) setVols.set(id, []); setVols.get(id).push(c); } }
+    const inSet = new Set();
+    const whole = ((M.SETS && M.SETS.trads) || []).map(([k, name]) => ({ k, name, works: (M.SETS.list || []).filter((s) => s.trad === k && setVols.has(s.id)).sort((p, q) => p.year - q.year).map((s) => {
+      const vols = setVols.get(s.id).slice().sort((p, q) => backTo(p) - backTo(q) || (q.open != null ? 1 : 0) - (p.open != null ? 1 : 0) || has(q) - has(p));
+      for (const c of vols) inSet.add(c.slug);
+      const main = volumeFor(M, vols[0], v);
+      return { key: `set:${s.id}`, kind: "comm", vols, main, id: main.slug, set: s, trad: k, whole: true, year: s.year || yearOf(M, main.a, main),
+        rank: Math.min(...vols.map((c) => rankOf(M, c))), onV: vols.some((c) => c.notes && c.notes[v] != null) };
+    }) })).filter((g) => g.works.length);
     // the landmarks first, in the pane's order: the book's keys, then the sets on the whole Bible
     // (a curated key is a landmark whatever else it is, a series of homilies included, as the pane's key strip has it)
     const landmark = [], seen = new Set();
     for (const c of [...(M.head || []), ...(M.tail || [])]) { const w = ofSlug.get(c.slug); if (w && !seen.has(w)) { seen.add(w); w.whole = c.wb === 1; landmark.push(w); } }
-    const rest = works.filter((w) => w.kind === "comm" && !seen.has(w));
+    const rest = works.filter((w) => w.kind === "comm" && !seen.has(w) && !(whole.length && w.vols.every((c) => inSet.has(c.slug))));
     const trads = TRADS.map(([k, name]) => ({ k, name, works: rest.filter((w) => w.trad === k).sort((p, q) => p.rank - q.rank || p.year - q.year || String(p.main.a).localeCompare(String(q.main.a))) }))
       .filter((g) => g.works.length);
     // the homilies and sermons on the passage: one row a sermon, those on the verse first, then by their years, then standing
@@ -624,7 +639,7 @@
     sermons.sort((p, q) => (q.on ? 1 : 0) - (p.on ? 1 : 0) || (Number(p.x.fl || p.x.year) || p.w.year || 9999) - (Number(q.x.fl || q.x.year) || q.w.year || 9999) || p.w.rank - q.w.rank || Number(p.x.p) - Number(q.x.p));
     const hymns = M.hymns.filter((x) => keep({ sh: X_SHELF[x.tr] || famShelf(x.slug) || "x", w: x.slug, a: x.a }))
       .slice().sort((p, q) => (serOn(q, v) ? 1 : 0) - (serOn(p, v) ? 1 : 0) || (p.year || 9999) - (q.year || 9999) || String(p.a).localeCompare(String(q.a)));
-    return { landmark, trads, sermons, hymns, works };
+    return { landmark, whole, trads, sermons, hymns, works };
   }
 
   /* THE CITATIONS OF THE VERSE: the chapter file's rows for it, one row a work (its pages and their kinds together), by tradition, a
@@ -845,7 +860,7 @@
       drawKinds();
     }
     function kindCounts() {
-      return { comm: VM.landmark.length + VM.trads.reduce((s, g) => s + g.works.length, 0), sermons: VM.sermons.length, cite: CM.rows.length, hymns: VM.hymns.length };
+      return { comm: VM.landmark.length + (VM.whole || []).reduce((s, g) => s + g.works.length, 0) + VM.trads.reduce((s, g) => s + g.works.length, 0), sermons: VM.sermons.length, cite: CM.rows.length, hymns: VM.hymns.length };
     }
     function drawKinds() {
       const n = kindCounts();
@@ -904,6 +919,7 @@
     const LIMIT = 40;
     function groupBody(gid) {
       if (gid === "landmark") return VM.landmark.map(workRow).join("");
+      if (gid === "whole") return (VM.whole || []).map((g) => `<p class="vdb-wh">${esc(g.name)}</p>${g.works.map(workRow).join("")}`).join("");
       if (gid.startsWith("t:")) { const g = VM.trads.find((x) => `t:${x.k}` === gid); return g ? g.works.map(workRow).join("") : ""; }
       if (gid === "sermons") return VM.sermons.map(sermonRow).join("");
       if (gid === "hymns") return VM.hymns.map(hymnRow).join("");
@@ -923,6 +939,8 @@
       const names = (ws) => glimpse(ws.map((w) => short(w.main.a)));
       let html = "";
       if (VM.landmark.length) html += groupHTML("landmark", "comm", "Landmark commentaries on this verse", fmt(VM.landmark.length), names(VM.landmark), "", "vdb-g-key");
+      const wholeN = (VM.whole || []).reduce((s, g) => s + g.works.length, 0);
+      if (wholeN) html += groupHTML("whole", "comm", "Whole-Bible commentaries", fmt(wholeN), glimpse(VM.whole.flatMap((g) => g.works.map((w) => w.set.label))), "", "vdb-g-key vdb-g-whole");
       for (const g of VM.trads) html += groupHTML(`t:${g.k}`, "comm", g.name, fmt(g.works.length), names(g.works), "", `vdb-g-trad`);
       if (VM.sermons.length) html += groupHTML("sermons", "sermons", `Homilies and sermons on ${chRef}`, fmt(VM.sermons.length), glimpse(VM.sermons.map((s) => short(s.x.a || s.w.main.a))), "");
       if (VM.hymns.length) html += groupHTML("hymns", "hymns", `Hymns on ${chRef}`, fmt(VM.hymns.length), glimpse(VM.hymns.map((x) => x.t)), "");

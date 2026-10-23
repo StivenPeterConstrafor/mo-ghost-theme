@@ -95,6 +95,12 @@ html.cp-site-mo .cp-top > .cp-eyebrow, html.cp-site-mo .cp-top > .cp-ref { grid-
 .cp-keys-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .cp-keys-lab { flex: none; margin-right: 2px; font-size: 0.8125rem; color: var(--cp-muted, #6b6b6b); }
 .cp-keys:empty { display: none; }
+/* the whole-Bible sets by tradition (10-23): a small label, then one quiet row a tradition */
+.cp-keys-whole { display: flex; flex-direction: column; gap: 4px; padding-top: 6px; border-top: 1px solid var(--cp-rule); }
+.cp-keys-wl { margin-bottom: 1px; }
+.cp-keys-sub { flex: none; width: 9.5em; padding-top: 5px; font-size: 0.75rem; letter-spacing: 0.02em; color: var(--cp-muted, #6b6b6b); }
+.cp-keys-trad { flex-wrap: nowrap; align-items: flex-start; }
+.cp-keys-chips { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
 .cp-key { padding: 3px 10px; border: 1px solid var(--cp-rule); border-radius: 999px; background: transparent; color: var(--cp-ink); font: inherit; font-size: 12.5px; line-height: 1.4; cursor: pointer; }
 .cp-key:hover { border-color: var(--cp-ink); }
 .cp-key[aria-pressed="true"] { background: var(--cp-ink); border-color: var(--cp-ink); color: var(--cp-paper); }
@@ -380,6 +386,9 @@ html.cp-site-mo .cp-tabs .cp-desk { flex: none; min-height: 36px; margin: 0 0 6p
 @media (max-width: 640px) {
   .cp-keys-row { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; margin: 0 -16px; padding: 2px 16px; }
   .cp-keys-row::-webkit-scrollbar { display: none; }
+  .cp-keys-sub { width: auto; padding-top: 0; align-self: center; margin-right: 4px; }
+  .cp-keys-trad { align-items: center; }
+  .cp-keys-chips { flex-wrap: nowrap; }
   .cp-key { flex: none; }
 }
 
@@ -463,6 +472,10 @@ html.cp-site-mo .cp-grip { display: none; }
     margin: 14px 0 2px; padding: 4px 0 6px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; }
   html.cp-site-mo .cp-pane .cp-keys::-webkit-scrollbar { display: none; }
   html.cp-site-mo .cp-pane .cp-keys-row { display: contents; }
+  /* the whole-Bible sets (10-23) run on in the same sideways row: "Whole Bible", then each tradition's name and its sets */
+  html.cp-site-mo .cp-pane .cp-keys-whole, html.cp-site-mo .cp-pane .cp-keys-chips { display: contents; }
+  html.cp-site-mo .cp-pane .cp-keys-wl { margin-left: 8px; padding-left: 12px; border-left: 1px solid var(--cp-rule); }
+  html.cp-site-mo .cp-pane .cp-keys-sub { width: auto; padding: 0 0 0 4px; white-space: nowrap; font-size: 12px; }
   html.cp-site-mo .cp-pane .cp-keys-lab { flex: none; white-space: nowrap; font-size: 12.5px; }
   html.cp-site-mo .cp-pane .cp-keys-row + .cp-keys-row > .cp-keys-lab { margin-left: 8px; padding-left: 12px; border-left: 1px solid var(--cp-rule); }
   html.cp-site-mo .cp-pane .cp-key { position: relative; flex: none; min-height: 34px; padding: 4px 12px; font-size: 13.5px; white-space: nowrap; }
