@@ -82,11 +82,8 @@
   const pop = doc.createElement("div");
   pop.id = "citepop"; pop.hidden = true; pop.setAttribute("role", "dialog"); pop.setAttribute("aria-label", "Cited work");
   doc.body.appendChild(pop);
-  let pw = null;
-  const pageWindow = () => pw || (pw = root.FRPageWindow ? Promise.resolve(root.FRPageWindow) : new Promise((res) => {
-    const s = doc.createElement("script"); s.src = root.__FR_PAGE_WINDOW_SRC__ || "/page-window.js"; s.onload = () => res(root.FRPageWindow || null); s.onerror = () => res(null);
-    doc.head.appendChild(s);
-  }));
+  // page-window.js is loaded by the template before this file; never inject a script whose src comes from a window global.
+  const pageWindow = () => Promise.resolve(root.FRPageWindow || null);
   function close() { pop.hidden = true; pop.innerHTML = ""; }
   async function open(a) {
     const [pg, i] = a.dataset.cl.split(":");

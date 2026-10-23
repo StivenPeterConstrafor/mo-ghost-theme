@@ -21,6 +21,13 @@
   if (!main) return;
   const API = "https://mo-tfr-ask-dev.mo-podcast-feed.workers.dev/v1/share/";
   document.documentElement.classList.add("faith-ask-shared");
+  // The worker stores whatever text a member sends, so a shared answer is
+  // not necessarily one Ask wrote. Keep it out of search results and do
+  // not present it as ours (security review 2026-10-02).
+  const noindex = document.createElement("meta");
+  noindex.name = "robots";
+  noindex.content = "noindex";
+  document.head.appendChild(noindex);
 
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
@@ -36,7 +43,7 @@
   function inline(text, sources) {
     const held = [];
     const hold = (html) => `\uE000${held.push(html) - 1}\uE001`;
-    let out = String(text)
+    let out = String(text).replace(/[\uE000\uE001]/g, "")
       .replace(/\[([^\]\n]+)\]\(([^\s)]+)\)/g, (_, label, href) => {
         const u = ownLink(href);
         return u ? hold(`<a href="${esc(u)}">${esc(label)}</a>`) : hold(esc(label));
@@ -106,10 +113,10 @@
         ? new Date(`${String(d.created_at).replace(" ", "T")}Z`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
         : "";
       document.title = `${d.q} · Ask the Library · The Faith Received`;
-      box.innerHTML = `<p class="faith-share-kicker">Shared from Ask the Library${when ? ` · ${esc(when)}` : ""}</p>`
+      box.innerHTML = `<p class="faith-share-kicker">Shared by a reader from Ask the Library${when ? ` · ${esc(when)}` : ""}</p>`
         + `<h1 class="faith-share-q">${esc(d.q)}</h1>`
         + `<div class="fra-answer faith-share-a">${markdown(d.a, d.src || [])}</div>${sourceList(d.src)}`
-        + '<p class="faith-share-note">Written by Ask the Library from the works in The Faith Received. '
+        + '<p class="faith-share-note">Shared by a reader. Mere Orthodoxy does not review shared answers. '
         + "Read the sources before relying on it.</p>"
         + '<p class="faith-share-actions"><a class="fr-btn" href="/the-faith-received/ask/">Ask your own question</a>'
         + '<a class="fr-btn" href="/the-faith-received/curated/">Browse the library</a></p>';

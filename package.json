@@ -54,7 +54,9 @@
     "check:modernize": "node scripts/check-modernize.mjs",
     "check:pld-marks": "node scripts/check-pld-print-marks.mjs",
     "check:pg-heal": "node scripts/check-pg-canon-heal.mjs",
-    "build:slugs": "node scripts/build-public-slugs.mjs"
+    "build:slugs": "node scripts/build-public-slugs.mjs",
+    "guard:pii": "node scripts/guard-pii.mjs --unpushed",
+    "guard:install": "git config core.hooksPath githooks && chmod +x githooks/pre-push && echo \"pre-push PII guard installed\""
   },
   "devDependencies": {
     "esbuild": "^0.24.0",

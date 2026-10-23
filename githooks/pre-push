@@ -1,0 +1,38 @@
+#!/bin/sh
+#
+# pre-push — block reader/member personal data from reaching a public remote.
+#
+# Installed by:  npm run guard:install
+# (which sets core.hooksPath=githooks, so this file is versioned and shared
+# rather than living unversioned in .git/hooks where nobody can review it.)
+#
+# Deliberately NOT `set -e`. The exit status of guard-pii.mjs is the decision
+# and it is read explicitly below; letting the shell abort early would make a
+# node startup failure look like a refusal for the wrong reason, and — worse —
+# a future edit could make it look like a pass.
+#
+# There is no `grep -q` in this hook and there should never be one. See the
+# 2026-08-19 entry in workers/SECURITY.md: `grep -q` under `pipefail` reports
+# failure BECAUSE it matched, which in a guard means a silent false negative.
+
+if [ "${MO_PII_GUARD:-1}" = "0" ]; then
+  echo "pre-push: guard-pii disabled via MO_PII_GUARD=0" >&2
+  exit 0
+fi
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "pre-push: node not found — REFUSING the push rather than skipping the" >&2
+  echo "          PII check. Set MO_PII_GUARD=0 to override deliberately." >&2
+  exit 1
+fi
+
+node scripts/guard-pii.mjs --unpushed
+rc=$?
+
+if [ "$rc" -eq 0 ]; then
+  exit 0
+fi
+
+# 1 = found something. 2 = could not tell. Both refuse, and the message above
+# has already explained which one happened.
+exit 1

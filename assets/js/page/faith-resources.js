@@ -21,6 +21,8 @@
 
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  // Only an http(s) address becomes a link (as MOArticlesModule.safeUrl); a card with any other is not drawn.
+  const safeUrl = (u) => { const s = String(u == null ? "" : u).trim(); return /^https?:\/\/[^\s"'<>]+$/i.test(s) ? s : ""; };
 
   /* ── tabs ─────────────────────────────────────────────────────── */
   const tabs = () => Array.prototype.slice.call(root.querySelectorAll("[data-res-tabs] [role=tab]"));
@@ -142,6 +144,8 @@
 
     // One card, one link: the image (or a tinted tile), the label, the title, the date, why it is here. What it serves rides in the title attribute.
     function card(a, ts, q) {
+      const href = safeUrl(a.u);
+      if (!href) return "";
       const src3 = M.image(a, 300);
       const img = src3
         ? `<img class="fr-res-photo" src="${esc(src3)}" srcset="${esc(src3)} 300w, ${esc(M.image(a, 600))} 600w" sizes="${SIZES}" width="600" height="400" alt="${esc(a.ia || "")}" loading="lazy" decoding="async">`
@@ -152,7 +156,7 @@
       const label = `<span class="fr-res-ckind${cfg.labelFirst ? " fr-res-ckind--first" : ""}">${esc(cfg.label(a))}</span>`;
       return [
         '<li class="fr-res-card">',
-        `<a class="fr-res-cardlink" href="${esc(a.u)}" target="_blank" rel="noopener"${tip}>`,
+        `<a class="fr-res-cardlink" href="${esc(href)}" target="_blank" rel="noopener"${tip}>`,
         `<span class="fr-res-img">${img}</span>`,
         cfg.labelFirst ? label : "",
         `<span class="fr-res-ctitle">${highlight(a.t, ts)}</span>`,

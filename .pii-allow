@@ -1,0 +1,24 @@
+# .pii-allow — addresses guard-pii.mjs will not block.
+#
+# One entry per line. Either a literal address, or /a regex/ (case-insensitive).
+# Blank lines and # comments ignored.
+#
+# EVERY LINE HERE IS A DECISION TO PUBLISH AN ADDRESS IN A PUBLIC REPOSITORY.
+# That is the whole point of keeping the file: an exemption should appear in a
+# diff, with a name attached, rather than being buried in the guard's source
+# where nobody reviews it. Do not add a reader or member address here. If one
+# needs to be in the repository, the answer is redaction, not an exemption.
+#
+# The broad structural exemptions (example.*, .invalid, .test, *.lan,
+# @mereorthodoxy.com, users.noreply.github.com) live in scripts/guard-pii.mjs
+# and are documented there, including the deliberate gap around staff
+# addresses.
+
+# Seeded 2026-08-20. Third-party and fixture addresses already in the tree at
+# the time the guard was written, each verified as not belonging to a reader:
+
+# Stripe's own checkout host, appears in payment-link copy.
+/@checkout\.stripe\.com$/
+
+# Ian's own address, in the package.json "author" field since the repo began.
+iharber93@gmail.com
