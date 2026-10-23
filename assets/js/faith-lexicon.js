@@ -17,7 +17,7 @@ const nf=n=>Number(n||0).toLocaleString();
 // one-line English summary of how that page defines the term, not a quotation; the page link is the source.
 const fnv=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return h;};
 const JZ=async u=>{try{const r=await fetch(BLOB+u);if(!r.ok)return null;const b=new Uint8Array(await r.arrayBuffer());
-  const t=b[0]===31&&b[1]===139?await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream('gzip'))).text():new TextDecoder().decode(b);return JSON.parse(t);}catch(_){return null;}};
+  const t=b[0]===0x1f&&b[1]===0x8b?await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream('gzip'))).text():new TextDecoder().decode(b);return JSON.parse(t);}catch(_){return null;}};
 const histOf=async id=>{const d=await JZ(`/v1/lexicon/history/${fnv(id)%2048}.json.gz`);return d&&d.terms?d.terms[id]||null:null;};
 const cent=y=>{if(y==null)return 'Undated';const c=Math.floor((y-1)/100)+1,s=c%100>=11&&c%100<=13?'th':({1:'st',2:'nd',3:'rd'}[c%10]||'th');return `${c+s} century`;};
 const who=a=>a?`<span class="ha">${esc(a[0]||'Unknown author')}</span>${a[1]?` (${esc(a[1])})`:''}`:'';

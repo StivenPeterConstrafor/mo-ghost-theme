@@ -532,6 +532,12 @@
   }
   function deskSwitch(slug, tab) {
     if (!DESK || DESK.slug !== slug || !document.body.contains(DESK.seg)) return false;
+    // the terms and the questions are parts of the Index: open it on that part, as a fresh load does
+    if (["terms", "questions"].includes(tab)) {
+      DESK.show("index", false);
+      const b = document.getElementById("wkp-index")?.querySelector(`.wh-parts [data-part="${tab}"]`); if (b) b.click();
+      return true;
+    }
     DESK.show(tab || SECTIONS[0].id, false);
     return true;
   }

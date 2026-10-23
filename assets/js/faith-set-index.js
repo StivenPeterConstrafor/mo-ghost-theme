@@ -322,5 +322,5 @@ if(!SET){
   await route();
   addEventListener('hashchange',route);
 });
-async function route(){const [sec,...rest]=decodeURIComponent(location.hash.slice(1)).split('/');
+async function route(){const [sec,...rest]=(()=>{try{return decodeURIComponent(location.hash.slice(1));}catch(_){return location.hash.slice(1);}})().split('/');
   await showSec(SECS.some(([k])=>k===sec)?sec:'subjects',rest.join('/')||null,false);}

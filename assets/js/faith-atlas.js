@@ -132,7 +132,7 @@ function tradsHTML(m){
     return `<li><span class="tr-n">${esc(r.name)}<span class="ct">${r.n}</span></span><span class="tr-b" style="width:${(r.n/max*100).toFixed(1)}%" role="img" aria-label="${esc(ps.map(x=>`${x.l} ${x.n}`).join(', '))}">${segsHTML(ps)}</span></li>`;}).join('')}</ol>`;
 }
 /* ANSWER LANES (2026-10-22), a page-local extension of the module's era strip, to move into tradition-graphics.js: a lane an answer, each
-   author a dot at his year in his tradition's colour (the lanes are named, not coloured, so the figure speaks in the traditions' colours
+   author a dot at his year in his tradition's color (the lanes are named, not colored, so the figure speaks in the traditions' colors
    only), a quarter-century's dots stacked in its column in the traditions' order (a column
    taller than twelve dots drawn closer), the library's eras banded behind and named under the centuries, one legend whose entries switch
    a tradition off in every lane (hollow and grey, as on the maps; the lanes are drawn again without it), the undated counted and not

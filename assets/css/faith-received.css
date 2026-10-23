@@ -20903,3 +20903,26 @@ html.faith-ask-shared [data-tfr-gate] { display: none; }
 .bhero .tfr-guide-link { display: flex; flex-wrap: wrap; gap: 10px; margin: 22px 0 0; }
 .bhero .tfr-guide-link[hidden] { display: none; }
 .fro-guides { margin-top: 14px; }
+
+/* ── THE SKIN OVER #202 (2026-10-22) ─────────────────────────────────────
+   Stiven's commentary decks, atlas, set index and Scripture verse rail
+   carry his site's pills, display face and in-page scroll boxes. The
+   templates and port sheets are regenerated from upstream, so the house
+   rules are restated here rather than edited there. !important because
+   the template <style> blocks load after this sheet. */
+/* No pills: 3px corners, as everywhere else on the site. */
+.tfr-tool .bb .pw-lanes, .tfr-tool .bb .pw-page h4 span, .tfr-tool .bsheet .close,
+.tfr-tool .seal, .tfr-tool .ptog, .tfr-tool .adv, .tfr-tool .sv, .tfr-tool .cc-kind,
+.tfr-tool .arg-k, .tfr-tool .rcv-tag, .tfr-tool .sr, .tfr-tool .pvb, .tg-pvb { border-radius: 3px !important; }
+/* No display face on a working surface: the verse rail's tradition rows,
+   record heads and era heads take the body face. */
+.vr-tg-name, .vr-rec-head h3, .vr-era h5 { font-family: var(--font-body, "Source Serif Pro", Georgia, serif) !important; }
+/* No scroll box inside the page: a topic note's long list of
+   controversies, and the atlas's loci once they stack under the map. */
+.tn-work .tn-scroll { max-height: none !important; overflow: visible !important; }
+@media (max-width: 760px) { .tfr-tool .loci { max-height: none !important; overflow: visible !important; } }
+/* UNTIL THE ROUTES ARE UP (remove with the routes.yaml upload). The atlas,
+   topics, Compare and the decks already link to /maps/ and /controversies/,
+   which 404 until Ian has seen them and uploads routes.yaml. Meanwhile
+   those links read as plain text. */
+a[href^="/the-faith-received/maps/"], a[href^="/the-faith-received/controversies/"] { pointer-events: none !important; color: inherit !important; text-decoration: none !important; cursor: text; }
