@@ -34,13 +34,9 @@ html:not(.ht-js) main.tfr-howto .ht-panel + .ht-panel { margin-top: 2rem; border
 html.ht-js main.tfr-howto .ht-eyebrow { display: none; }
 main.tfr-howto .ht-eyebrow { margin: 0 0 .4rem; font: 600 .75rem/1.4 var(--font-body); letter-spacing: .14em; text-transform: uppercase; color: var(--ht-accent); }
 
-/* ── The top of a guide: one sentence on the left, the index on the right ── */
-main.tfr-howto .ht-top { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: .5rem 2rem; align-items: start; margin: 0 0 1rem; }
-main.tfr-howto .ht-intro { margin: .4rem 0 0; font: 1rem/1.5 var(--font-body); text-wrap: pretty; }
-main.tfr-howto .ht-index { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: 2rem; font: .9375rem/1.3 var(--font-body); }
-main.tfr-howto .ht-index li { break-inside: avoid; }
-main.tfr-howto .ht-index a { display: inline-flex; align-items: center; min-height: 2rem; color: var(--fg); }
-main.tfr-howto .ht-index a:hover { color: var(--ht-accent); }
+/* ── The top of a guide: a short intro, no index (Ian, 10-23) ── */
+main.tfr-howto .ht-top { margin: 0 0 1rem; }
+main.tfr-howto .ht-intro { margin: .4rem 0 0; max-width: 60ch; font: 1rem/1.5 var(--font-body); text-wrap: pretty; }
 
 /* ── The features: two columns on a desktop, one stack per block (label, heading, words, screenshot, button) ── */
 main.tfr-howto .ht-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.75rem 2rem; align-items: stretch; }
@@ -60,17 +56,14 @@ main.tfr-howto .ht-btn {
 main.tfr-howto a.ht-btn:hover, main.tfr-howto a.ht-btn:focus-visible { background: var(--ht-accent); color: var(--ht-on); }
 main.tfr-howto .ht-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 main.tfr-howto .ht-foot { margin: 1rem 0 0; padding-top: 1.25rem; border-top: 1px solid var(--border); }
-@media (pointer: coarse) { main.tfr-howto :is(.ht-btn, .ht-index a) { min-height: 2.75rem; } }
+@media (pointer: coarse) { main.tfr-howto .ht-btn { min-height: 2.75rem; } }
 
 /* ── Below 900px: one column, the same stack ── */
 @media (max-width: 899px) {
-  main.tfr-howto .ht-top { grid-template-columns: minmax(0, 1fr); }
   main.tfr-howto .ht-grid { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
 }
 @media (max-width: 640px) {
   main.tfr-howto .wrap { padding: 0 20px 2.5rem; }
   main.tfr-howto .ht-tabs { gap: 0 1.4rem; }
   main.tfr-howto .ht-btn { width: 100%; }
-  main.tfr-howto .ht-index { columns: 1; }
-  main.tfr-howto .ht-index a { min-height: 2.75rem; }
 }
