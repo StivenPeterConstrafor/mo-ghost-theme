@@ -82,7 +82,7 @@
 .tix-sub { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); margin-top: 6px; }
 .tix-sub .tix-card { padding: 18px 18px 16px; } .tix-sub .tix-card h3 { font-size: 1.35rem; }
 .tix-subhead { margin: 10px 0 0; font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); }
-@media (max-width: 640px) { .tix-card { padding: 18px 16px; } .tix-faces li { width: 74px; } }
+@media (max-width: 640px) { .tix-card { padding: 18px 16px; } .tix-faces li { width: 74px; } .tix-go a { display: inline-flex; align-items: center; min-height: 44px; } }
 @media (prefers-reduced-motion: reduce) { .tix-card, .tix-faces li { opacity: 1; transform: none; transition: none; } }`;
 
   function tree(list, X, host) {
