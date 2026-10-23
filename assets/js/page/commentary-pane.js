@@ -1274,6 +1274,13 @@
   window.addEventListener('sd:verse', (e) => { if (!pane) return; if (!(e.detail && e.detail.v)) S.pin = false; head(); });
 
   let lastKey = '';
+  // cp=<slug> in the address (the page's query on Mere Orthodoxy, the hash's on The Faith Received)
+  // read as the page opens (the reader may rewrite its address first: the navigation entry is read too) and on every change of the hash,
+  // before the page redraws its own address; used once, by the chapter it was asked on
+  const cpOf = (u) => { try { const x = new URL(u, location.href); return x.searchParams.get('cp') || new URLSearchParams(x.hash.split('?')[1] || '').get('cp') || ''; } catch (_) { return ''; } };
+  let askedCp = cpOf(location.href) || cpOf(opened);
+  window.addEventListener('hashchange', () => { const x = cpOf(location.href); if (x) askedCp = x; });
+  const askedWork = () => { const x = askedCp; askedCp = ''; return x; };
   async function init() {
     const w = where(); if (!w) return;
     const fresh = !document.querySelector('.cp-pane');
@@ -1335,7 +1342,13 @@
     S.verse = w.v || 1;
     head();
     if (SITE.name === 'mo') creeds();
-    choose(c ? c.slug : null);
+    // (10-22) the commentary the address asks for (cp=<slug>: the Verse Desk's "Read beside the text"), on the Commentary view, the verse in sight
+    const asked = askedWork(), pick = asked && S.list.find((x) => x.slug === asked);
+    if (pick) {
+      setTab('c', true); S.pin = true;
+      choose(pick.slug, true);
+      const el = w.v && SITE.verseEl(w.v); if (el) el.scrollIntoView({ block: 'center', behavior: 'auto' });
+    } else choose(c ? c.slug : null);
     S.firstEl = document.querySelector(SITE.verses);
     watch();
   }
