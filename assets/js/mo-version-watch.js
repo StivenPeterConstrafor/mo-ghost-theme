@@ -41,8 +41,10 @@
   const CHECK_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
   const FIRST_CHECK_DELAY_MS = 60 * 1000; // a brand-new load is fresh by definition
   const DISMISS_COOLDOWN_MS = 45 * 60 * 1000; // re-arm well after a dismiss, not never
+  const MIN_GAP_MS = 2 * 60 * 1000; // tab switching must not refetch the uncached page each time
   let timer = null;
   let shown = false;
+  let lastCheck = Date.now();
 
   function extractVersion(html) {
     const meta = html.match(/<meta[^>]+name=["']mo-asset-version["'][^>]*>/i);
@@ -84,6 +86,8 @@
 
   function check() {
     if (shown || document.visibilityState !== "visible") return;
+    if (Date.now() - lastCheck < MIN_GAP_MS) return;
+    lastCheck = Date.now();
     const sep = window.location.search ? "&" : "?";
     const url = `${window.location.pathname}${window.location.search}${sep}mo_cb=${Date.now()}`;
     fetch(url, { cache: "no-store" })

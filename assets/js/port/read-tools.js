@@ -522,7 +522,7 @@ function __initSearch(){
       // works down the list and hid how many works answered)
       let h=res.length?("<div class=rsn>"+res.length+" passages in "+groups.length+" "+(groups.length===1?"work":"works")+(SCOPE.tr?" — "+esc(SCOPE.tr)+" works":"")+"</div>"+groups.map(g=>{const w=m[g.slug]||{};
         const en=(window.__TEN||{})[g.slug]||"",more=g.pages.slice(1,7);
-        return '<a class=rsr href="/the-faith-received/read/?w='+encodeURIComponent(g.slug)+"#b"+g.pages[0]+'-0"><span class=rst>'+esc(en||w.title||g.slug)+"</span><span class=rsm>"+esc(w.author||"")+(w.author?" · ":"")+"pg. "+esc(g.pages[0])+(more.length?" · also pp. "+more.map(esc).join(", ")+(g.pages.length>7?" …":""):"")+"</span></a>";}).join("")):"<div class=rsn>No library results"+(SCOPE.tr?" among "+esc(SCOPE.tr)+" works":"")+".</div>";
+        return '<a class=rsr href="/the-faith-received/read/?w='+encodeURIComponent(g.slug)+"#b"+encodeURIComponent(g.pages[0])+'-0"><span class=rst>'+esc(en||w.title||g.slug)+"</span><span class=rsm>"+esc(w.author||"")+(w.author?" · ":"")+"pg. "+esc(g.pages[0])+(more.length?" · also pp. "+more.map(esc).join(", ")+(g.pages.length>7?" …":""):"")+"</span></a>";}).join("")):"<div class=rsn>No library results"+(SCOPE.tr?" among "+esc(SCOPE.tr)+" works":"")+".</div>";
       const NAME={pl:"Patrologia Latina — Latin Fathers",pg:"Patrologia Graeca — Greek Fathers",po:"Patrologia Orientalis — Eastern Fathers"};
       // Parallels open in our reader (Stiven 2026-10-01: nothing on MereO touches Vercel): source doc id -> our slug.
       const PFX={pl:"pld-",pg:"pg-",po:"po-"},hop=(c,f)=>{const a=String(f.anchor||"");return "/the-faith-received/read/?w="+encodeURIComponent(PFX[c]+f.doc)+(a?"#b"+encodeURIComponent(a.includes("-")?a:a+"-0"):"");};
@@ -1368,7 +1368,7 @@ function __initReaderTools(){
     const h=await lexHistory(t.id);
     if(!h||!h.works||lexPop.hidden||tok!==lexTok)return;
     const dated=h.rows.map(r=>h.authors[r[2]]).filter(a=>a&&a[2]!=null),a0=dated[0],a1=dated[dated.length-1];
-    const span=a0&&a1&&a0!==a1?`, from ${lexEsc(a0[0])} to ${lexEsc(a1[0])}`:'';
+    const span=a0&&a1&&a0!==a1?` from ${lexEsc(a0[0])} to ${lexEsc(a1[0])}`:'';
     lexPop.querySelector('.lx-open')?.insertAdjacentHTML('beforebegin',`<p class="lx-hist">Defined in ${h.works.toLocaleString()} ${h.works===1?'work':'works'}${span}. <a href="${LEX}#${encodeURIComponent(t.id)}">How each defines it</a></p>`);
     place();
   }

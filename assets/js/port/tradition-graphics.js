@@ -56,7 +56,7 @@
      wherever an item has no year: bin() for the strips, a holder's dates beside his name and his place in a position's order.
      A strip drawn before the key arrives is drawn again when it does; dates.ready resolves when the key is in (true) or
      cannot be had (false), so a page may wait for it before drawing. A name the library cannot date stays undated. */
-  const BLOB = 'https://0ss8v4l06kodnhp0.public.blob.vercel-storage.com';
+  const BLOB = 'https://mo-tfr-library.mo-podcast-feed.workers.dev'; // MereO: the library worker (R2), never Vercel
   const DATES = { by: null, fold: null, ready: null, done: false };
   const fold = (t) => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '');
   const goodYear = (y) => { const v = Number(y); return v > 0 && v < 2100 ? v : 0; };

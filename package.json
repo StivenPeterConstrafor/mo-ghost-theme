@@ -38,6 +38,8 @@
     "check:ask": "node scripts/check-ask-selectors.mjs && node scripts/check-author-display.mjs && node scripts/check-room-corpora.mjs && node scripts/check-ask-cite-quote.mjs",
     "check:commentary-browser": "node scripts/check-commentary-browser.mjs",
     "check:commentary-pages": "node scripts/check-commentary-pages.mjs",
+    "check:decks": "node scripts/check-decks-panes.mjs",
+    "check:lexicon": "node scripts/check-lexicon.mjs",
     "check:commentary-pages:live": "node scripts/check-commentary-pages.mjs --live",
     "check:scripture-view": "node scripts/check-scripture-view.mjs",
     "check:verse-desk": "node scripts/check-verse-desk.mjs",
@@ -54,7 +56,9 @@
     "check:modernize": "node scripts/check-modernize.mjs",
     "check:pld-marks": "node scripts/check-pld-print-marks.mjs",
     "check:pg-heal": "node scripts/check-pg-canon-heal.mjs",
-    "build:slugs": "node scripts/build-public-slugs.mjs"
+    "build:slugs": "node scripts/build-public-slugs.mjs",
+    "guard:pii": "node scripts/guard-pii.mjs --unpushed",
+    "guard:install": "git config core.hooksPath githooks && chmod +x githooks/pre-push && echo \"pre-push PII guard installed\""
   },
   "devDependencies": {
     "esbuild": "^0.24.0",

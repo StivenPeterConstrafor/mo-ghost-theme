@@ -1681,13 +1681,15 @@ function frHeadingIn(t,ttl){
     const nt=_n(String(ttl).replace(/^[^—]{0,16}—\s*/,""));
     if(nt.length>=6){let best=null,bs=0;
       const a=nt.split(" ").filter(w=>w.length>2);
-      const score=txt=>{const ht=_n(txt);if(!ht)return 0;
-        // a long word may end otherwise in the page's own language ("Distinction III" over a "Distinctio III" head)
-        const hit=a.length?a.filter(w=>ht.includes(w.length>6?w.slice(0,-2):w)).length/a.length:0;
+      const score=(txt,stem)=>{const ht=_n(txt);if(!ht)return 0;
+        // a long word may end otherwise in the page's own language ("Distinction III" over a "Distinctio III" head): in a heading
+        // only, and at a word's start, so "against" never takes a body row's "again" (MereO, 2026-10-22)
+        const has=w=>stem&&w.length>7?(" "+ht).includes(" "+w.slice(0,-2)):ht.includes(w);
+        const hit=a.length?a.filter(has).length/a.length:0;
         const pref=(ht.startsWith(nt.slice(0,18))||nt.startsWith(ht.slice(0,18)))?1:0;
         return Math.max(hit,pref);};
       t.querySelectorAll(".row.rhead .csub").forEach(h=>{if(!h.getClientRects().length)return;
-        const sc=score(h.textContent);if(sc>bs){bs=sc;best=h;}});
+        const sc=score(h.textContent,true);if(sc>bs){bs=sc;best=h;}});
       // headings often don't carry the subject (born-digital: "Q. 1 — Whether uti…" starts as BODY
       // text under a bare "Quaestio I." head, Bonaventure 2026-07-28) — also match each row's
       // opening text and land on the best row.

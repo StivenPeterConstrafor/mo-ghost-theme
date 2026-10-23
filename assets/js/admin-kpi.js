@@ -2957,8 +2957,14 @@
     if (!t) return;
     const out = [];
     const dur = t.visit_duration_seconds;
+    // The worker filters likely bots out of every Plausible figure from
+    // 2026-10-22 (mo-admin lib/bot-filter.js). Older snapshots carry no
+    // bot_filter and print the caption as before.
+    const botNote = base.bot_filter
+      ? ` ${esc(base.bot_filter)}${typeof base.visitors_30d_raw === "number" ? ` Unfiltered: ${fmt(base.visitors_30d_raw)} visitors.` : ""}`
+      : "";
     out.push(`<div class="kpi-chart"><p class="kpi-chart-title">Site quality</p>
-      <p class="kpi-chart-sub">Plausible, whole site, last 30 days. The breakdowns below follow the period selector.</p>
+      <p class="kpi-chart-sub">Plausible, whole site, last 30 days.${botNote} The breakdowns below follow the period selector.</p>
       <ul class="kpi-statlist">
         <li><span>Visitors</span><b>${fmt(t.visitors_30d)}</b></li>
         <li><span>Pageviews</span><b>${fmt(t.pageviews_30d)}</b></li>
@@ -2975,7 +2981,7 @@
       out.push(barBlock("Most-visited pages", `Visitors, ${since}.`, named(t.top_pages), { rotate: true }));
     }
     if (t.channels && t.channels.length) {
-      out.push(barBlock("Channels", `Visitors, ${since}. A high Direct share is a tagging artefact — digest links carry no UTMs.`, named(t.channels), { rotate: true }));
+      out.push(barBlock("Channels", `Visitors, ${since}. A high Direct share is a tagging artifact. Digest links carry no UTMs.`, named(t.channels), { rotate: true }));
     }
     if (t.top_sources && t.top_sources.length) {
       out.push(barBlock("Referrers", `Visitors, ${since}.`, named(t.top_sources), { rotate: true, color: C2 }));

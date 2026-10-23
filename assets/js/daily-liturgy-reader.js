@@ -9,9 +9,16 @@
 (function () {
   "use strict";
 
-  const CALENDAR_URL = window.moAssetUrl("/assets/data/daily-liturgy/calendar.json");
-  const DEVOTIONALS_URL = window.moAssetUrl("/assets/data/daily-liturgy/devotionals.json");
-  const BI2Y_URL = window.moAssetUrl("/assets/data/daily-liturgy/bible-in-2-years.json");
+  // moDataUrl, not moAssetUrl: moAssetUrl's `v` is boot.min.js's own hash,
+  // so the URL never changed when the prayers were corrected (10/14, 10/16)
+  // and returning readers kept the old file from their browser cache for
+  // up to a year (Ghost serves /assets with max-age one year). Readers
+  // reported the webpage prayers not matching the audio for a week while
+  // the file itself was right. moDataUrl folds the hour into `v`, so a
+  // corrected file reaches every reader within the hour.
+  const CALENDAR_URL = window.moDataUrl("/assets/data/daily-liturgy/calendar.json");
+  const DEVOTIONALS_URL = window.moDataUrl("/assets/data/daily-liturgy/devotionals.json");
+  const BI2Y_URL = window.moDataUrl("/assets/data/daily-liturgy/bible-in-2-years.json");
   const BI2Y_START = "2026-01-01";
   const BI2Y_TOTAL_DAYS = 736;
   // Every other feed consumer (podcast-feed.js, dlp-band.js) reads the

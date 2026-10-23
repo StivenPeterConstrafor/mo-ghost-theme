@@ -339,7 +339,7 @@ function draw(d){
     if(a){x1=a.x;y1_=a.y}else if(r.from.position){const k=P.findIndex(p=>p.id===r.from.position);if(k<0)continue;x1=posX(k);y1_=T-6}else continue;
     if(b){x2=b.x;y2=b.y}else if(r.to.position){const k=P.findIndex(p=>p.id===r.to.position);if(k<0)continue;x2=posX(k);y2=T-6}else continue;
     const mx=(x1+x2)/2,bend=Math.min(60,Math.abs(x2-x1)*.25);
-    e+=`<path class="edge ${r.kind}${r.recorded?' recorded':''}" data-kind="${r.kind}" data-a="${r.from.n||''}" data-b="${r.to.n||''}" d="M${x1.toFixed(1)},${y1_.toFixed(1)} C${(mx).toFixed(1)},${(y1_-bend).toFixed(1)} ${(mx).toFixed(1)},${(y2-bend).toFixed(1)} ${x2.toFixed(1)},${y2.toFixed(1)}"><title>${esc(`${r.from.author||r.from.position} ${r.kind} ${r.to.author||r.to.position}${r.note?`: ${r.note}`:''}`)}</title></path>`;
+    e+=`<path class="edge ${esc(r.kind)}${r.recorded?' recorded':''}" data-kind="${esc(r.kind)}" data-a="${esc(r.from.n||'')}" data-b="${esc(r.to.n||'')}" d="M${x1.toFixed(1)},${y1_.toFixed(1)} C${(mx).toFixed(1)},${(y1_-bend).toFixed(1)} ${(mx).toFixed(1)},${(y2-bend).toFixed(1)} ${x2.toFixed(1)},${y2.toFixed(1)}"><title>${esc(`${r.from.author||r.from.position} ${r.kind} ${r.to.author||r.to.position}${r.note?`: ${r.note}`:''}`)}</title></path>`;
   }
   let dots='';
   for(const [n,o] of at){const {h} = o;dots+=`<a class="dot" data-n="${n}" data-trad="${esc(h.tradition||'')}" tabindex="0" role="button" aria-label="${esc(h.author)}, ${esc(h.tradition||'')}, ${esc(yrOf(h)||'undated')}: ${esc(h.answer)}"><circle cx="${o.x.toFixed(1)}" cy="${o.y.toFixed(1)}" r="5" fill="${col(h.tradition)}"/></a>`;}

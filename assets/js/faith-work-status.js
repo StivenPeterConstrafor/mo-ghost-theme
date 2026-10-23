@@ -169,7 +169,7 @@
 
   /* EVERY WORK SAYS HOW IT WAS MADE (Ian, 2026-09-28).
    *
-   * A reader, Michael Nestler, found the Didache with no note at all and
+   * A reader found the Didache with no note at all and
    * could not tell a human translation from an English original from a
    * bug. Silence was the rule for everything outside the AI collections,
    * and on slow pages for the AI collections too, because the panel
