@@ -56,6 +56,9 @@ if(!['en','la','both'].includes(LANE))LANE='en';
 const canon=k=>((D.canon||{})[k])||{titles:[],places:[],landings:{}};
 function noun(){return GD()?GRID[S.deck].noun:{sentences:'distinction',summa:'question',decretals:'title',decretum:S.part==='C'?'causa':'distinction',systems:'place'}[S.deck];}
 const SYS=()=>S.deck==='systems';
+// a problem's joined disputations: the newer `moves` list when it holds any, else the older `voetius` list (an empty `moves` array
+// used to count as present and hid the older list: 1.1 #11 and twelve problems of 1.3, 10-23)
+const movesOf=p=>Array.isArray(p.moves)&&p.moves.length?p.moves:Array.isArray(p.voetius)&&p.voetius.length?p.voetius:[];
 const WHO=()=>GD()?GRID[S.deck].many:SYS()?'systems':'commentators';
 // THE REFORMED, VITRINGA AND LUTHERAN DECKS (2026-10-22, owner: "voetius and vitringa and saumur and sedan i am referring to like its own
 // reformed deck alongside aquinas, same with lutherans"). Each is a grid in the systems' shape (v1/decks/<deck>/grid.json: the works on
@@ -935,7 +938,7 @@ const argLinks=p=>[p.atlas?`<a href="${ATLASP}#${encodeURIComponent(p.atlas)}">A
 // its adversaries and its page, the answer, the question stated with its words, the objections it answers with theirs, its distinction;
 // then, folded, the disputations that argue it at length in their own words
 function probRow(side,p,i,ctx){
-  const cfg=PRB(),sl=sealOf(p),verdict=p.verdict||ctx.marks[p.mark]||'',mv=(Array.isArray(p.moves)&&p.moves.length?p.moves:Array.isArray(p.voetius)&&p.voetius.length?p.voetius:[]),fm=mv.filter(m=>branches(m).length>1),adv=advOf(p,ctx),n=String(p.n??i+1),obs=Array.isArray(p.objections)?p.objections:[];
+  const cfg=PRB(),sl=sealOf(p),verdict=p.verdict||ctx.marks[p.mark]||'',mv=movesOf(p),fm=mv.filter(m=>branches(m).length>1),adv=advOf(p,ctx),n=String(p.n??i+1),obs=Array.isArray(p.objections)?p.objections:[];
   const la=p.la?`${esc(p.la)}${p.mark_la?` <span class="pr-mk">${esc(p.mark_la)}</span>`:''}`:'',en=esc(p.q||'');
   const [main,under]=LANE==='la'&&la?[[la,'la'],[en,'en']]:[[en,'en'],[la,'la']];
   const anti=adv&&Array.isArray(p.antithesis)&&p.antithesis.length&&String(p.against||'').trim()?advPairs(p.antithesis):'';
@@ -1044,7 +1047,7 @@ async function paneProblems(side){
   const authors=Array.isArray(P.strip_authors)?P.strip_authors.filter(Boolean):[];
   const ctx={host,slug:P.slug,marks:P.marks||{},adv:'',authors},count={};
   host._pi=ps.map(p=>{const sl=sealOf(p),cats=sl?sl[2]:[];cats.forEach(c=>{count[c]=(count[c]||0)+1;});
-    return {cats,hay:fold([p.q,p.la,p.verdict,p.mark_la,p.answer,p.status,typeof p.against==='string'?p.against:advPairs(p.against).replace(/<[^>]+>/g,' '),...(p.objections||[]).flatMap(o=>[o.by,o.obj,o.resp,o.quote]),...(p.moves||p.voetius||[]).flatMap(m=>[m.author,m.q,m.answer,m.quote])].join(' '))};});
+    return {cats,hay:fold([p.q,p.la,p.verdict,p.mark_la,p.answer,p.status,typeof p.against==='string'?p.against:advPairs(p.against).replace(/<[^>]+>/g,' '),...(p.objections||[]).flatMap(o=>[o.by,o.obj,o.resp,o.quote]),...movesOf(p).flatMap(m=>[m.author,m.q,m.answer,m.quote])].join(' '))};});
   // Quenstedt's questions run through the chapters of his locus: a chapter's questions under its heading
   const groups=[];
   ps.forEach((p,i)=>{const ch=String(p.chap||'');if(!groups.length||groups[groups.length-1].ch!==ch)groups.push({ch,rows:[]});groups[groups.length-1].rows.push(probRow(side,p,i,ctx));});
@@ -1056,7 +1059,7 @@ async function paneProblems(side){
   host.innerHTML=`<header class="ph"><div class="ph-row">${sourceSelect(side,cs,'')}${P.slug&&from!=null?`<a class="open" href="${read(P.slug,from)}">Open in the reader ↗</a>`:''}</div>
     <h2>${esc(P.title||h2g)}</h2><p class="what">${esc([P.title_la,partName(S.part)].filter(Boolean).join(' · ')||subg)}</p>
     <p class="pbase">${esc(spine)}${from!=null?`, ${from===to?`p. ${from}`:`pp. ${from}–${to}`}`:''}</p></header>`
-    +`<div class="scroll pscroll${authors.length?' has-strip':''}">${ps.some(p=>!(p.moves||p.voetius||[]).length&&!(Array.isArray(p.argued)&&p.argued.length))?`<p class="pr-where">Where these ${cfg.many} are argued: <button type="button" class="res-of" data-gob>see the ${esc(GRID[S.deck].head.toLowerCase())} beside this ${noun()}</button></p>`:''}${graphHTML(P,cfg)}<div class="pctl">${strip?`<div class="pfilter" role="group" aria-label="Show the ${cfg.many} by their verdict">${strip}</div>`:''}`
+    +`<div class="scroll pscroll${authors.length?' has-strip':''}">${ps.some(p=>!movesOf(p).length&&!(Array.isArray(p.argued)&&p.argued.length))?`<p class="pr-where">Where these ${cfg.many} are argued: <button type="button" class="res-of" data-gob>see the ${esc(GRID[S.deck].head.toLowerCase())} beside this ${noun()}</button></p>`:''}${graphHTML(P,cfg)}<div class="pctl">${strip?`<div class="pfilter" role="group" aria-label="Show the ${cfg.many} by their verdict">${strip}</div>`:''}`
     +`${head}</div>`
     +`${groups.map(g=>`<section class="pgrp">${g.ch?`<h3 class="pchap">${esc(g.ch)}</h3>`:''}<ol class="probs acc">${g.rows.join('')}</ol></section>`).join('')}<p class="note pnone" hidden>None of the ${cfg.many} in this ${noun()} match.</p>`
     +`${selOn(P)?selFoldHTML(P,host):more.length?`<details class="pmore"><summary><h3>${esc(cfg.more)} <small>${more.length}</small></h3></summary><ol class="argued tg">${more.map(m=>moveHTML(m,host)).join('')}</ol></details>`:''}`
@@ -2303,7 +2306,7 @@ function leadFor(slug){
     if(!p)return null;
     const hd=x=>{const h=String(x||'').split(/\s+\u2014\s+/).map(t=>tidyCaps(t.trim()));return /:$/.test(h[0])&&h[1]?`${h[0]} ${h[1]}`:h[0];};
     const rows=[...(p.argued||[]).filter(e=>e&&e.slug===slug).map(e=>({page:e.page,head:hd(e.heading),vol:e.vol||'',quote:e.quote||'',kind:AKL[e.kind]||''})),
-      ...(p.moves||p.voetius||[]).filter(m=>m&&m.slug===slug).map(m=>({page:m.page,head:[m.disp,m.q].filter(Boolean).join(': '),vol:'',quote:m.quote||'',kind:''}))];
+      ...movesOf(p).filter(m=>m&&m.slug===slug).map(m=>({page:m.page,head:[m.disp,m.q].filter(Boolean).join(': '),vol:'',quote:m.quote||'',kind:''}))];
     if(!rows.length)return null;
     return {page:rows[0].page,html:`<section class="wk-lead tg"><p class="wk-k">On ${esc(cfg.one)} ${esc(p.n)}: ${esc(p.q||'')}</p>${rows.map(r=>`<p class="wk-h">${r.kind?`<span class="arg-k">${esc(r.kind)}</span> `:''}${esc(r.head||'')}${r.vol?` · ${esc(r.vol)}`:''}</p>${r.quote?qbHTML({quote:r.quote,w:slug,p:r.page}):r.page!=null&&r.page!==''?`<p class="ob-pg">${ccPg(slug,r.page)}</p>`:''}`).join('')}</section>`};
   }
