@@ -595,14 +595,48 @@
       const ctx = { book, c, v };
       if (!more) {
         $top.innerHTML = "";
-        (d.top_works || []).forEach((w) => {
-          // A work's kinds, when all its citations fit one response; the same rows give its Preview.
+        // A work's kinds, when all its citations fit one response; the same rows give its Preview.
+        const item = (w) => {
           const all = S.workRows(ctx, { ...f }, w);
-          $top.appendChild(S.sourceItem(w, ctx, all ? {
+          return S.sourceItem(w, ctx, all ? {
             count: w.n,
             pickRow: () => all().then((x) => x.rows[0] || null),
             kinds: () => all().then((x) => (x.rows.length === x.matched ? S.kindsLabel(x.rows) : "")),
-          } : { count: w.n, pickRow: () => firstRowOf(w.w, v) }));
+          } : { count: w.n, pickRow: () => firstRowOf(w.w, v) });
+        };
+        /* ONE ROW AN AUTHOR (2026-10-21, the owner on Matthew 28:19: de Dieu's Critica Sacra listed five times over, each with its own
+         * Preview). An author whose several works or volumes cite the verse has one row, his most-cited work open beneath it and the
+         * rest behind "N more"; the row is keyed by his name as the commentary lists key theirs, an anonymous work by itself. */
+        const byAuthor = new Map();
+        (d.top_works || []).forEach((w) => {
+          const k = /^Uncertain author/i.test(w.a || "") ? w.w : String(w.a || w.w).normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
+          if (!byAuthor.has(k)) byAuthor.set(k, []);
+          byAuthor.get(k).push(w);
+        });
+        byAuthor.forEach((ws) => {
+          if (ws.length === 1) { $top.appendChild(item(ws[0])); return; }
+          const name = (window.FRVerseRail ? window.FRVerseRail.properName(ws[0].a) : ws[0].a) || ws[0].w;
+          const n = ws.reduce((t, w) => t + (Number(w.n) || 0), 0);
+          const li = document.createElement("li");
+          li.className = "sd-source sd-author-group";
+          li.innerHTML = `<div class="sd-source-head"><div class="sd-source-id"><span class="sd-source-title">${esc(name)}</span>`
+            + `<span class="sd-source-meta">${plural(ws.length, "work", "works")} \u00b7 ${plural(n, "citation", "citations")}</span></div></div><ol class="sd-author-works"></ol>`;
+          const ol = li.querySelector("ol");
+          ws.forEach((w, i) => {
+            const it = item(w);
+            // the name is on the author's row; the work's own line keeps its century and count
+            const meta = it.querySelector(".sd-source-meta"), first = meta && meta.firstChild;
+            if (first && first.nodeType === 3 && w.a && first.textContent.startsWith(w.a)) first.textContent = first.textContent.slice(w.a.length).replace(/^\s*\u00b7\s*/, "");
+            it.hidden = i > 0;
+            ol.appendChild(it);
+          });
+          const more = document.createElement("button");
+          more.type = "button";
+          more.className = "sd-commentary-more";
+          more.textContent = `${ws.length - 1} more by ${name}`;
+          more.addEventListener("click", () => { ol.querySelectorAll(":scope > [hidden]").forEach((x) => { x.hidden = false; }); more.hidden = true; });
+          li.appendChild(more);
+          $top.appendChild(li);
         });
         if (!(d.top_works || []).length) $top.innerHTML = `<li class="sd-muted">Nothing matches these filters.</li>`;
         $rows.innerHTML = "";

@@ -15,11 +15,11 @@
     { id: "overview", label: "Overview" },
     { id: "argument", label: "The argument" },
     { id: "sections", label: "Sections" },
-    { id: "index", label: "Subject index" },
+    { id: "index", label: "Index" },
     { id: "terms", label: "Terms defined" },
     { id: "questions", label: "Questions asked" },
     { id: "quotes", label: "Quotations" },
-    { id: "citedby", label: "Read later by" },
+    { id: "citedby", label: "Later readers" },
     { id: "scripture", label: "Scripture" },
     { id: "topics", label: "Topics" },
     { id: "positions", label: "Positions" },
@@ -36,6 +36,7 @@
     deskHref: (slug, id) => `/the-faith-received/author/#w/${encodeURIComponent(slug)}${id && id !== "overview" ? "/" + id : ""}`,
     readerHref: (slug, page) => `/the-faith-received/read/?w=${encodeURIComponent(slug)}${page != null && page !== "" ? `#b${encodeURIComponent(page)}-0` : ""}`,
     setIndexHref: (id) => `/the-faith-received/set-index/?set=${encodeURIComponent(id)}`,
+    bibleHref: (book, chapter) => `/the-faith-received/bible/#b/${encodeURIComponent(book)}${chapter ? `/${encodeURIComponent(chapter)}` : ""}`,
   };
   function config(over) { Object.assign(cfg, over || {}); }
 
@@ -46,14 +47,14 @@
     if (!cache.has(slug)) {
       cache.set(slug, (async () => {
         const base = cfg.base();
-        let d = await getJSON(`${base}/v1/enrich/works/${encodeURIComponent(slug)}.json`);
-        // EVERY INDEXED WORK HAS ITS SUBJECT INDEX (2026-10-20, owner: "why … 9k vs 16k?"): the guide files (9,075 works) carry the
-        // subject index, but the whole index (v1/enrich/index, 16,604 works) has it for every mined work; a work without a guide, or
-        // a guide without an index, takes the subjects from there.
-        if (!(d && Array.isArray(d.index) && d.index.length)) {
-          const all = await fullIndex(slug);
-          if (all && Array.isArray(all.subjects) && all.subjects.length) d = Object.assign({}, d || {}, { index: all.subjects });
-        }
+        const [g, all] = await Promise.all([getJSON(`${base}/v1/enrich/works/${encodeURIComponent(slug)}.json`), fullIndex(slug)]);
+        let d = g;
+        // EVERY WORK HAS ITS WHOLE INDEX (2026-10-20, owner: "why … 9k vs 16k?", then "i need everything to have all types of
+        // indexes"): the guide files (9,075 works) carry a subject index; the whole index (v1/enrich/index, every work in the
+        // catalogue) carries all five parts. A work without a guide, or a guide without an index, takes its subjects from there;
+        // every work takes the other four parts from there.
+        if (!(d && Array.isArray(d.index) && d.index.length) && all && Array.isArray(all.subjects) && all.subjects.length) d = Object.assign({}, d || {}, { index: all.subjects });
+        if (all) d = Object.assign({}, d || {}, { full: all });
         if (!d) return null;
         const meta = d.sections && Object.keys(d.sections).length ? await getJSON(`${base}/v1/works/${encodeURIComponent(slug)}/meta.json`) : null;
         return Object.assign({}, d, { structure: (meta && meta.structure) || null });
@@ -70,13 +71,13 @@
       overview: ((d.about && (d.about.blurb || d.about.summary)) || (d.start && d.start.length)) ? 1 : 0,
       argument: (d.argument && Array.isArray(d.argument.map) && d.argument.map.length) || 0,
       sections: secs,
-      index: (Array.isArray(d.index) && d.index.length) || 0,
+      index: d.full ? Math.max(1, PARTS.reduce((n, [k]) => n + partList(d, k).length, 0)) : (Array.isArray(d.index) && d.index.length) || 0,
       quotes: (Array.isArray(d.quotes) && d.quotes.length) || 0,
     };
   }
 
   // A page reference: a button the host wires (the rail turns the page in place; the work page opens a preview).
-  const page = (p, text) => `<button type="button" class="wh-page" data-page="${esc(p)}">${esc(text || `p. ${p}`)}</button>`;
+  const page = (p, text) => `<button type="button" class="wh-page" data-page="${esc(p)}"${text != null && String(text) === String(p) ? ` aria-label="Page ${esc(p)}"` : ""}>${esc(text || `p. ${p}`)}</button>`;
   const pagesOf = (refs, max) => {
     const ps = (refs || []).slice(0, max || 8);
     return ps.length ? `<span class="wh-pp">${ps.length > 1 ? "pp." : "p."} ${ps.map((r) => page(r.p != null ? r.p : r, String(r.p != null ? r.p : r))).join(", ")}</span>` : "";
@@ -133,8 +134,10 @@
 
   function sectionRows(d) {
     const out = [];
-    if (!d.sections || !Array.isArray(d.structure)) return out;
-    d.structure.forEach((e, i) => {
+    // the contents table from meta.json, else the outline read from the work's TEI headings (merge_sections_tei.py, 2026-10-21)
+    const struct = Array.isArray(d.structure) ? d.structure : (Array.isArray(d.outline) ? d.outline : null);
+    if (!d.sections || !struct) return out;
+    struct.forEach((e, i) => {
       const note = d.sections[String(i)];
       if (!note || !e || e.page == null) return;
       const depth = Number(e.depth) || 1;
@@ -151,13 +154,87 @@
   }
 
   // The subject index: a filter box, the headings in a column grid, their pages behind each.
-  function index(d) {
-    const rows = (d.index || []).map((e) => {
+  function subjects(list) {
+    const rows = (list || []).map((e) => {
       const head = e.sub ? `${e.heading}, ${e.sub}` : e.heading;
       return `<li data-k="${esc(String(head).toLowerCase())}"><span class="wh-ih">${esc(head)}</span><span class="wh-ipp">${(e.pages || []).slice(0, 12).map((p) => page(p, String(p))).join(" ")}</span></li>`;
     }).join("");
-    return `<label class="wh-filter">Find in the index <input type="search" placeholder="A subject, a name" autocomplete="off"></label><ul class="wh-index">${rows}</ul>
-      <p class="wh-none" hidden>Nothing in the index matches.</p>`;
+    return `<label class="wh-filter">Find a subject <input type="search" placeholder="A subject" autocomplete="off"></label><ul class="wh-index">${rows}</ul>
+      <p class="wh-none" hidden>No subject matches.</p>`;
+  }
+  // THE INDEX IN FIVE PARTS (2026-10-20, owner: "i need everything to have all types of indexes"): subjects, the persons the work
+  // names or cites, its Scripture in the order of the Bible, the terms it defines, the questions it asks. Every work shows all
+  // five; a part the work has nothing for says so.
+  const PARTS = [["subjects", "Subjects"], ["persons", "Persons"], ["scripture", "Scripture"], ["terms", "Terms"], ["questions", "Questions"]];
+  const NONE = { subjects: "No subjects are indexed for this work yet.", persons: "This work names no person or author.", scripture: "This work cites no Scripture.",
+    terms: "This work defines no terms.", questions: "This work poses no questions." };
+  function partList(d, k) {
+    if (k === "subjects") return (Array.isArray(d.index) && d.index.length ? d.index : (d.full && d.full.subjects)) || [];
+    return (d.full && Array.isArray(d.full[k]) && d.full[k]) || [];
+  }
+  const pagesRow = (ps) => `<span class="wh-ipp">${(ps || []).slice(0, 12).map((p) => page(p, String(p))).join(" ")}${(ps || []).length > 12 ? ` <span class="wh-k">+${(ps.length - 12).toLocaleString()}</span>` : ""}</span>`;
+  // A part is drawn the first time it is shown, its first rows only, and its find box searches the whole part (2026-10-20, rail
+  // critique: the rail built some 5,100 page buttons for an Index nobody had opened).
+  const IX = new Map();
+  let ixSeq = 0;
+  const STEP = 150;
+  const IXNOTE = "Made by machine from each page of the work.";
+  const FIND = {
+    subjects: ["Find a subject", "A subject", "No subject matches."],
+    persons: ["Find a person", "A name", "No person matches."],
+    scripture: ["Find a passage", "A book, a chapter", "No passage matches."],
+    terms: ["Find a term", "A term, in the work's language or English", "No term matches."],
+    questions: ["Find a question", "A word in the question", "No question matches."],
+  };
+  const keyOf = (k, e) => String(k === "subjects" ? (e.sub ? `${e.heading}, ${e.sub}` : e.heading) : k === "persons" ? e.name : k === "scripture" ? e.ref : k === "terms" ? e.term : e.q).toLowerCase();
+  const ROW = {
+    subjects: (e) => `<span class="wh-ih">${esc(e.sub ? `${e.heading}, ${e.sub}` : e.heading)}</span>${pagesRow(e.pages)}`,
+    persons: (e) => `<span class="wh-ih">${esc(e.name)}</span>${pagesRow(e.pages)}`,
+    scripture: (e) => `<a class="wh-ih" href="${esc(cfg.bibleHref(e.b, e.c))}">${esc(e.ref)}</a>${pagesRow(e.pages)}`,
+    terms: (e) => `<span class="wh-ih">${esc(e.term)}</span>${pagesRow(e.pages)}`,
+    questions: (e) => `<span class="wh-ih">${esc(e.q)}</span><span class="wh-ipp">${page(e.page, `p. ${e.page}`)}</span>`,
+  };
+  const ixRows = (k, list) => list.map((e) => `<li>${ROW[k](e)}</li>`).join("");
+  function partHTML(k, list) {
+    if (!list.length) return `<p class="wh-nonek">${esc(NONE[k])}</p>`;
+    const [find, hint, none] = FIND[k];
+    return `<label class="wh-filter">${find} <input type="search" placeholder="${esc(hint)}" autocomplete="off"></label><ul class="wh-index">${ixRows(k, list.slice(0, STEP))}</ul><p class="wh-none" hidden>${none}</p>${list.length > STEP ? `<button type="button" class="wh-ixmore">Show all ${list.length.toLocaleString()}</button>` : ""}`;
+  }
+  function index(d, opt) {
+    if (!d.full) return subjects(d.index);
+    const lists = Object.fromEntries(PARTS.map(([k]) => [k, partList(d, k)]));
+    // ONE PART BY ITSELF (2026-10-21, owner: "Subject Index, Scripture Index, Topic Index (index explicit)"): the Research rail names
+    // each index as a fold of its own; the tab strip and the note are the work page's
+    if (opt && opt.part && lists[opt.part]) {
+      const id = `ix${++ixSeq}`;
+      IX.set(id, lists);
+      return `<div class="wh-part wh-part-only" data-part="${opt.part}" data-ix="${id}">${partHTML(opt.part, lists[opt.part])}</div>`;
+    }
+    // the part shown first: the one asked for when it has entries (the reader's Contents opens on Scripture), else the first that has any
+    const first = (opt && opt.first && lists[opt.first] && lists[opt.first].length) ? opt.first : (PARTS.find(([k]) => lists[k].length) || PARTS[0])[0];
+    const id = `ix${++ixSeq}`;
+    IX.set(id, lists);
+    return `<div class="wh-parts" role="tablist" aria-label="Parts of the index">${PARTS.map(([k, l]) =>
+      `<button type="button" role="tab" data-part="${k}" aria-selected="${k === first}">${l}<small>${lists[k].length.toLocaleString()}</small></button>`).join("")}</div>`
+      + PARTS.map(([k]) => `<div class="wh-part" data-part="${k}" data-ix="${id}" role="tabpanel"${k === first ? "" : " hidden"}>${k === first ? partHTML(k, lists[k]) : ""}</div>`).join("")
+      + methodHtml(IXNOTE, "wh-ixnote");
+  }
+  // A part drawn again from its list: the rows holding every word in its find box, the first STEP unless all were asked for.
+  function ixDraw(part, all) {
+    const lists = IX.get(part.dataset.ix), k = part.dataset.part, list = lists && lists[k];
+    if (!list || !list.length) return;
+    const box = part.querySelector(".wh-filter input");
+    const words = (box ? box.value : "").trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const hit = words.length ? list.filter((e) => { const s = keyOf(k, e); return words.every((w) => s.includes(w)); }) : list;
+    const cut = all ? hit : hit.slice(0, STEP);
+    part.querySelector(".wh-index").innerHTML = ixRows(k, cut);
+    part.querySelector(".wh-none").hidden = hit.length > 0;
+    let more = part.querySelector(".wh-ixmore");
+    if (cut.length < hit.length) {
+      if (!more) { more = document.createElement("button"); more.type = "button"; more.className = "wh-ixmore"; part.appendChild(more); }
+      more.hidden = false;
+      more.textContent = `Show all ${hit.length.toLocaleString()}`;
+    } else if (more) more.hidden = true;
   }
 
   function quotes(d) {
@@ -193,7 +270,7 @@
     return byP.then((b) => { const x = b && b[slug]; return x ? { id: x[0], label: `Index of all ${x[1]} volumes of the set` } : null; });
   }
 
-  // READ LATER BY (owner 2026-10-06, proposal 2): the library's page-to-page citation links turned round — for each page of
+  // LATER READERS (owner 2026-10-06, proposal 2; called "Read later by" until the 2026-10-20 rail critique): the library's page-to-page citation links turned round — for each page of
   // this work, the later pages that cite it (v1/enrich/citedby/<slug>.json, built by tools/enrich/citedby.py from the same
   // links as "Cited on this page"; sure links only). Citing works are named from the catalogue.
   const later = new Map();
@@ -263,6 +340,19 @@
   // Filters and page buttons inside a rendered block; onPage(page) decides what a page reference does.
   function wire(host, onPage) {
     host.addEventListener("click", (e) => {
+      const part = e.target.closest(".wh-parts [data-part]");
+      if (part && host.contains(part)) {
+        const box = part.closest(".wh-parts").parentElement;
+        box.querySelectorAll(":scope > .wh-parts [data-part]").forEach((b) => b.setAttribute("aria-selected", String(b === part)));
+        box.querySelectorAll(":scope > .wh-part").forEach((x) => {
+          x.hidden = x.dataset.part !== part.dataset.part;
+          const lists = !x.hidden && !x.childElementCount && IX.get(x.dataset.ix);
+          if (lists) x.innerHTML = partHTML(x.dataset.part, lists[x.dataset.part] || []);
+        });
+        return;
+      }
+      const all = e.target.closest(".wh-part .wh-ixmore");
+      if (all && host.contains(all)) { ixDraw(all.closest(".wh-part"), true); return; }
       const more = e.target.closest(".wh-more");
       if (more && host.contains(more)) {
         const p = more.previousElementSibling, open = more.getAttribute("aria-expanded") !== "true";
@@ -278,8 +368,10 @@
     });
     host.addEventListener("input", (e) => {
       const box = e.target.closest(".wh-filter input");
-      if (!box || box.closest(".wh-lfilter")) return;   // "Read later by" filters its own list
-      const scope = box.closest(".wh-panel, .wh-fold, details") || host;
+      if (!box || box.closest(".wh-lfilter")) return;   // "Later readers" filters its own list
+      const ix = box.closest(".wh-part[data-ix]");
+      if (ix) { ixDraw(ix, false); return; }
+      const scope = box.closest(".wh-part, .wh-panel, .wh-fold, details") || host;
       const q = box.value.trim().toLowerCase();
       let shown = 0;
       scope.querySelectorAll(".wh-index li, .wh-sections li").forEach((li) => { const on = !q || li.dataset.k.includes(q); li.hidden = !on; if (on) shown++; });
@@ -289,8 +381,10 @@
   }
 
   const NOTE = "Library notes are machine-written from this work's own pages; every page reference was checked against the text.";
-  // The note sits in the closed Methodology dropdown (tfr-method.js); a plain line where that script is not loaded.
-  const noteHtml = () => (root.TFRMethod ? root.TFRMethod.html(`<p>${esc(NOTE)}</p>`) : `<p class="wh-note">${esc(NOTE)}</p>`);
+  // How a note was made sits in the closed Methodology dropdown (tfr-method.js, Ian 2026-10-20); a plain line where that script
+  // is not loaded.
+  const methodHtml = (text, cls) => (root.TFRMethod ? root.TFRMethod.html(`<p>${esc(text)}</p>`) : `<p class="wh-note${cls ? ` ${cls}` : ""}">${esc(text)}</p>`);
+  const noteHtml = () => methodHtml(NOTE);
 
   // A page reference on the work page opens the page window right under its line (page-window.js); a second click
   // closes it. Without the page window it opens the reader at that page.
@@ -410,7 +504,9 @@
     });
     wire(body, (page, btn) => inlinePage(btn.dataset.w || slug, page, btn));
     DESK = { slug, show, seg, onScroll };
-    const want = o.tab || "";
+    // the terms and the questions are parts of the Index now: an address that asks for them opens the Index on that part
+    const askedPart = ["terms", "questions"].includes(o.tab) ? o.tab : "";
+    const want = askedPart ? "index" : (o.tab || "");
     show(present[want] ? want : order.find((x) => present[x]), false);
     citedBy(slug).then((d) => {
       if ((o.run && !o.run()) || !d || DESK.seg !== seg) return;
@@ -418,17 +514,7 @@
       panel("citedby");
       show(want === "citedby" ? "citedby" : active, false);
     });
-    fullIndex(slug).then((d) => {
-      if ((o.run && !o.run()) || !d || DESK.seg !== seg) return;
-      ["terms", "questions"].forEach((id) => {
-        const n = Array.isArray(d[id]) ? d[id].length : 0;
-        if (!n) return;
-        present[id] = true; num[id] = n;
-        panel(id).innerHTML = `<h2 class="sect">${esc(label(id))}</h2>${render(id, d)}${noteHtml()}`;
-      });
-      addSet("terms");
-      show(want && present[want] ? want : active || order.find((x) => present[x]), false);
-    });
+
     guide(slug).then((d) => {
       if ((o.run && !o.run()) || !d || DESK.seg !== seg) return;
       const c = counts(d);
@@ -438,6 +524,7 @@
         panel(id).innerHTML = `<h2 class="sect">${esc(label(id))}</h2>${render(id, d)}${id === "overview" ? noteHtml() : ""}`;
       });
       addSet("index");
+      if (askedPart) { const b = panel("index").querySelector(`.wh-parts [data-part="${askedPart}"]`); if (b) b.click(); }
       body.parentElement?.querySelector(".wk-unmined")?.remove();
       // the guide leads unless the address asked for another tab
       show(want && present[want] ? want : order.find((x) => present[x]), false);
@@ -449,6 +536,8 @@
     return true;
   }
 
-  root.FRWorkHub = { SECTIONS, GUIDE, label, config, cfg, guide, counts, render, wire, esc, NOTE, noteHtml, desk, deskSwitch, inlinePage, citedBy, names, mountLater, citerRow, fullIndex, setOf,
+  const parts = (d) => Object.fromEntries(PARTS.map(([k]) => [k, d ? partList(d, k) : []]));
+
+  root.FRWorkHub = { SECTIONS, GUIDE, PARTS, partList, label, config, cfg, guide, counts, render, wire, esc, NOTE, noteHtml, desk, deskSwitch, inlinePage, citedBy, names, mountLater, citerRow, fullIndex, setOf, parts,
     deskHref: (slug, id) => cfg.deskHref(slug, id), readerHref: (slug, p) => cfg.readerHref(slug, p) };
 })(typeof window === "undefined" ? globalThis : window);

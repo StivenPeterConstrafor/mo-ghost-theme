@@ -10,11 +10,11 @@
   --cp-hit: #F3EED9;
   --cp-faint: var(--faint, #83837E);
   --cp-heat: var(--fg, #1C1C1A);
-}
+ --cp-sheet: #fff; }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]):not([data-theme="sepia"]) { --cp-rule: #3A3A36; --cp-mark: #2E2C26; --cp-hit: #353020; }
+  :root:not([data-theme="light"]):not([data-theme="sepia"]) { --cp-rule: #3A3A36; --cp-mark: #2E2C26; --cp-hit: #353020; --cp-sheet: #1F1E1B; }
 }
-:root[data-theme="dark"] { --cp-rule: #3A3A36; --cp-mark: #2E2C26; --cp-hit: #353020; }
+:root[data-theme="dark"] { --cp-rule: #3A3A36; --cp-mark: #2E2C26; --cp-hit: #353020; --cp-sheet: #1F1E1B; }
 
 /* the reader's own rule is .scripture-reader-layout:has(…) (0,3,0): these outrank it while the pane is open */
 html body.cp-on main .scripture-reader-layout:has(.cp-pane) {
@@ -91,7 +91,9 @@ html.cp-site-mo .cp-top > .cp-eyebrow, html.cp-site-mo .cp-top > .cp-ref { grid-
 .cp-pick { flex: none; min-height: 44px; padding: 0 2px; background: none; border: 0; font-size: 14px; color: var(--cp-accent); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .cp-list { margin: 0 0 6px; padding: 0; list-style: none; }
 /* The key works of the chapter, one click away (2026-10-19): the four first on the book, a rule, the two first on the whole Bible. */
-.cp-keys { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 10px 0 2px; }
+.cp-keys { display: flex; flex-direction: column; gap: 6px; margin: 10px 0 2px; }
+.cp-keys-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.cp-keys-lab { flex: none; margin-right: 2px; font-size: 0.8125rem; color: var(--cp-muted, #6b6b6b); }
 .cp-keys:empty { display: none; }
 .cp-key { padding: 3px 10px; border: 1px solid var(--cp-rule); border-radius: 999px; background: transparent; color: var(--cp-ink); font: inherit; font-size: 12.5px; line-height: 1.4; cursor: pointer; }
 .cp-key:hover { border-color: var(--cp-ink); }
@@ -127,14 +129,30 @@ html.cp-site-mo .cp-top > .cp-eyebrow, html.cp-site-mo .cp-top > .cp-ref { grid-
 a.cp-row-t { text-decoration: none; }
 .cp-w-g { font-size: 13px; line-height: 1.45; color: var(--cp-muted); max-width: 62ch; }
 
-.cp-lang { display: flex; align-items: center; gap: 8px; margin: 6px 0 0; font-size: 13px; color: var(--cp-muted); }
+/* English or the source text: one control of two segments, the chosen one inked (10-21) */
+.cp-lang { display: inline-flex; align-items: stretch; width: max-content; margin: 8px 0 0; border: 1px solid var(--cp-rule); border-radius: 3px; overflow: hidden; font-size: 13px; }
 .cp-lang[hidden] { display: none; }
-.cp-lang button { min-height: 32px; padding: 0 2px; background: none; border: 0; font-size: 13px; color: var(--cp-muted); cursor: pointer; }
-.cp-lang button[aria-pressed="true"] { color: var(--cp-ink); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--cp-accent); }
+.cp-lang button { min-width: 4.6em; min-height: 32px; padding: 0 12px; background: none; border: 0; font-size: 13px; color: var(--cp-muted); cursor: pointer; }
+.cp-lang button + button { border-left: 1px solid var(--cp-rule); }
+.cp-lang button:hover:not([aria-pressed="true"]) { color: var(--cp-ink); background: var(--cp-ground); }
+.cp-lang button[aria-pressed="true"] { background: var(--cp-ink); color: var(--cp-paper); }
+.cp-pane .cp-lang button:focus-visible { outline-offset: -3px; }
+@media (pointer: coarse) { .cp-lang button { min-height: 44px; } }
+
+/* the directory of every commentary on the chapter (scripture-verse-rail.css), in the rail's flow: the rail has no box that scrolls,
+   so the find box stays where it is rather than sticking to the window under the masthead (10-21) */
+.cp-list .vr-dir { margin: 2px 0 10px; }
+.cp-list .vr-dir-find { position: static; padding: 8px 0; }
+/* the rail's paper and ground are one cream here: a work's preview is set on a white sheet with a hairline, so it reads as the work's
+   page and not as the list */
+html.cp-site-mo .vr-e-box { background: var(--cp-sheet, #fff); border: 1px solid var(--cp-rule); border-radius: 3px; }
+html.cp-site-mo .vr-dir-find input { background: var(--cp-sheet, #fff); }
 
 .cp-where { margin: 10px 0 16px; padding: 0 0 10px; font-size: 13px; color: var(--cp-muted); border-bottom: 1px solid var(--cp-rule); }
 .cp-where .cp-pg { font-variant-numeric: tabular-nums; }
 .cp-where a { color: var(--cp-accent); text-decoration: underline; text-underline-offset: 3px; }
+/* the way to the reader keeps its separator with it when the line wraps (10-21) */
+.cp-where .cp-go { white-space: nowrap; }
 
 /* the commentary's own words: in the page's flow, so the page scrolls and there is no second scrollbar */
 .cp-body { font-size: 16px; line-height: 1.62; }
@@ -168,7 +186,7 @@ a.cp-row-t { text-decoration: none; }
 
 /* ── Reception: the verse's history from the pages ── */
 .cp-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0 0 10px; }
-.cp-stat { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px 10px; background: #fff; border: 1px solid var(--cp-rule); border-radius: 3px; }
+.cp-stat { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px 10px; background: var(--cp-sheet, #fff); border: 1px solid var(--cp-rule); border-radius: 3px; }
 .cp-stat b { font-size: 24px; line-height: 1.1; font-weight: 500; font-variant-numeric: tabular-nums; }
 .cp-stat span { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cp-muted); }
 .cp-lede { margin: 0 0 14px; font-size: 13px; color: var(--cp-muted); }
@@ -349,4 +367,18 @@ html.cp-site-mo .cp-tabs .cp-desk { flex: none; min-height: 36px; margin: 0 0 6p
   html.cp-site-mo .cp-pane > .cp-tabs { top: 0; margin: 0 -14px 6px; padding: 0 14px; }
   html.cp-site-mo .cp-tabs button { min-height: 44px; padding: 4px 0; font-size: 14px; }
   html.cp-site-mo .cp-tabs .cp-desk { min-height: 44px; margin: 0 0 0 8px; padding: 4px 9px; font-size: 13.5px; }
+}
+/* the most cited verses of the chapter, one line of buttons under the reception (scripture-verse-rail, 2026-10-21) */
+.cp-rec-most { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; margin: 4px 0 18px; padding-top: 12px; border-top: 1px solid var(--cp-rule); font-size: 0.82rem; }
+.cp-rec-most > span { color: var(--cp-muted); margin-right: 2px; }
+.cp-rec-most button { display: inline-flex; align-items: baseline; gap: 5px; padding: 4px 8px; background: none; border: 1px solid var(--cp-rule);
+  font: inherit; color: var(--cp-ink); cursor: pointer; font-variant-numeric: tabular-nums; }
+.cp-rec-most button small { color: var(--cp-muted); font-size: 0.74rem; }
+.cp-rec-most button[aria-current="true"] { border-color: var(--cp-ink); }
+.cp-rec-most button:hover { background: var(--cp-ground); }
+.cp-rec-most button:focus-visible, .cp-more:focus-visible { outline: 2px solid var(--cp-ink); outline-offset: 2px; }
+@media (max-width: 640px) {
+  .cp-keys-row { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; margin: 0 -16px; padding: 2px 16px; }
+  .cp-keys-row::-webkit-scrollbar { display: none; }
+  .cp-key { flex: none; }
 }

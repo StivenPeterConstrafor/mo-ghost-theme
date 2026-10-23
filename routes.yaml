@@ -466,6 +466,14 @@ routes:
   # on 2026-09-21 before Ian settled on Connections.
   /the-faith-received/constellations/:
     template: custom-faith-port-web
+  # The controversies (2026-10-21): two authorities question by question, as the library's own controversy literature argued
+  # them (Rada: Thomas and Scotus; Capreolus: Thomas and his critics; Turretin and his opponents), each side in his own words.
+  /the-faith-received/controversies/:
+    template: custom-faith-controversies
+  # Maps of the tradition (2026-10-21): for each classic question the positions, every author placed by century and tradition,
+  # the lines between them, the axes and the turning points.
+  /the-faith-received/maps/:
+    template: custom-faith-maps
   # The atlas was at /web/ until 2026-09-21. Ian renamed it to match what
   # the rail calls it. The old address stays, pointing at the same
   # template, so links already shared keep working.
@@ -493,6 +501,10 @@ routes:
     template: custom-faith-lexicon
   /the-faith-received/set-index/:
     template: custom-faith-set-index
+  # Shared questions (2026-10-22): the questions three or more works of the library ask, by topic and part, each with every work
+  # and page that asks it; the part's askers by century and tradition, and a disputed question's positions. #<topic>/<part>/<n>.
+  /the-faith-received/shared-questions/:
+    template: custom-faith-questions
   # The full ~190-topic layer (v1/mine/topic2-all/) underneath the 13
   # curated topic pages below. One route, two states via ?s=<slug>  - 
   # same pattern as /the-faith-received/author/?a=.

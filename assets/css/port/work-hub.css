@@ -19,8 +19,8 @@
 .wh-blurb{margin:0 0 14px;max-width:70ch;font:17px/1.6 var(--body,inherit);color:var(--fg);text-wrap:pretty}
 .wh-clamp{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
 .wh-facts{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px;padding:0}
-.wh-facts span{font:13px/1.4 var(--body,inherit);color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:3px 10px}
-:is(.wh-panel,.wrs,#notebook) h3.wh-h{margin:0 0 12px;font:600 13px/1.3 var(--body,inherit);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.wh-facts span{font:13px/1.4 var(--body,inherit);color:var(--muted);border:1px solid var(--border);border-radius:3px;padding:3px 10px}
+:is(.wh-panel,.wrs,#notebook) h3.wh-h{margin:0 0 12px;font:600 15px/1.4 var(--body,inherit);color:var(--fg)}
 .wh-ov>div+div{margin-top:18px}
 @media (min-width:960px){.wh-panel .wh-ov{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:24px 56px;align-items:start}.wh-panel .wh-ov>div+div{margin-top:0}}
 .wh-start,.wh-theses,.wh-sections,.wh-quotes,.wh-index,.wh-cited{list-style:none;margin:0;padding:0}
@@ -44,6 +44,14 @@
 .wh-sections .wh-d2{padding-left:1.2rem;border-left:2px solid var(--border)}
 .wh-filter{display:grid;gap:6px;margin:0 0 14px;font:14px/1.4 var(--body,inherit);color:var(--muted);max-width:28rem}
 .wh-filter input,.rn-q{font:16px/1.4 var(--body,inherit);padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--fg);min-height:44px;width:100%;box-sizing:border-box}
+/* the Index in five parts (2026-10-20): a row of parts, each with its count, over the part's own list */
+.wh-parts{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.wh-parts button{appearance:none;display:inline-flex;align-items:baseline;gap:6px;border:1px solid var(--border);background:var(--bg);color:var(--muted);border-radius:6px;padding:6px 12px;min-height:36px;font:14px/1.2 var(--body,inherit);cursor:pointer}
+.wh-parts button small{font-size:12px;font-variant-numeric:tabular-nums}
+.wh-parts button[aria-selected="true"]{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.wh-parts button:focus-visible{outline:2px solid var(--accent,var(--fg));outline-offset:2px}
+.wh-nonek{margin:4px 0 0;color:var(--muted);font:15px/1.5 var(--body,inherit)}
+.wh-index a.wh-ih{color:var(--fg);text-decoration:underline;text-decoration-color:var(--border);text-underline-offset:3px}
 .wh-index{columns:2 18rem;column-gap:2rem}
 .wh-index li{break-inside:avoid;padding:6px 0;line-height:1.45;font-variant-numeric:tabular-nums;display:grid;gap:2px}
 .wh-ih{color:var(--fg)}
@@ -62,6 +70,9 @@
 .wh-cited{display:grid;gap:8px}
 .wh-cited li{display:grid;gap:2px}
 .wh-cited li span{font-size:13px;color:var(--muted)}
+.wh-cited .wh-how{display:inline;font-size:13px;color:var(--muted);font-style:italic}
+.wh-also{margin:10px 0 0;font:14px/1.6 var(--body,var(--font-body,inherit));color:var(--muted)}
+.wh-also a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--border);text-underline-offset:3px}
 
 /* Read later by: the work's cited pages, most cited first; a page opens to the later pages that cite it */
 .wh-later{list-style:none;margin:0;padding:0;border-top:1px solid var(--border)}
@@ -83,15 +94,27 @@
 .wh-pv{font-size:13px;color:var(--muted)}
 #notebook .wh-lbody{padding-left:0}
 #notebook .wh-citers li{font-size:14px}
-/* in the rail: one list in two groups (On this page · The whole work), no boxes inside it */
+/* in the rail: one list in two groups (the page in view · the whole work), each under a heading that names it, no boxes inside it */
 html #notebook #nbWorkPanel > #nbWorkSources:not(:empty){border:0;border-radius:0;background:none;padding:0;margin:0}
-#notebook .wh-group{margin:22px 0 2px;font:600 12px/1.3 var(--font-body,inherit);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-#notebook .nb-work-guide>.wh-group:first-child{margin-top:8px}
-#notebook .wh-count{margin-left:6px;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+#notebook .wh-group{margin:32px 0 2px;font:500 20px/1.25 var(--font-display,var(--font-body,inherit));color:var(--fg);text-wrap:balance}
+#notebook .nb-work-guide>.wh-group:first-child{margin-top:4px}
+#notebook .wh-count{margin-left:auto;padding-left:12px;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+#notebook .wh-zero>summary{color:var(--muted)}
+/* the page's index entries: the part, then its entries; an entry opens the whole Index found to it */
+#notebook .wh-pix{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 14px;align-items:baseline}
+#notebook .wh-pix dt{font:13px/1.6 var(--font-body,inherit);color:var(--muted)}
+#notebook .wh-pix dd{margin:0;display:flex;flex-wrap:wrap;gap:2px 16px;min-width:0}
+#notebook .wh-pix-e{appearance:none;border:0;background:none;padding:2px 0;margin:0;min-height:28px;font:15px/1.45 var(--font-body,inherit);color:var(--fg);text-align:left;text-decoration:underline;text-decoration-color:var(--border);text-underline-offset:3px;cursor:pointer;overflow-wrap:anywhere}
+#notebook .wh-pix-e:hover{text-decoration-color:currentColor}
+#notebook .wh-pix-more{appearance:none;border:0;background:none;padding:2px 0;margin:0;min-height:28px;font:13px/1.45 var(--font-body,inherit);color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+#notebook .wh-pix-e:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+@media (pointer:coarse){#notebook :is(.wh-pix-e,.wh-pix-more){min-height:36px}}
 #notebook #nbAnalysisFold{margin-top:0}
 #notebook #nbAnalysisFold .wr-identity,#notebook #nbAnalysisFold .wr-intro{display:none}
 #notebook #nbAnalysisFold>#nbWorkAnalysis{padding:0 0 18px}
-.wh-more{appearance:none;background:none;border:0;padding:4px 0;margin:-6px 0 12px;min-height:32px;font:14px var(--body,inherit);color:var(--fg);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.wh-more,.wh-ixmore{appearance:none;background:none;border:0;padding:4px 0;margin:-6px 0 12px;min-height:32px;font:14px var(--body,inherit);color:var(--fg);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.wh-ixmore{margin:8px 0 4px;min-height:40px}
+.wh-ixnote{margin:14px 0 0}
 /* in the rail: the same blocks, a size down */
 #notebook .wh-blurb{font-size:15px}
 #notebook .wh-theses summary{font-size:15px}

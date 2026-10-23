@@ -429,6 +429,7 @@ function __initSearch(){
         +'<tr><td>r</td><td>related passages (library + the Fathers)</td></tr>'
         +'<tr><td>Enter or ⌕</td><td>next match (Shift for previous)</td></tr>'
         +'<tr><td>[ or ]</td><td>hide / show the contents sidebar</td></tr>'
+        +'<tr><td>w</td><td>open / close Research</td></tr>'
         +'<tr><td>Esc</td><td>close panels</td></tr>'
         +'<tr><td>click a page pill</td><td>copy the citation + link</td></tr></table>'
         +'<span class=kh-x>press ? to close</span></div>';
@@ -1340,8 +1341,15 @@ function __initReaderTools(){
   const LEX=(window.__FR_LEXICON_PATH__||'/lexicon');
   const lexEsc=t=>String(t??'').replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   function lexClose(){lexPop.hidden=true;}
+  // how many works define the term, oldest and latest author (10-20, item 6): v1/lexicon/history bundles, FNV-1a over the term's id;
+  // fetched after the senses are shown, so the pop-up never waits on it
+  const lexFnv=s=>{let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return h;};
+  async function lexHistory(id){try{const r=await fetch(BLOB+'/v1/lexicon/history/'+(lexFnv(id)%2048)+'.json.gz');if(!r.ok)return null;
+    const b=new Uint8Array(await r.arrayBuffer());const t=b[0]===31&&b[1]===139?await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream('gzip'))).text():new TextDecoder().decode(b);
+    return (JSON.parse(t).terms||{})[id]||null;}catch(_){return null;}}
+  let lexTok=0;
   async function defineWord(word,rc){
-    const f=lexFold(word);if(!f)return;
+    const f=lexFold(word);if(!f)return;const tok=++lexTok;
     lexPop.innerHTML=`<p class="lx-wait" role="status">Looking up “${lexEsc(word)}”…</p>`;lexPop.hidden=false;
     const place=()=>{if(innerWidth<=640){lexPop.style.left='8px';lexPop.style.top='auto';return;}
       lexPop.style.left=Math.max(8,Math.min(rc.left,innerWidth-lexPop.offsetWidth-8))+'px';
@@ -1355,6 +1363,13 @@ function __initReaderTools(){
     lexPop.innerHTML=`<button type="button" class="lx-x" aria-label="Close">×</button><p class="lx-h">${lexEsc(t.headword)}</p>${forms?`<p class="lx-f">${lexEsc(forms)}</p>`:''}`
       +`<ol class="lx-s">${(t.senses||[]).slice(0,3).map(sn=>`<li><span>${lexEsc(sn.gloss)}</span>${(sn.src||[]).slice(0,2).map(([w,pg,a,ti])=>`<a href="${lexEsc(READER_PATH(w,pg))}">${lexEsc(a?a+', ':'')}${lexEsc(ti||w)}, p. ${lexEsc(pg)}</a>`).join('')}</li>`).join('')}</ol>`
       +`<a class="lx-open" href="${LEX}#${encodeURIComponent(t.id)}">${(t.senses||[]).length>3?`All ${t.senses.length} senses in the lexicon`:'Open in the lexicon'}</a>`;
+    place();
+    if(typeof DecompressionStream==='undefined')return;
+    const h=await lexHistory(t.id);
+    if(!h||!h.works||lexPop.hidden||tok!==lexTok)return;
+    const dated=h.rows.map(r=>h.authors[r[2]]).filter(a=>a&&a[2]!=null),a0=dated[0],a1=dated[dated.length-1];
+    const span=a0&&a1&&a0!==a1?`, from ${lexEsc(a0[0])} to ${lexEsc(a1[0])}`:'';
+    lexPop.querySelector('.lx-open')?.insertAdjacentHTML('beforebegin',`<p class="lx-hist">Defined in ${h.works.toLocaleString()} ${h.works===1?'work':'works'}${span}. <a href="${LEX}#${encodeURIComponent(t.id)}">How each defines it</a></p>`);
     place();
   }
   const READER_PATH=(w,pg)=>(window.__FR_READER_PATH__||'/read')+'?w='+encodeURIComponent(w)+'#b'+encodeURIComponent(pg)+'-0';
@@ -1430,7 +1445,7 @@ function __initReaderTools(){
     const b=$("#nbCount");if(b){b.textContent='Research';b.setAttribute('aria-label','Open research'+(n?', '+n+' saved passages':''));b.dataset.zero='0';}const count=$("#nbSavedCount");if(count)count.textContent=n||'';}
   const ctr=document.querySelector(".ctr");
   if(ctr&&!$("#frAuth")){const a=el("span","authbar");a.id="frAuth";
-    a.innerHTML='<button type="button" class="nb-pill" id="nbCount" aria-controls="notebook" aria-expanded="false">Research</button><button class="ab-sync" id="frSync" hidden title="Sign in to sync your notebook across devices">Sign in</button><span class="ab-note" id="frSyncNote">saved on this device</span>';ctr.appendChild(a);
+    a.innerHTML='<button type="button" class="nb-pill" id="nbCount" aria-controls="notebook" aria-expanded="false" title="Research (w)" aria-keyshortcuts="w">Research</button><button class="ab-sync" id="frSync" hidden title="Sign in to sync your notebook across devices">Sign in</button><span class="ab-note" id="frSyncNote">saved on this device</span>';ctr.appendChild(a);
     // on a phone the account cluster lives at the head of the Notebook (sign-in next to what it syncs),
     // on desktop in the masthead — the SAME node migrates so handlers/state survive
     const mq=matchMedia("(max-width:720px)");
@@ -1450,14 +1465,14 @@ function __initReaderTools(){
     if($("#nbSelectionText"))$("#nbSelectionText").textContent=passage?.text||'';($("#nbSelectionCite")||{}).textContent=passage?.cite||'';
   }
   function activeNotebookId(){return $('#nbProjectPick')?.value||lsGet('fr_pincol')||'default';}
-  function populateNotebookContext(){if(!window.FRResearchNotebook||!$('#nbProjectPick'))return;try{const state=FRResearchNotebook.read(),pick=$('#nbProjectPick');pick.innerHTML=state.collections.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>').join('');pick.value=state.activeId;let context=lj('fr_desk_context_v1');($('#nbProjectDesk')||{}).textContent=context.title?'Return to '+context.title:'Open writing desk';($('#nbProjectDesk')||{}).href='/the-faith-received/desk/'+(context.docId?'?doc='+encodeURIComponent(context.docId):'');}catch(e){status(e.message);}}
+  function populateNotebookContext(){if(!window.FRResearchNotebook||!$('#nbProjectPick'))return;try{const state=FRResearchNotebook.read(),pick=$('#nbProjectPick');pick.innerHTML=state.collections.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>').join('');pick.value=state.activeId;let context=lj('fr_desk_context_v1');($('#nbProjectDesk')||{}).textContent=context.title?'Return to '+context.title:'';($('#nbProjectDesk')||{}).hidden=!context.title;($('#nbProjectDesk')||{}).href='/the-faith-received/desk/'+(context.docId?'?doc='+encodeURIComponent(context.docId):'');}catch(e){status(e.message);}}
   if($('#nbProjectPick'))$('#nbProjectPick').onchange=()=>{try{FRResearchNotebook.selectCollection($('#nbProjectPick')?.value);}catch(e){status(e.message);}};
   [$('#nbProjectDesk'),$('#nbDesk')].filter(Boolean).forEach(link=>{if(window.parent!==window)link.target='_top';link.onclick=e=>{if(window.parent===window)return;try{if(window.parent.FRDesk?.returnToWriting){e.preventDefault();window.parent.FRDesk.returnToWriting();}}catch(_){}};});
   window.addEventListener('fr-notebook-updated',populateNotebookContext);window.addEventListener('fr-notebook-selection',populateNotebookContext);populateNotebookContext();
   window.FRReaderBookmarks?.bind($('#nbSaveReadingPlace'),{getContext:()=>({slug:WORK_SLUG,title:WORK,author:AUTHOR,collectionId:activeNotebookId(),pageLabel:p=>locOf(p)}),feedback:$('#nbBookmarkStatus'),openSavedButton:$('#nbOpenSavedPlaces'),onOpenSaved:()=>openNotebook('saved')});
   // SAVE WORK (owner 2026-09-10 "save works to my notebook, for later reading"): the whole work as a reference (page null), one path through the notebook
   (()=>{const b=$('#nbSaveWork');if(!b||!window.FRResearchNotebook?.saveWork)return;const N=window.FRResearchNotebook;
-    const paint=()=>{const on=N.hasReference(WORK_SLUG,null);b.setAttribute('aria-pressed',String(on));b.textContent=on?'Saved for later':'Save work';b.title=on?'In your notebook · click to remove':'Keep this work in your notebook for later reading';};paint();
+    const paint=()=>{const on=N.hasReference(WORK_SLUG,null);b.setAttribute('aria-pressed',String(on));b.textContent=on?'Work saved':'Save the work';b.title=on?'In your notebook · click to remove':'Keep this work in your notebook for later reading';};paint();
     window.addEventListener('fr-notebook-updated',paint);
     b.onclick=async()=>{b.disabled=true;const st=$('#nbBookmarkStatus');try{if(N.hasReference(WORK_SLUG,null)){await N.unsave(WORK_SLUG,null);if(st)st.textContent='Removed from your notebook.';}else{const res=await N.saveWork({slug:WORK_SLUG,title:WORK,author:AUTHOR},{collectionId:activeNotebookId()});if(st)st.textContent=res.created===false?'Already in '+res.collectionName+'.':'Saved to '+res.collectionName+' for later reading.'+(res.warnings?.length?' Account sync could not be confirmed.':'');}}
       catch(err){if(st)st.textContent=err?.message||'This work could not be saved.';}finally{b.disabled=false;paint();}};})();
@@ -1536,7 +1551,7 @@ function __initReaderTools(){
   function ensureWorkResearch(){
     if(!window.FRWorkResearch){($('#nbWorkAnalysis')||{}).textContent='Work analysis tools could not be loaded. Reload this page to try again.';return;}
     if(!workResearch){
-      workResearch=FRWorkResearch.mount($('#nbWorkAnalysis'),{slug:WORK_SLUG,blob:BLOB,title:[$('#h1')?.textContent||DATA.title,DATA.volume].filter(Boolean).join(', '),author:AUTHOR,page:cur,location:locOf,
+      workResearch=FRWorkResearch.mount($('#nbWorkAnalysis'),{only:['summaries','positions','answers','answered'],slug:WORK_SLUG,blob:BLOB,title:[$('#h1')?.textContent||DATA.title,DATA.volume].filter(Boolean).join(', '),author:AUTHOR,page:cur,location:locOf,
         about:()=>{closeNotebook(false);$('#rdAbout')?.click();},
         read:page=>{if(!sideMedia.matches)closeNotebook();jump(String(page));},
         ask:q=>{closeNotebook(false);window.FRAsk?.open({fresh:true,q:q||'',contextWork:WORK_SLUG,works:WORK_SLUG?[WORK_SLUG]:[]});},
@@ -1545,7 +1560,7 @@ function __initReaderTools(){
           const cite=CITEWORK+(record.page?', '+locOf(record.page):''),source={slug:WORK_SLUG,page:String(record.page),url:new URL(url,location.origin).href,cite,title:DATA.title_en||DATA.title||WORK,author:AUTHOR};
           return FRResearchNotebook.save({id:'work-analysis:'+WORK_SLUG+':'+record.id,type:'note',researchRecord:true,slug:WORK_SLUG,page:record.page,text:'Extracted '+FRWorkResearch.recordNames[record.kind]+': '+record.text,cite,url:source.url,work:WORK,author:AUTHOR,label:'Work analysis',research:{kind:record.kind,sources:[source],authors:AUTHOR?[AUTHOR]:[],topics:context.statementTopics||[],sectionTopics:context.sectionTopics||[],verses:context.verses||[],citations:context.citations||[],analysis:{...record.raw,sectionMembership:record.sections||[record.unit],sectionTopics:record.sectionTopics||[]},provenance:'Published work analysis; not a verbatim quotation'}});
         }});
-      window.FRWorkResearchSources?.mount($('#nbWorkSources'),{slug:WORK_SLUG,blob:BLOB,author:AUTHOR,confession:window.FRReaderNavigation?.isConfession(DATA),location:locOf,browseAnalysis:options=>workResearch.browse(options),read:page=>{if(!sideMedia.matches)closeNotebook();jump(String(page));}});
+      window.FRWorkResearchSources?.mount($('#nbWorkSources'),{only:['topics','sources','historical'],labels:{topics:'Topic index'},slug:WORK_SLUG,blob:BLOB,author:AUTHOR,confession:window.FRReaderNavigation?.isConfession(DATA),location:locOf,browseAnalysis:options=>workResearch.browse(options),read:page=>{if(!sideMedia.matches)closeNotebook();jump(String(page));}});
       const place=$('#reader-location');if(place)new MutationObserver(()=>workResearch.setPage(cur)).observe(place,{childList:true,characterData:true,subtree:true});
     }
     workResearch.setPage(cur);workResearch.load();
@@ -1627,7 +1642,6 @@ function __initReaderTools(){
   function researchTab(name){
     name=['work','search','passage','saved','chats'].includes(name)?name:activeResearchTab;activeResearchTab=name;
     for(const [key,id] of [['work','WorkPanel'],['search','WorkSearch'],['passage','Passage'],['saved','Saved'],['chats','Chats']]){const on=key===name;($('#nb'+id)||{}).hidden=!on;$('#nb'+id+'Tab')?.setAttribute('aria-selected',String(on));($('#nb'+id+'Tab')||{}).tabIndex=on?0:-1;}
-    notebook.querySelector('.nb-project').hidden=name==='search';
     notebook.querySelector('.nb-settings').hidden=name==='work'||name==='search'||name==='chats';
     if(name==='chats')renderConversations();
     if(name==='work')ensureWorkResearch();
@@ -1643,7 +1657,7 @@ function __initReaderTools(){
     nbFocus=document.activeElement;if(window.FRAsk?.isOpen?.())await window.FRAsk.close();
     captureSelection();renderNotebook();paintPassage();researchTab(view);
     notebook.inert=false;notebook.classList.add('open');notebook.setAttribute('aria-hidden','false');$('#nbScrim')?.classList.add('open');$('#nbCount')?.setAttribute('aria-expanded','true');syncNotebookLayout();
-    if(!sideMedia.matches)$('#nbClose')?.focus();
+    if(!sideMedia.matches)notebook.focus({preventScroll:true});   // the sheet takes focus, not its close button (2026-10-20 rail critique: a ring on × at every open)
   }
   function closeNotebook(restore=true){const wasOpen=notebook.classList.contains('open');notebook.classList.remove('open');notebook.setAttribute('aria-hidden','true');notebook.inert=true;$('#nbScrim')?.classList.remove('open');$('#nbCount')?.setAttribute('aria-expanded','false');syncNotebookLayout();if(wasOpen&&restore){const target=nbFocus?.isConnected&&nbFocus.getClientRects().length&&!nbFocus.closest('[inert]')?nbFocus:[...document.querySelectorAll('#nbCount,.frthumb [data-t="nb"]')].find(e=>e.getClientRects().length&&!e.closest('[inert]'));target?.focus({preventScroll:true});}}
   sideMedia.addEventListener('change',syncNotebookLayout);
@@ -1716,8 +1730,8 @@ function __initReaderTools(){
     const hl=lj("fr_hl"),hlr=lj(HLR),notes=lj("fr_notes"),tr=lj("fr_tr"),here=key=>key.indexOf(WSID+"|")===0;
     const ni=Object.keys(notes).filter(here),ti=Object.keys(tr).filter(here),hi=[...new Set([...Object.keys(hl),...Object.keys(hlr)])].filter(here);
     const saved=savedCollections().flatMap(c=>(c.items||[]).filter(i=>((i.site||'fr')==='fr'&&i.slug===WORK_SLUG)||i.askSources?.some(s=>(s.slug||s.w)===WORK_SLUG)).map(i=>({...i,collection:c.name})));
-    if($('#nbSavedCount'))$('#nbSavedCount').textContent=ni.length+ti.length+hi.length+saved.length||'';($('#nbTitle')||{}).textContent=(ni.length+ti.length+hi.length+saved.length)+' saved items from this book';
-    if(!ni.length&&!ti.length&&!hi.length&&!saved.length){body.insertAdjacentHTML("beforeend",'<div class="nb-empty">Nothing saved from this book yet. Select text to highlight it, add a note, or make a quote image. Your work will collect here with its source.</div>');return;}
+    if($('#nbSavedCount'))$('#nbSavedCount').textContent=ni.length+ti.length+hi.length+saved.length||'';{const total=ni.length+ti.length+hi.length+saved.length;($('#nbTitle')||{}).textContent=total?(total===1?'1 item saved from this work':total+' items saved from this work'):'Nothing saved from this work yet';}
+    if(!ni.length&&!ti.length&&!hi.length&&!saved.length){body.insertAdjacentHTML("beforeend",'<div class="nb-empty">Save a place with Save above, or select text in the work to highlight it, add a note or make a quote image. Each keeps its source.</div>');return;}
     const ord=(a,b)=>{const ea=nbEl(a),eb=nbEl(b);return ea&&eb?(ea.compareDocumentPosition(eb)&Node.DOCUMENT_POSITION_FOLLOWING?-1:1):0;};
     let section=body;const sec=(t,n)=>{section=el("details","nb-saved-group");section.dataset.group=t;section.open=opened.has(t)?opened.get(t):n<=3;const h=el("summary");h.textContent=t+" · "+n;section.appendChild(h);body.appendChild(section);};
     if(ni.length){sec("Notes",ni.length);ni.sort(ord).forEach(id=>section.appendChild(nbItem(id,{mine:(notes[id]||{}).t})));}
@@ -1731,7 +1745,7 @@ function __initReaderTools(){
   function filterNotebook(){const value=$('#nbSearch')?.value.toLowerCase(),body=$('#nbBody');body.querySelectorAll('.nb-item').forEach(it=>it.hidden=!!value&&!it.textContent.toLowerCase().includes(value));body.querySelectorAll('.nb-saved-group').forEach(g=>{g.hidden=!!value&&![...g.querySelectorAll('.nb-item')].some(i=>!i.hidden);if(value){if(!g.hasAttribute('data-filter-open'))g.dataset.filterOpen=String(g.open);g.open=true;}else if(g.hasAttribute('data-filter-open')){g.open=g.dataset.filterOpen==='true';delete g.dataset.filterOpen;}});let empty=$('#nbNoMatches');if(!empty){empty=el('p','nb-guidance');empty.id='nbNoMatches';empty.setAttribute('role','status');body.appendChild(empty);}empty.textContent='No saved research matches this search.';empty.hidden=!value||[...body.querySelectorAll('.nb-item')].some(i=>!i.hidden);}
   async function renderConversations(){
     const token=++chatSequence,host=$('#nbChatList');host.textContent='Loading conversations…';
-    try{const rows=window.FRChatStore?await FRChatStore.all():(lj('fr_chats').chats||[]);if(token!==chatSequence)return;host.innerHTML='';const visible=rows.filter(c=>!c.archived).sort((a,b)=>b.ts-a.ts),belongs=c=>c.contextWork===WORK_SLUG||c.w===WORK_SLUG||(c.scope?.works||[]).includes(WORK_SLUG);for(const [label,list] of [['This book',visible.filter(belongs)],['Other conversations',visible.filter(c=>!belongs(c))]]){if(!list.length)continue;const group=el('details','nb-conversation-group');group.open=label==='This book';const summary=el('summary');summary.textContent=label+' · '+list.length;group.appendChild(summary);for(const c of list){const button=el('button','nb-chat'),last=(c.turns||[]).at(-1),state=last?.serverJob?.status||last?.status||'draft';button.innerHTML='<span>'+esc(c.t||'New conversation')+'</span><small>'+esc(state.replace(/_/g,' '))+(c.unread?' · unread':'')+'</small>';button.onclick=()=>{closeNotebook(false);window.FRAsk?.open({id:c.id});};group.appendChild(button);}host.appendChild(group);}if(!visible.length)host.textContent='Your conversations will appear here. Start one to discuss this book.';}catch(_){host.textContent='Conversations could not be loaded. Open Ask to try again.';}
+    try{const rows=window.FRChatStore?await FRChatStore.all():(lj('fr_chats').chats||[]);if(token!==chatSequence)return;host.innerHTML='';const visible=rows.filter(c=>!c.archived).sort((a,b)=>b.ts-a.ts),belongs=c=>c.contextWork===WORK_SLUG||c.w===WORK_SLUG||(c.scope?.works||[]).includes(WORK_SLUG);for(const [label,list] of [['This work',visible.filter(belongs)],['Other conversations',visible.filter(c=>!belongs(c))]]){if(!list.length)continue;const group=el('details','nb-conversation-group');group.open=label==='This work';const summary=el('summary');summary.textContent=label+' · '+list.length;group.appendChild(summary);for(const c of list){const button=el('button','nb-chat'),last=(c.turns||[]).at(-1),state=last?.serverJob?.status||last?.status||'draft';button.innerHTML='<span>'+esc(c.t||'New conversation')+'</span><small>'+esc(state.replace(/_/g,' '))+(c.unread?' · unread':'')+'</small>';button.onclick=()=>{closeNotebook(false);window.FRAsk?.open({id:c.id});};group.appendChild(button);}host.appendChild(group);}if(!visible.length)host.textContent='Your questions about this work are kept here.';}catch(_){host.textContent='Conversations could not be loaded. Open Ask to try again.';}
   }
   {const q=$("#nbSearch");if(q)q.oninput=()=>{const f=q.value.toLowerCase();
     filterNotebook();};}

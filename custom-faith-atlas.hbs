@@ -7,47 +7,144 @@
 <link rel=preconnect href="https://fonts.googleapis.com"><link rel=preconnect href="https://fonts.gstatic.com" crossorigin>
 <link rel=stylesheet href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Source+Serif+Pro:ital,wght@0,400;0,600;1,400&display=swap">
 <style>
-.tfr-tool{--bg:#FFFFFF;--fg:#1C1C1A;--muted:#5A5A56;--border:#D8D8D3;--card-bg:#FFFFFF;--highlight:#EFEFEA;
-  --font-display:'EB Garamond',Georgia,serif;--font-body:'Source Serif Pro',Georgia,serif;--sans:'Source Serif Pro',Georgia,serif;}
+/* the shared graphics module's shelf colours (--tg-*) pinned to their light values here: this site is light, and the module's
+   dark values, keyed to the system's dark mode (no data-theme on this site's html), would lift them on a light page */
+.tfr-tool{--bg:#FFFFFF;--fg:#1C1C1A;--muted:#5A5A56;--border:#D8D8D3;--card-bg:#FFFFFF;--highlight:#EFEFEA;--sel:var(--card-bg);--affirms:#3F6B4E;--denies:#A8462B;
+  --tg-gf:#2E6E8E;--tg-pl:#7A4E9B;--tg-po:#5E8C61;--tg-md:#B07B2A;--tg-rc:#A63D5A;--tg-lu:#C1593C;--tg-rf:#2F7D4F;--tg-ed:#3B5BA5;--tg-hl:#8C7B5C;--tg-x:#7A7A76;
+  --font-display:'EB Garamond',Georgia,serif;--font-body:'Source Serif Pro',Georgia,serif;--sans:'Source Serif Pro',Georgia,serif;--ease:cubic-bezier(.22,1,.36,1)}
+/* THE ATLAS OF DISPUTED QUESTIONS (2026-10-20, owner item 7: "The classic questions (for example, whether God's existence can be
+   demonstrated), with every place the library treats them and each author's answer"). v1/atlas (runs/minimax_1019/atlas).
+   2026-10-21: each answer is one row, the same as on the maps of the tradition: who (name, dates and tradition) | his answer, and the
+   work it stands in | the pages, at the right; an answer group shows six rows and folds the rest, unless the tally narrows to it.
+   One type scale: secondary .8rem, body 1rem, headings 1.25 / 1.6 / 2rem.
+   THE DESIGN PASS (2026-10-22, owner: "design is impeccable"): the answers filter is a quiet toolbar (one choice, underlined), not a
+   row of pills; a chosen question is a sheet on the stone, not a block of ink; a question steps to the one before and after, by the
+   arrow keys too, as on the maps; the page's title follows the question.
+   THE ATLAS IN THE MAPS' LANGUAGE (2026-10-22, with tradition-graphics.js/.css, the maps' drawings shared): a question opens on its
+   answers split in one divided bar, each answer named with its count; then its answers through the centuries, a lane an answer and
+   each author a dot at his year in his tradition's colour (the answer lanes: a page-local extension of the module's era strip, to
+   move into the module); its traditions by answer as small divided bars; its positions as its map heads them (the module's position
+   block); and last, as the evidence, each author's answer with his pages, as before. Each question of the list carries its split in
+   a thin bar. A figure speaks in one set of colours: the answers' (the split, the traditions' bars, the evidence) or the traditions'
+   (the lanes, the positions), since the library's green and red would read two ways beside the Reformed and the Lutheran. */
 .tfr-tool *{box-sizing:border-box}
 .tfr-tool{margin:0;background:var(--bg);color:var(--fg);font:16px/1.62 var(--font-body);-webkit-font-smoothing:antialiased}
 .tfr-tool a{color:var(--fg)}
-.tfr-tool .top{padding:1rem 1.4rem .8rem;display:flex;align-items:baseline;gap:.9rem;flex-wrap:wrap;border-bottom:1px solid var(--border)}
-.tfr-tool .top .wm{font:500 1.3rem/1 var(--font-display);text-decoration:none}
-.tfr-tool .top .sub{font:italic .95rem/1 var(--font-display);color:var(--muted)}
-.tfr-tool .wrap{max-width:60rem;margin:0 auto;padding:1.8rem 1.2rem 4rem}
+.tfr-tool :is(a,button,summary,input,select):focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.tfr-tool .wrap{max-width:74rem;margin:0 auto;padding:1.8rem 1.2rem 4rem}
 .tfr-tool h1{font:500 2rem/1.2 var(--font-display);margin:.2rem 0 .6rem;text-wrap:balance}
-.tfr-tool .lede{max-width:68ch;color:var(--muted);margin:0 0 1.4rem;text-wrap:pretty}
-.tfr-tool .cols{display:grid;grid-template-columns:minmax(14rem,20rem) minmax(0,1fr);gap:1.8rem;align-items:start}
+.tfr-tool .lede{max-width:66ch;color:var(--muted);margin:0 0 1.4rem;text-wrap:pretty}
+.tfr-tool .ct{color:var(--muted);font:400 .8rem/1.3 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tfr-tool .sr{position:absolute;left:-9999px}
+.tfr-tool .cols{display:grid;grid-template-columns:minmax(15rem,19rem) minmax(0,1fr);gap:2rem;align-items:start}
 .tfr-tool .loci{margin:0;padding:0;list-style:none;border-top:1px solid var(--border)}
 .tfr-tool .loci details{border-bottom:1px solid var(--border)}
-.tfr-tool .loci summary{cursor:pointer;padding:.55rem .2rem;font:500 1.05rem/1.3 var(--font-display);list-style:none;display:flex;justify-content:space-between;gap:.5rem}
+.tfr-tool .loci summary{cursor:pointer;padding:.55rem .2rem;font:500 1rem/1.3 var(--font-display);list-style:none;display:flex;justify-content:space-between;gap:.5rem}
 .tfr-tool .loci summary::-webkit-details-marker{display:none}
-.tfr-tool .loci summary small{color:var(--muted);font:.78rem/1.3 var(--sans)}
-.tfr-tool .loci ul{list-style:none;margin:0 0 .6rem;padding:0}
-.tfr-tool .loci li button{display:block;width:100%;text-align:left;padding:.4rem .3rem .4rem .8rem;border:0;background:none;color:var(--fg);font:.92rem/1.35 var(--font-body);cursor:pointer;border-radius:4px}
-.tfr-tool .loci li button:hover{background:var(--highlight)}
-.tfr-tool .loci li button[aria-current="true"]{background:var(--fg);color:var(--bg)}
+.tfr-tool .loci summary small{color:var(--muted);font:.8rem/1.3 var(--sans)}
+.tfr-tool .loci ul{list-style:none;margin:.2rem 0 .6rem;padding:0}
+.tfr-tool .loci li button{display:block;width:100%;text-align:left;padding:.45rem .6rem;border:0;background:none;color:var(--fg);font:1rem/1.35 var(--font-body);cursor:pointer;border-radius:6px;text-wrap:pretty}
+.tfr-tool .loci li button:hover{box-shadow:inset 0 0 0 1px var(--border)}
+.tfr-tool .loci li button[aria-current="true"]{background:var(--sel);box-shadow:inset 0 0 0 1px var(--border)}
 .tfr-tool .q h2{font:500 1.6rem/1.25 var(--font-display);margin:0 0 .3rem;text-wrap:balance}
-.tfr-tool .q .tally{display:flex;flex-wrap:wrap;gap:.4rem;margin:.5rem 0 1.2rem}
-.tfr-tool .q .tally button{border:1px solid var(--border);background:var(--card-bg);color:var(--fg);padding:.35rem .75rem;border-radius:3px;font:600 .8rem/1.2 var(--sans);cursor:pointer}
-.tfr-tool .q .tally button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
-.tfr-tool .ans{margin:1.2rem 0 .3rem;padding-bottom:.3rem;border-bottom:1px solid var(--border);font:500 1.1rem/1.3 var(--font-display);color:var(--muted)}
-.tfr-tool .rows{list-style:none;margin:0;padding:0}
-.tfr-tool .rows li{padding:.65rem 0;border-bottom:1px solid var(--border)}
-.tfr-tool .rows .who{font:500 1.05rem/1.3 var(--font-display)}
-.tfr-tool .rows .who small{font:.8rem/1 var(--sans);color:var(--muted);margin-left:.4rem}
-.tfr-tool .rows p{margin:.2rem 0 .3rem;max-width:70ch}
-.tfr-tool .rows .pp{display:flex;flex-wrap:wrap;gap:.15rem 1.1rem;font-size:.875rem;color:var(--muted)}
-.tfr-tool .rows .pp .src{max-width:100%}
+.tfr-tool .meta{color:var(--muted);font-size:.8rem;margin:0 0 .3rem}
+.tfr-tool .note{max-width:70ch;margin:0 0 .4rem;font-size:.8rem;color:var(--muted);font-style:italic}
+.tfr-tool .tally{display:flex;flex-wrap:wrap;align-items:stretch;gap:0 1.3rem;margin:.9rem 0 1.4rem;box-shadow:inset 0 -1px 0 var(--border)}
+.tfr-tool .tally button{display:inline-flex;align-items:baseline;gap:.35rem;min-height:2.4rem;padding:.6rem 0 .5rem;border:0;border-bottom:2px solid transparent;background:none;color:var(--muted);font:600 .8rem/1.2 var(--sans);cursor:pointer;white-space:nowrap}
+.tfr-tool .tally button:hover{color:var(--fg)}
+.tfr-tool .tally button[aria-pressed="true"]{color:var(--fg);border-bottom-color:var(--fg)}
+.tfr-tool .tally .tsep{align-self:center;width:1px;height:1rem;background:var(--border)}
+.tfr-tool .sec-h{display:flex;align-items:baseline;gap:.45rem;margin:2.2rem 0 .4rem;padding-bottom:.35rem;border-bottom:1px solid var(--fg);font:500 1.25rem/1.3 var(--font-display);text-wrap:balance}
+.tfr-tool .ans{display:flex;align-items:center;gap:.45rem;margin:1.4rem 0 0;padding-bottom:.3rem;border-bottom:1px solid var(--border);font:500 1rem/1.3 var(--font-display)}
+.tfr-tool .split{display:flex;gap:1px;height:8px;margin:1rem 0 .5rem;border-radius:3px;overflow:hidden}
+.tfr-tool .split i,.tfr-tool .mt i{display:block;min-width:2px;background:var(--c)}
+.tfr-tool .split-n{display:flex;flex-wrap:wrap;gap:.15rem 1.1rem;margin:0 0 .4rem;font-size:.8rem;line-height:1.5}
+.tfr-tool .split-n>span{display:inline-flex;align-items:center;gap:.35rem}
+.tfr-tool .sw{flex:none;display:inline-block;width:.6rem;height:.6rem;border-radius:50%;background:var(--c,#7A7A76)}
+.tfr-tool .sw.pale{box-shadow:inset 0 0 0 1px var(--muted)}
+.tfr-tool .mt{display:flex;gap:1px;height:4px;margin:.4rem 0 .15rem;border-radius:2px;overflow:hidden}
+.tfr-tool :is(.split,.mt,.tr-b) i.na{margin-left:3px}
+.tfr-tool .trs{list-style:none;margin:.2rem 0 0;padding:0}
+.tfr-tool .trs>li{display:grid;grid-template-columns:minmax(9rem,13rem) minmax(0,1fr);gap:.1rem 1.2rem;align-items:center;padding:.4rem 0;border-bottom:1px solid var(--border)}
+.tfr-tool .tr-n{display:inline-flex;align-items:baseline;gap:.4rem;font:500 1rem/1.3 var(--font-display)}
+.tfr-tool .tr-b{display:flex;gap:1px;height:8px;border-radius:3px;overflow:hidden}
+.tfr-tool .tr-b i{display:block;min-width:2px;background:var(--c)}
+.tfr-tool .al{margin:.2rem 0 0}
+.tfr-tool .al-l+.al-l{margin-top:.6rem}
+.tfr-tool .al-h{display:flex;flex-wrap:wrap;align-items:center;gap:.1rem .45rem;margin:0 0 .2rem;font-size:.8rem;line-height:1.4}
+.tfr-tool .al-u{margin-left:auto;color:var(--muted)}
+.tfr-tool .al-p{position:relative}
+.tfr-tool .al-bg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.tfr-tool .al-d{position:absolute;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:var(--c);box-shadow:0 0 0 1px var(--bg)}
+.tfr-tool .al .tg-ax{margin-top:.2rem}
+.tfr-tool .pos-in{max-width:70ch;margin:2.2rem 0 0;color:var(--muted);font-size:.8rem;text-wrap:pretty}
+.tfr-tool .pos-in a{color:var(--fg)}
+.tfr-tool .hl{list-style:none;margin:0;padding:0}
+.tfr-tool .hr{display:grid;grid-template-columns:minmax(7.5rem,12rem) minmax(0,1fr) minmax(3.2rem,auto);gap:.1rem 1.2rem;align-items:baseline;padding:.55rem 0;border-bottom:1px solid var(--border)}
+.tfr-tool .hr[hidden]{display:none}
+.tfr-tool .h-who{font:500 1rem/1.3 var(--font-display);text-wrap:balance}
+.tfr-tool .h-who small{display:block;margin-top:.1rem;color:var(--muted);font:400 .8rem/1.35 var(--sans)}
+.tfr-tool .h-line{max-width:68ch;text-wrap:pretty}
+.tfr-tool .h-src{display:block;margin-top:.15rem;color:var(--muted);font:italic .8rem/1.4 var(--font-body)}
+.tfr-tool .h-pg{text-align:right;font-size:.8rem;line-height:1.5;font-variant-numeric:tabular-nums}
+.tfr-tool .h-pg .pp{display:block;white-space:nowrap}
+.tfr-tool .more{display:inline-flex;align-items:center;min-height:2rem;margin:.55rem 0 0;padding:.3rem .7rem;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--fg);font:600 .8rem/1.2 var(--sans);cursor:pointer}
+.tfr-tool .more:hover{border-color:var(--fg)}
 .tfr-tool .muted{color:var(--muted)}
-.tfr-tool .note{margin:-.2rem 0 .4rem;font-size:.85rem;color:var(--muted);font-style:italic}
-@media (max-width:760px){.tfr-tool .cols{grid-template-columns:1fr}}
+.tfr-tool .next{display:grid;grid-template-columns:1fr 1fr;gap:1rem 2rem;margin:2rem 0 0;padding-top:.9rem;border-top:1px solid var(--border)}
+.tfr-tool .next button{display:grid;gap:.15rem;align-content:start;border:0;background:none;color:var(--fg);font:1rem/1.4 var(--font-body);cursor:pointer;padding:.25rem 0;text-align:left;text-wrap:pretty}
+.tfr-tool .next button small{color:var(--muted);font:600 .8rem/1.3 var(--sans)}
+.tfr-tool .next button:hover>span{text-decoration:underline;text-underline-offset:3px}
+.tfr-tool .next button+button,.tfr-tool .next span+button{grid-column:2;text-align:right}
+@media (prefers-reduced-motion:no-preference){.tfr-tool .loci li button,.tfr-tool .tally button{transition:color .12s var(--ease),background-color .12s var(--ease),box-shadow .12s var(--ease),border-color .12s var(--ease)}
+.tfr-tool #q>h2{animation:shown .2s var(--ease)}}
+@keyframes shown{from{opacity:.4}}
+.tfr-tool .pgs{display:inline-flex;flex:none;align-items:baseline;white-space:nowrap}
+.tfr-tool .pvb{position:relative;display:inline-flex;align-items:center;margin-left:.45rem;padding:.1rem .55rem;border:1px solid var(--border);border-radius:999px;background:var(--card-bg);color:var(--fg);font:600 .8rem/1.2 var(--sans,var(--font-body));text-decoration:none;white-space:nowrap;cursor:pointer}
+.tfr-tool .pvb:hover{border-color:var(--fg)}
+.tfr-tool .pvb[aria-expanded="true"]{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.tfr-tool a.pvl[aria-expanded="true"]{background:var(--fg);color:var(--bg);text-decoration:none;border-radius:2px;box-shadow:0 0 0 2px var(--fg)}
+.tfr-tool .pvb:focus-visible,.tfr-tool .pvl:focus-visible,.tfr-tool .pvw :is(a,button):focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+@media (pointer:coarse){.tfr-tool .pvb::after{content:"";position:absolute;inset:-.55rem -.2rem}}
+.tfr-tool .pvw{grid-column:1/-1;flex:1 0 100%;margin:.6rem 0 .8rem;border:1px solid var(--border);border-radius:6px;background:var(--card-bg);overflow:hidden;container-type:inline-size;text-align:left;white-space:normal;font-style:normal;font-size:1rem;--accent:var(--fg);--accent-soft:color-mix(in srgb,var(--fg) 20%,var(--card-bg));--body:var(--font-body)}
+.tfr-tool .pvw-head{display:flex;flex-wrap:wrap;align-items:center;gap:.1rem 1rem;padding:.2rem .75rem;background:var(--bg);font:.8rem/1.3 var(--font-body)}
+.tfr-tool .pvw-at{margin-right:auto;font-weight:600;font-variant-numeric:tabular-nums}
+.tfr-tool .pvw-head a,.tfr-tool .pvw-x{display:inline-flex;align-items:center;min-height:2rem;padding:0;border:0;background:none;color:var(--fg);font:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.tfr-tool .pvw-pp{display:flex;flex-wrap:wrap;gap:.25rem}
+@container (max-width:30rem){.tfr-tool .pvw-pp{order:3;flex-basis:100%;padding-bottom:.3rem}}
+.tfr-tool .pvw-pp button{min-width:2rem;min-height:1.75rem;padding:0 .45rem;border:1px solid var(--border);border-radius:4px;background:var(--card-bg);color:var(--fg);font:inherit;font-variant-numeric:tabular-nums;cursor:pointer}
+.tfr-tool .pvw-pp button[aria-pressed="true"]{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.tfr-tool .pvw .pw-page h4{display:block;margin:0 0 6px;padding:0;border:0;font:600 .8rem/1.3 var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tfr-tool .pvw .pw-col h5{margin:.4em 0 .6em;padding:0;border:0;font:600 1rem/1.4 var(--body);text-align:center;text-wrap:balance;color:var(--fg)}
+.tfr-tool .pvw .pw-col p{margin:0 0 .7em;max-width:70ch;font:1rem/1.65 var(--body);color:var(--fg);white-space:pre-line}
+.tfr-tool .pvw .pw-col p:last-child{margin-bottom:0}
+.tfr-tool .pvw .pw-col .pw-none{color:var(--muted);font-style:italic;font-size:.8rem}
+.tfr-tool .pvw .pw-cited{border-left:0;padding-left:0;margin-left:0}
+.tfr-tool .pvw .pw-page:not(.pw-cited){opacity:1}
+.tfr-tool .pvw .pw-wait a{color:var(--fg)}
+@container (max-width:36rem){.tfr-tool .pvw .pw-two{grid-template-columns:minmax(0,1fr);gap:.8rem}}
+@media (prefers-reduced-motion:no-preference){.tfr-tool .pvw{animation:pvw-in .18s cubic-bezier(.22,1,.36,1)}}
+@keyframes pvw-in{from{opacity:0;transform:translateY(-3px)}}
+@media (max-width:760px){.tfr-tool .cols{grid-template-columns:minmax(0,1fr)}
+.tfr-tool .loci{max-height:min(50vh,22rem);overflow:auto;overscroll-behavior:contain;border-bottom:1px solid var(--border)}}
+@media (max-width:640px){.tfr-tool .wrap{padding:1.2rem 1rem 3rem}
+.tfr-tool h1{font-size:1.6rem}
+.tfr-tool .q h2{font-size:1.25rem}
+.tfr-tool .tally{gap:0 1.1rem}
+.tfr-tool .tally .tsep{display:none}
+.tfr-tool .next{grid-template-columns:1fr}
+.tfr-tool .next button+button,.tfr-tool .next span+button{grid-column:1;text-align:left}
+.tfr-tool .hr{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"who pg" "line line";column-gap:.8rem}
+.tfr-tool .h-who{grid-area:who}
+.tfr-tool .h-pg{grid-area:pg}
+.tfr-tool .h-line{grid-area:line;margin-top:.2rem}
+.tfr-tool .trs>li{grid-template-columns:minmax(0,1fr);gap:.3rem;padding:.55rem 0}}
 .tfr-tool{background:transparent}
 .tfr-tool .wrap{padding-top:1.2rem}
+.tfr-tool .more,.tfr-tool .tg-more,.tfr-tool .tg-hold>summary{border-radius:3px}
 </style>
 {{/contentFor}}
-{{!-- /the-faith-received/disputed-questions/ — Disputed questions, as The Faith Received has it (tools/prdl_reader_prototype/atlas.html), in this site's
+{{!-- /the-faith-received/disputed-questions/: Disputed questions, as The Faith Received has it (tools/prdl_reader_prototype/atlas.html), in this site's
      shell: the hero is the theme's, the body and its script (faith-atlas.js) the library's, reading the library worker. --}}
 <section class="bhero bhero--tool">
   <div class="bhero-inner container">
@@ -61,4 +158,6 @@
   <div class="cols"><nav aria-label="Questions by locus"><div class="loci" id="loci"><p class="muted">Loading…</p></div></nav><article class="q" id="q" aria-live="polite"></article></div>
 
 </div></main>
-<script src="{{asset "js/faith-atlas.js"}}&amp;frv=605ffa4e0daff6e4"></script>
+<link rel="stylesheet" href="{{asset "css/port/work-hub.css"}}&amp;frv=0374a552e8452478"><script src="{{asset "js/port/page-window.js"}}&amp;frv=2023bacb69cf7ee4"></script>
+<link rel="stylesheet" href="{{asset "css/port/tradition-graphics.css"}}&amp;frv=cc8cf6f7c7831d99"><script src="{{asset "js/port/tradition-graphics.js"}}&amp;frv=3780efc0f7559ddf"></script>
+<script src="{{asset "js/faith-atlas.js"}}&amp;frv=313711799e0dd109"></script>

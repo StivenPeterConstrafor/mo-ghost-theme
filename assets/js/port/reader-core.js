@@ -1459,7 +1459,7 @@ function captureReaderPosition(rebuild){
   // hydration, the late shards). Anchoring to the first body row instead re-pins that row at its old offset whenever the
   // content above it changes height, which carried a bare link down past the title and front matter (report #42).
   if(rebuild&&!choice&&!window.__frUserScrolled&&window.__frTgt==null&&!window.__frInitialReference&&!location.hash&&sc.scrollTop<=2)return {top:true,page:cur,title:'',choice:false,id:null,offset:null,serial:window.__readerNavSerial||0};
-  if(choice?.id)return {page:choice.page,title:choice.title||'',choice:true,id:choice.id,...(choice.focusId?{focusId:choice.focusId}:{}),...(choice.sourcePath?{sourcePath:choice.sourcePath,sourceText:choice.sourceText,sourceKey:choice.sourceKey||''}:{}),anchor:true,offset:null,serial:choice.serial};
+  if(choice?.id)return {page:choice.page,title:choice.title||'',choice:true,id:choice.id,...(choice.focusId?{focusId:choice.focusId}:{}),...(choice.sourcePath?{sourcePath:choice.sourcePath,sourceText:choice.sourceText,sourceKey:choice.sourceKey||''}:{}),...(choice.at?{at:choice.at}:{}),anchor:true,offset:null,serial:choice.serial};
   const anchor=Array.from(reading.querySelectorAll('.row[id]:not(.rapp),.pganchor')).find(node=>{const r=node.getBoundingClientRect();return node.getClientRects().length&&r.bottom>base+16;});
   let page=anchor?.closest('.folio')?.dataset.page||anchor?.dataset.page||cur;
   const requested=choice?.page??(!window.__frUserScrolled?window.__frTgt:null);
@@ -1503,6 +1503,7 @@ function frResolveSourceHeading(position){
 }
 function frResolveReaderAnchor(position){
   if(position.sourcePath)return frResolveSourceHeading(position);
+  if(position.at&&position.page!=null&&window.__readerBuilt){const h=frHeadingIn(frFolioOf(position.page),position.at);if(h&&h.isConnected&&h.getClientRects().length)return h;}
   const opening=position.page==null?null:(window.FRMigneNavigation?.openingKey(DATA,position.page)??position.page);
   if(opening!=null)window.__ensurePage?.(opening);
   const visible=node=>{if(node?.closest?.('.frontmatter'))document.getElementById('app')?.classList.add('show-fm');return node?.isConnected&&node.getClientRects().length?node:null;};
@@ -1547,7 +1548,7 @@ function restoreReaderPosition(position){
     if(!position.anchor&&!target?.isConnected)target=jump(position.page,position.title);
     if(!target&&position.page!=null&&DATA?.__loadRest)DATA.__loadRest().catch(()=>{});
     if(target){
-      if(position.anchor&&!placed){window.__frPlaceReaderAnchor(target,position.sourcePath?{block:'start'}:{});placed=true;target.classList.add('anchor-flash');setTimeout(()=>target.classList.remove('anchor-flash'),2300);document.getElementById('app')?.classList.remove('prelanding');}
+      if(position.anchor&&!placed){window.__frPlaceReaderAnchor(target,(position.sourcePath||position.at)?{block:'start'}:{});placed=true;target.classList.add('anchor-flash');setTimeout(()=>target.classList.remove('anchor-flash'),2300);document.getElementById('app')?.classList.remove('prelanding');}
       const delta=target.getBoundingClientRect().top-sc.getBoundingClientRect().top;
       // The mobile masthead can grow after fonts load. Keep source-heading arrivals
       // below its current bottom instead of freezing the initial desktop-sized gap.
@@ -1599,9 +1600,9 @@ window.__frNavigateReaderAnchor=href=>{
     const samePage=target.pathname.replace(/\/+$/,'')===here.pathname.replace(/\/+$/,'');
     if(!(samePage||/^\/read(?:\.html|\/[^/]+)?$/.test(target.pathname))||!targetWork||![currentWork,DATA?.slug].filter(Boolean).includes(targetWork))return false;
     // A citation can omit the current lane/view settings; an explicit change still needs navigation.
-    for(const [key,value]of target.searchParams)if(!['w','ws','p','section','heading'].includes(key)&&here.searchParams.get(key)!==value)return false;
+    for(const [key,value]of target.searchParams)if(!['w','ws','p','section','heading','at'].includes(key)&&here.searchParams.get(key)!==value)return false;
     let id;try{id=decodeURIComponent(target.hash.slice(1));}catch(_){return false;}
-    const sourcePath=target.searchParams.get('section'),sourceKey=target.searchParams.get('heading')||'';
+    const sourcePath=target.searchParams.get('section'),sourceKey=target.searchParams.get('heading')||'',at=String(target.searchParams.get('at')||'').slice(0,240);
     if(sourceKey&&!sourcePath)return false;
     const sourceRow=sourcePath?readerDisplayOutline().find(row=>row.navSourcePath===sourcePath&&(!sourceKey||row.navSourceKey===sourceKey)):null;
     const sourceText=sourceRow?.navSourceText||'',source=sourcePath?frSourceHeadingRecord(sourcePath,sourceText,sourceKey):null;
@@ -1613,10 +1614,11 @@ window.__frNavigateReaderAnchor=href=>{
     if(sourcePath&&!source&&sourceStart==null)return false;
     const reference=frReaderBlockReference(target.hash),page=source?.page||(sourceStart==null?null:String(sourceStart))||reference?.page||(!id?target.searchParams.get('p'):null);
     if(source||sourceStart!=null||!id&&page)id='b'+page+'-0';if(!id)return false;
-    const serial=rememberReaderChoice(page,sourceRow?.title||'',id);
+    const serial=rememberReaderChoice(page,sourceRow?.title||at,id);if(at&&!source)window.__readerChoice.at=at;
     if(source){here.searchParams.set('section',sourcePath);here.searchParams.set('p',page);if(sourceKey)here.searchParams.set('heading',sourceKey);else here.searchParams.delete('heading');window.__readerChoice.sourcePath=sourcePath;window.__readerChoice.sourceText=sourceText;window.__readerChoice.sourceKey=sourceKey;}
-    else{here.searchParams.delete('p');here.searchParams.delete('section');here.searchParams.delete('heading');}here.hash=id;history.replaceState(history.state,'',here);
-    restoreReaderPosition({page,title:sourceRow?.title||'',choice:true,id,...(source?{sourcePath,sourceText,sourceKey}:{}),anchor:true,offset:null,serial});return true;
+    else{here.searchParams.delete('p');here.searchParams.delete('section');here.searchParams.delete('heading');}
+    if(at&&!source)here.searchParams.set('at',at);else here.searchParams.delete('at');here.hash=id;history.replaceState(history.state,'',here);
+    restoreReaderPosition({page,title:sourceRow?.title||at,choice:true,id,...(source?{sourcePath,sourceText,sourceKey}:{}),...(at&&!source?{at}:{}),anchor:true,offset:null,serial});return true;
   }catch(_){return false;}
 };
 // Real reading movement wins over arrival targets and late hydration corrections.
@@ -1665,15 +1667,23 @@ function jump(p,ttl){
   // in-page section targeting (owner 2026-07-28, Zanchi: "click Book 2 → header not visible"):
   // when the clicked TOC title matches a heading row INSIDE the page, land on the heading itself —
   // the section often starts mid-page and the page top shows the previous section's tail.
+  const hit=frHeadingIn(t,ttl);if(hit)tgt=hit;
+  window.__frPlaceReaderAnchor(tgt,{block:"start"});window.__frJumpEl=tgt;return tgt;}  // page starts at "pg. N", clear of the masthead (scroll-margin-top)
+// THE HEADING A TITLE NAMES INSIDE ONE DRAWN PAGE (contents clicks, and since 2026-10-20 the ?at= arrival: the commentary decks,
+// the set indexes and the citations open the reader on the heading itself, not on its page's top). The outline's own match first,
+// then the heading rows, then the rows' opening words, scored by the title's words.
+function frHeadingIn(t,ttl){
+  if(!t||!ttl)return null;
   const exact=window.FRReaderNavigation?.exactHeading(DATA,t,ttl)||(/^pld-/.test(DATA?.slug||'')?window.FRPldReading?.renderedHeading(t,ttl):null);
-  if(exact)tgt=exact.classList?.contains('reader-inline-target')?exact:(exact.closest(".row")||exact);
-  if(ttl&&!exact){const _n=s=>String(s||"").toLowerCase().replace(/<[^>]+>/g,"").replace(/[^a-z0-9]+/g," ").trim();
+  if(exact)return exact.classList?.contains('reader-inline-target')?exact:(exact.closest(".row")||exact);
+  {const _n=s=>String(s||"").toLowerCase().replace(/<[^>]+>/g,"").replace(/[^a-z0-9]+/g," ").trim();
     // strip the "Q. 1 — " / "Article 2 — " label so the subject words drive the match
     const nt=_n(String(ttl).replace(/^[^—]{0,16}—\s*/,""));
     if(nt.length>=6){let best=null,bs=0;
       const a=nt.split(" ").filter(w=>w.length>2);
       const score=txt=>{const ht=_n(txt);if(!ht)return 0;
-        const hit=a.length?a.filter(w=>ht.includes(w)).length/a.length:0;
+        // a long word may end otherwise in the page's own language ("Distinction III" over a "Distinctio III" head)
+        const hit=a.length?a.filter(w=>ht.includes(w.length>6?w.slice(0,-2):w)).length/a.length:0;
         const pref=(ht.startsWith(nt.slice(0,18))||nt.startsWith(ht.slice(0,18)))?1:0;
         return Math.max(hit,pref);};
       t.querySelectorAll(".row.rhead .csub").forEach(h=>{if(!h.getClientRects().length)return;
@@ -1683,8 +1693,12 @@ function jump(p,ttl){
       // opening text and land on the best row.
       if(bs<0.6)t.querySelectorAll(".row:not(.rhead)").forEach(r=>{if(!r.getClientRects().length)return;
         const sc=score((r.textContent||"").slice(0,260));if(sc>bs){bs=sc;best=r;}});
-      if(best&&bs>=0.6)tgt=best.closest(".row")||best;}}
-  window.__frPlaceReaderAnchor(tgt,{block:"start"});window.__frJumpEl=tgt;return tgt;}  // page starts at "pg. N", clear of the masthead (scroll-margin-top)
+      if(best&&bs>=0.6)return best.closest(".row")||best;}}
+  return null;}
+// the drawn page a reference names (a Migne column resolves to its opening), for a heading search inside it
+function frFolioOf(page){
+  const p=window.FRMigneNavigation?.openingKey(DATA,page)??page;
+  return document.querySelector('#reading .folio[data-page="'+CSS.escape(String(p))+'"]');}
 // ---- canonical locators ----
 // Scanned works cite by PRINTED PAGE ("p. N"). Born-digital (SCTA) works have no page image,
 // so they're cited by their place in the spine — the scholastic locator (lib./dist./q./art./
@@ -4125,12 +4139,15 @@ function build(){
       // back-of-book index (INDEX_PAGES, §2.2/P5) — same gate as P5's render dispatch, so the
       // tab and the content it opens always agree. Everything else in this tab strip/state
       // machine (_navView, the "on" class, buildNav() re-invocation on click) is untouched.
-      if(INDEX_PAGES&&INDEX_PAGES.size)tab("Index","index");
+      // 10-21 (owner: "every work needs a scripture index? and i can see it on mobile"): the Index tab also carries the index made from
+      // the text (v1/enrich/index: Scripture, subjects, persons, terms, questions, through work-hub.js), so every work with one shows
+      // the tab, on a phone too, and a printed index is named by the book's own heading for it
+      if((INDEX_PAGES&&INDEX_PAGES.size)||window.FRWorkHub)tab("Index","index");
       tab("Library","library");
       if(vt.children.length>1)nav.appendChild(vt);
     }
     if(_navView==="library"){renderLibrary(nav);return;}
-    if(_navView==="index"&&INDEX_PAGES&&INDEX_PAGES.size){renderIndexNav(nav);return;}
+    if(_navView==="index"&&((INDEX_PAGES&&INDEX_PAGES.size)||window.FRWorkHub)){renderIndexNav(nav);return;}
     if(_navView==="outline"&&window.FRReaderNavigation?.isConfession(DATA)&&renderConfessionContents(nav))return;
     const showOutline=STRUCT&&_navView!=="pages";
     if(showOutline) renderOutline(nav);
@@ -4154,10 +4171,16 @@ function build(){
   function renderIndexNav(nav){
     const KIND_LABEL={quaestionum:"Index Quaestionum",errata:"Errata",citations:"Index of Citations",topical:"Index",alphabetic:"Index",contents:"Contents"};
     const box=el("div","nav-index");
-    [...INDEX_PAGES.entries()].forEach(([page,kind])=>{
+    const printed=!!(INDEX_PAGES&&INDEX_PAGES.size);
+    // a printed index page by the book's own heading for it ("Index of the Passages of Holy Scripture"), not four rows of "Index"
+    const outline=printed?readerDisplayOutline().filter(r=>r&&r.title&&r.page!=null&&!isNaN(+r.page)):[];
+    const named=page=>{let best=null;for(const r of outline){if(+r.page<=+page&&(!best||+r.page>=+best.page))best=r;}
+      return best&&/\bind(?:ex|ice|ices)\b|register|catalog/i.test(best.title)?String(best.title).split(" — ")[0]:null;};
+    if(printed){const h=el("h3","index-h");h.textContent="Printed in this book";box.appendChild(h);}
+    [...(printed?INDEX_PAGES.entries():[])].forEach(([page,kind])=>{
       const row=el("div","nav-node nd1 ixnavrow");
       row.dataset.page=page;
-      row.innerHTML=`<span class="cv leaf">▾</span><span class="nn-t">${esc(KIND_LABEL[kind]||"Index")}</span>`;
+      row.innerHTML=`<span class="cv leaf">▾</span><span class="nn-t">${esc(named(page)||KIND_LABEL[kind]||"Index")}</span><span class="nn-p">p. ${esc(String(page))}</span>`;
       row.onclick=()=>goNav(+page,row);
       box.appendChild(row);
       if(kind==="alphabetic"){
@@ -4181,6 +4204,19 @@ function build(){
         box.appendChild(rail);
       }
     });
+    // the index made from the text, opened on Scripture (work-hub.js, the work page's own index)
+    const HUB=window.FRWorkHub;
+    if(HUB&&DATA&&DATA.slug){
+      const made=el("section","index-made");
+      made.innerHTML='<h3 class="index-h">Made from the text</h3><p class="index-guidance" role="status">Loading the index…</p>';
+      box.appendChild(made);
+      HUB.guide(DATA.slug).then(d=>{
+        if(!made.isConnected)return;
+        if(!d||!d.full){made.querySelector(".index-guidance").textContent="No index has been made for this work yet.";return;}
+        made.innerHTML='<h3 class="index-h">Made from the text</h3>'+HUB.render("index",d,{first:"scripture"});
+        HUB.wire(made,(p,b)=>goNav(/^\d+$/.test(String(p))?+p:p,b));
+      }).catch(()=>{if(made.isConnected)made.querySelector(".index-guidance").textContent="The index could not be loaded.";});
+    }
     nav.appendChild(box);
   }
   // LIBRARY: browse every work in the corpus without leaving the reader — a filterable
@@ -4433,7 +4469,7 @@ function syncReaderHeader(n){
    // the volume on its shelf, every work it holds (owner 2026-10-11, the PG shelf on a phone)
    const room=frShelfVolumeHref(se);if(room){const a=document.createElement('a');a.href=room;a.textContent=se.label;a.title='All the works in '+se.key+' '+se.vol;volume.replaceChildren(a);}}
    else{volume.textContent=String(DATA.volume||"").replace(/\b(P[LG]|PO)\s*(\d+)/g,"$1 $2");volume.removeAttribute('title');}}
- place.textContent=locOf(n);place.setAttribute('aria-label','Go to a place in this work, currently '+locOf(n));
+ place.textContent=locOf(n);place.dataset.page=String(n);place.setAttribute('aria-label','Go to a place in this work, currently '+locOf(n));
  const column=DATA.pld_source_view?.hasColumns!==false&&(!DATA.pld_source_view?.notes||DATA.pld_source_view?.columnNotes)&&/^P[LG]\s*\d/i.test(DATA.volume||""),unit=column?'column':DATA.has_pages?'page':'section';
  $("#pgJump").setAttribute('aria-label',unit[0].toUpperCase()+unit.slice(1)+' number');$("#pgJump").title='Go to '+unit;
  $("#reader-jump-label").textContent='Go to '+unit;

@@ -165,7 +165,7 @@
     const peak = base && base.peak;
     const cap = `Works citing it in each century.${peak ? ` The library holds the most from the ${ord(peak)} century, so that bar runs tall for most verses.` : ""}${outs.length > 1 ? " The colored bars are the centuries where this verse is cited more than the library's usual share."
       : outs.length ? " The colored bar is the century where this verse is cited more than the library's usual share." : ""}`;
-    return `<p class="fr-rh-lede">${lede}</p><figure class="fr-rh-strip-wrap"><ol class="fr-rh-strip">${cols.join("")}</ol></figure>${method(`<p>${cap}</p><p>${REC_NOTE}</p>`)}`;
+    return `<p class="fr-rh-lede">${lede}</p><figure class="fr-rh-strip-wrap"><ol class="fr-rh-strip">${cols.join("")}</ol><figcaption class="fr-rh-cap">${cap}</figcaption></figure>`;
   }
   // the page's gist, ended at a word (the files keep 180 characters of it), the whole on hover
   const gist = (g) => {
@@ -482,9 +482,12 @@
           // Closed until opened, on every screen (2026-10-16): open by default the history and the commentaries made the panel
           // 9,400px tall beside a chapter of 2,500, and working in it scrolled the text out of sight (the panel is not sticky:
           // Ian, 09-23). The fold rows say what each holds; the Verse Desk shows them whole.
-          const lead = `${parts.history ? fold("fr_history", "Reception history", parts.nWorks, `${parts.history}${recNote()}`, false, parts.nWorks === 1 ? "work" : "works") : ""}` +
-            `${parts.readings ? fold("fr_readings", "Readings", parts.nReadings, `${parts.readings}${method(`<p>${parts.readingsNote}</p>`)}`) : ""}` +
-            `${parts.disputes ? fold("fr_disputes", "Points in dispute", parts.nDisputes, `${parts.disputes}${method(`<p>${parts.readingsNote}</p>`)}`) : ""}`;
+          // ONE METHODOLOGY NOTE for the three folds, after them (2026-10-21, the owner: "too many methodology eyebrow"): the history's
+          // fold carried one inside its strip and one after it, the readings and the disputes one each
+          const folds = `${parts.history ? fold("fr_history", "Reception history", parts.nWorks, parts.history, false, parts.nWorks === 1 ? "work" : "works") : ""}` +
+            `${parts.readings ? fold("fr_readings", "Readings", parts.nReadings, parts.readings) : ""}` +
+            `${parts.disputes ? fold("fr_disputes", "Points in dispute", parts.nDisputes, parts.disputes) : ""}`;
+          const lead = folds ? `${folds}${method(`<p>${[parts.history ? REC_NOTE : "", parts.readings || parts.disputes ? parts.readingsNote : ""].filter(Boolean).join(" ")}</p>`)}` : "";
           const $count = $panel.querySelector("[data-sd-count]");
           if (lead) {
             const html = `<div class="fr-sn-verse" data-fr-sn="verse">${lead}</div>`;
@@ -536,9 +539,10 @@
         const $trans = $desk.querySelector('[aria-labelledby="sd-h-trans"]');
         const html = `<section class="sd-desk-sec fr-sn-desk" aria-labelledby="sd-h-reads" data-fr-sn="verse">
         <h2 class="sd-h2" id="sd-h-reads">Reception history of ${esc(label)}</h2>
-        ${parts.deskHistory ? `${parts.deskHistory}${parts.deskHistory.includes("fr-rh-strip-wrap") ? "" : recNote()}` : ""}
-        ${parts.readings ? `<h3 class="sd-h3">Readings</h3><div class="fr-sn-desk-readings">${parts.readings}</div>${method(`<p>${parts.readingsNote}</p>`)}` : ""}
-        ${parts.disputes ? `<h3 class="sd-h3">Points in dispute</h3><div class="fr-sn-desk-disputes">${parts.disputes}</div>` : ""}</section>`;
+        ${parts.deskHistory || ""}
+        ${parts.readings ? `<h3 class="sd-h3">Readings</h3><div class="fr-sn-desk-readings">${parts.readings}</div>` : ""}
+        ${parts.disputes ? `<h3 class="sd-h3">Points in dispute</h3><div class="fr-sn-desk-disputes">${parts.disputes}</div>` : ""}
+        ${method(`<p>${[parts.deskHistory ? REC_NOTE : "", parts.readings || parts.disputes ? parts.readingsNote : ""].filter(Boolean).join(" ")}</p>`)}</section>`;
         if ($trans) $trans.insertAdjacentHTML("afterend", html); else $desk.insertAdjacentHTML("beforeend", html);
         const $toc = $desk.querySelector("[data-sd-toc-reads]");
         if ($toc) $toc.hidden = false;

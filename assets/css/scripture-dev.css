@@ -1463,3 +1463,11 @@ html[data-sd-theme="dark"] .sd .cp-meter { background: rgba(233, 233, 229, 0.14)
 @media (max-width: 899px) {
   html[data-sd-theme="dark"] .sd .cp-pane { box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35); }
 }
+
+/* the citing works of one author, under his one row in the verse panel (scripture-dev.js, 2026-10-21: de Dieu's Critica Sacra was five
+   rows, each with a Preview); the first open, the rest behind "N more by" */
+.sd-author-group > .sd-source-head { padding-bottom: 2px; }
+.sd-author-works { list-style: none; margin: 0; padding: 0 0 0 18px; }
+.sd-author-works > .sd-source { padding: 8px 0 4px; border-bottom: 0; }
+.sd-author-works > .sd-source .sd-source-title { font-size: 15px; }
+.sd-author-group > .sd-commentary-more { margin: 2px 0 0 18px; }
