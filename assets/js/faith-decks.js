@@ -180,12 +180,21 @@ async function loadPlace(){
 const order=(a,b)=>{const ta=TRADS.includes(a.tr)?TRADS.indexOf(a.tr):99,tb=TRADS.includes(b.tr)?TRADS.indexOf(b.tr):99;return ta-tb||a.y-b.y||a.a.localeCompare(b.a)||a.t.localeCompare(b.t)||a.from-b.from;};
 // the commentators of the place: the grid says who and where he begins; the outline gives his divisions and where his place ends.
 // An article chosen narrows the list to those who treat it; a commentator already open stays open (he treats the whole question).
+// a work's volume as the problems' argued rows give it, where the catalogue gives none (owner: Voetius's volumes could not be told apart
+// in the works beside)
+const ARGVOL={key:'',m:new Map()};
+function argVol(slug){
+  const P=PL.props;
+  if(!P||!Array.isArray(P.problems))return '';
+  if(ARGVOL.key!==PL.key){ARGVOL.key=PL.key;ARGVOL.m=new Map();for(const p of P.problems)for(const e of p.argued||[])if(e&&e.slug&&e.vol&&!ARGVOL.m.has(e.slug))ARGVOL.m.set(e.slug,String(e.vol));}
+  return ARGVOL.m.get(slug)||'';
+}
 function commentators(all){
   const by=new Map();for(const r of rowsFor(all)){if(!by.has(r[0])||+r[1]<+by.get(r[0])[1])by.set(r[0],r);}
   const out=(PL.out&&PL.out.works)||{};
   return [...by.values()].map(r=>{const w=wk(r[0]),o=out[r[0]];
     const items=o&&o.items&&o.items.length?o.items:[[r[2]||`From p. ${r[1]}`,+r[1],1,r[2]||'',r[3]||null]];
-    return {slug:r[0],a:w[0]||'',t:w[1]?shortWork(w[1]):r[0],vol:noDash(w[2]||''),ft:noDash(w[5]||w[1]||''),fv:noDash(w[6]||w[2]||''),dup:w[7]||'',tr:w[3]||'Other',y:w[4]||9999,from:o?+o.from:+r[1],to:o?+o.to:+r[1]+6,items};
+    return {slug:r[0],a:w[0]||'',t:w[1]?shortWork(w[1]):r[0],vol:noDash(w[2]||'')||argVol(r[0]),ft:noDash(w[5]||w[1]||''),fv:noDash(w[6]||w[2]||''),dup:w[7]||'',tr:w[3]||'Other',y:w[4]||9999,from:o?+o.from:+r[1],to:o?+o.to:+r[1]+6,items};
   }).filter(c=>c.a||c.t!==c.slug).sort(order);
 }
 const KINDS=[['question',/^(?:on\s+|in\s+)?(?:question|quaestio|quaest\.|q\.\s*\d)|^\w+\s+question\b/i],['article',/^(?:article|articulus|art\.|a\.\s*\d)|^\w+\s+article\b/i],
@@ -459,77 +468,64 @@ function smallCaps(html){
   return html.split(/(<[^>]+>)/).map(seg=>seg.startsWith('<')?seg:seg.replace(CAPS,m=>/[A-Z]{4,}|[A-Z]{3,}\.?\s+[A-Z]{3,}/.test(m)?`<span class="sc">${m}</span>`:m)).join('');
 }
 const stems=t=>new Set((fold(t).match(/[a-z]{4,}/g)||[]).map(w=>w.slice(0,6)));
+// A NOTE OF MARTIN VITRINGA'S (2026-10-22): the note as printed, its capitals set in small capitals by the font; under it the works it
+// names that the library holds, one line each: the author, the work and its volume, the place as the note gives it, and the page, which
+// opens beside the text. A work is listed only when its printed name is in the note (owner: "Also cited here: Heinrich Alting" under a
+// note that never names him); the note's other references stand in it as printed.
 function noteHTML(text,links){
-  links=links||[];
-  const ids=links.map(l=>LINKS.push(l)-1);
-  let html=ital(esc(text));
-  const rest=[];
-  // every mention of a held author in the note (initials and surname with its Latin ending, outside tags); each link then goes to the
-  // mention whose next words best share its title ("ALTINGIUS in Theological Problems" with New Problematic Theology), one a mention
-  const occ=[];
-  links.forEach((l,i)=>{
-    if(!l||!l[1])return;
-    const [surface,,,,author]=l;
-    const sur=[surface,surnameOf(author)].filter(Boolean).map(s=>String(s).replace(/[.]/g,' ').trim().split(/\s+/).pop()).filter(s=>s.length>3);
-    for(const n of [...new Set(sur)]){
-      const re=new RegExp(`((?:\\b[A-Z][A-Za-z]{0,9}\\.\\s+){0,3})(?<![A-Za-zÀ-ɏ])${n.slice(0,Math.max(5,n.length-3)).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}[A-Za-zÀ-ɏ]*(?![^<]*>)`,'gi');
-      let m;
-      while((m=re.exec(html))){const cut=((m[1]||'').match(/^(?:[a-z][A-Za-z]{0,9}\.\s+)+/)||[''])[0].length;occ.push({i,at:m.index+cut,len:m[0].length-cut,after:html.slice(m.index+m[0].length,m.index+m[0].length+160)});}
-    }
-  });
-  const used=new Map(),byLink=new Map();
-  const pairs=occ.map(o=>{const t=stems(links[o.i][3]),a=stems(o.after);let sc=0;t.forEach(w=>{if(a.has(w))sc++;});return {...o,sc};}).sort((x,y)=>y.sc-x.sc||x.at-y.at);
-  for(const o of pairs){if(byLink.has(o.i)||used.has(o.at))continue;byLink.set(o.i,o);used.set(o.at,o.i);}
-  // one work cited several times (Problem 2, then Problem 13): its pages rise with the order of the mentions
-  const bySlug=new Map();
-  for(const o of byLink.values()){const sl=links[o.i][1];if(!bySlug.has(sl))bySlug.set(sl,[]);bySlug.get(sl).push(o);}
-  for(const os of bySlug.values()){
-    if(os.length<2)continue;
-    const idx=os.map(o=>o.i).sort((x,y)=>(+links[x][2]||1e9)-(+links[y][2]||1e9));
-    os.sort((x,y)=>x.at-y.at).forEach((o,k)=>{o.i=idx[k];});
-  }
-  // right to left, so the earlier offsets stay true
-  for(const o of [...byLink.values()].sort((x,y)=>y.at-x.at)){
-    const [surface,slug,page,title,author]=links[o.i],pg=page!=null&&page!=='';
-    const label=`${author||surface}, ${title}${pg?`, page ${page}`:''}: open beside the text`;
-    html=`${html.slice(0,o.at)}<a class="ref" href="${esc(read(slug,pg?page:null))}" data-li="${ids[o.i]}" aria-label="${esc(label)}">${html.slice(o.at,o.at+o.len)}</a><span class="tag" aria-hidden="true" data-t="${pg?`${atw(slug)} ${esc(page)}`:esc(shortTitle(title))}"></span>${html.slice(o.at+o.len)}`;
-  }
-  const placed=new Set([...byLink.values()].map(o=>o.i));
-  links.forEach((l,i)=>{
-    if(!l||!l[1]||placed.has(i))return;
-    const [surface,slug,page,title,author]=l,pg=page!=null&&page!=='';
-    rest.push(`<a class="ref" href="${esc(read(slug,pg?page:null))}" data-li="${ids[i]}" aria-label="${esc(`${author||surface}, ${title}`)}">${esc(author||surface)}</a><span class="tag" aria-hidden="true" data-t="${esc(shortTitle(title))}${pg?`, ${atw(slug)} ${esc(page)}`:''}"></span>`);
-  });
-  html=smallCaps(html);
-  return `<p class="nt">${html}</p>${rest.length?`<p class="held"><span class="held-l">Also cited here, in the library:</span> ${rest.join(' · ')}</p>`:''}`;
+  const t=String(text||''),hay=fold(t),seen=new Set(),refs=[];
+  for(const l of links||[]){if(!l||!l[1]||!l[0]||!hay.includes(fold(l[0])))continue;const k=`${l[1]}|${l[2]}`;if(seen.has(k))continue;seen.add(k);refs.push(l);}
+  const ids=refs.map(l=>LINKS.push(l)-1);
+  // the place the note gives after the name: to the next reference (a semicolon, or a sentence that opens on a name in capitals)
+  const at=surface=>{
+    const ws=String(surface).trim().split(/[\s.]+/).filter(Boolean).map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
+    const m=ws.length?new RegExp(ws.join('[\\s.]+'),'i').exec(t):null;
+    if(!m)return '';
+    let r=t.slice(m.index+m[0].length);
+    const stop=r.search(/;|\.\s+(?=[A-Z][A-Z.]{2,}|\([a-z]\)\s)/);
+    if(stop>=0)r=r.slice(0,stop);
+    r=r.replace(/^[\s.,:]+/,'').replace(/^in\s+/i,'').trim().replace(/[\s.,;:]+$/,'');
+    if(r.length>90)r=`${r.slice(0,88).replace(/\s+\S*$/,'')}…`;
+    return /^(?:l\.\s*c|ibid)/i.test(r)?'':r;
+  };
+  return `<p class="nt">${smallCaps(ital(esc(t)))}</p>${refs.length?`<ul class="vn-refs">${refs.map((l,i)=>{const [surface,slug,page,title,author]=l,pg=page!=null&&page!=='',w=D.texts.works[slug]||[],a=at(surface);
+    return `<li><span class="vn-who">${esc(author||w[0]||surface)}</span> · <em>${esc(shortTitle(title||w[1]||''))}</em>${w[2]?` · ${esc(noDash(w[2]))}`:''}${a?` · <span class="vn-at">${ital(esc(a))}</span>`:''} <span class="vn-go">→ <a class="ref" href="${esc(read(slug,pg?page:null))}" data-li="${ids[i]}" aria-label="${esc(`${author||surface}, ${title||''}${pg?`, page ${page}`:''}: open beside the text`)}">${pg?`${atw(slug)} ${esc(page)}`:'the work'}</a></span></li>`;}).join('')}</ul>`:''}`;
 }
 function runningHead(text){
   const t=PL.text||{},f=x=>fold(x).replace(/^(?:of|on|concerning|de)\s+/,'').replace(/\s+/g,'');
   if(/^(?:chapter|caput|cap\.)\b/i.test(text)||/^doctrin(?:e|a)\b.*christian/i.test(text))return true;
   return [String(t.title||'').replace(/^chapter\s*\d+\.?\s*/i,''),t.title_la].some(x=>x&&f(x)===f(text));
 }
+// an aphorism the page turn cuts goes on under the next page's mark without a new head ({cont: N}); a note the turn cuts is its own note
+// on the next page ([letter, text, links, "cont"]), "(g, continued)"; a page holding only a note's continuation ({notes} and no text)
+// shows that note, open, and no empty paragraph
 function vitRows(blocks,lane,side){
   return blocks.map((b,bi)=>{
     const {x} = b;
     if(b.h===1)return runningHead(b.t)?'':`<div class="ap"><h3 class="sec">${ital(esc(b.t))}</h3></div>`;
-    const notes=x&&Array.isArray(x.notes)?x.notes:[],aph=x&&/^\d+$/.test(String(x.aph||''))?String(x.aph):null;
-    if(!aph&&!notes.length)return `<div class="ap plain-row"><p class="plain">${ital(esc(b.t))}</p></div>`;
-    const id=`${side}-${lane}-${aph?`a${aph}`:`b${b.page}-${bi}`}`;
-    const marks=notes.map((n,k)=>{const m=String(n[0]||'*');return `<button type="button" class="mk" aria-expanded="false" aria-controls="${id}-n${k}" aria-label="Note ${esc(m)}" title="Note ${esc(m)}">${esc(m)}</button>`;}).join('');
-    const cards=notes.map((n,k)=>`<div class="card" id="${id}-n${k}" hidden><p class="lbl"><b>${esc(String(n[0]||'*'))}</b>Martin Vitringa’s note</p>${noteHTML(n[1],n[2])}</div>`).join('');
-    if(!aph)return `<div class="ap plain-row" id="${id}"><p class="plain">${ital(esc(b.t))}${marks}</p>${cards}</div>`;
-    const body=ital(esc(String(b.t).replace(/^\s*\d{1,3}\.\s*/,'')));
-    return `<div class="ap" id="${id}" data-aph="${aph}"><a class="num" href="#${esc([S.deck,S.part,S.place,`a${aph}`].join('/'))}" aria-label="Aphorism ${aph}">§ ${aph}</a><p lang="${lane}">${body}${marks}</p>${x.margin?`<span class="refs">${esc(x.margin)}</span>`:''}${cards}</div>`;
+    const notes=x&&Array.isArray(x.notes)?x.notes:[],aph=x&&/^\d+$/.test(String(x.aph||''))?String(x.aph):null,cont=x&&/^\d+$/.test(String(x.cont||''))?String(x.cont):null,text=String(b.t||'').trim(),hold=!text;
+    if(!aph&&!cont&&!notes.length)return text?`<div class="ap plain-row"><p class="plain">${ital(esc(text))}</p></div>`:'';
+    const id=`${side}-${lane}-${aph?`a${aph}`:cont?`c${cont}-${b.page}-${bi}`:`b${b.page}-${bi}`}`;
+    const marks=notes.map((n,k)=>(n[3]==='cont'?'':`<button type="button" class="mk" data-m="${esc(String(n[0]||'*'))}" aria-expanded="false" aria-controls="${id}-n${k}" aria-label="Note ${esc(String(n[0]||'*'))}" title="Note ${esc(String(n[0]||'*'))}"></button>`)).join('');
+    const vns=notes.length?`<div class="vns">${notes.map((n,k)=>{const m=String(n[0]||'*');return `<details class="vn" id="${id}-n${k}"${hold?' open':''}><summary>${n[3]==='cont'?`Martin Vitringa’s note <span class="vn-c">(${esc(m)}, continued)</span>`:`<span class="vn-m">${esc(m)}</span> Martin Vitringa’s note`}</summary><div class="vn-b">${noteHTML(n[1],n[2])}</div></details>`;}).join('')}</div>`:'';
+    const refs=x&&x.margin?`<span class="refs">${esc(x.margin)}</span>`:'';
+    if(aph)return `<div class="ap" id="${id}" data-aph="${aph}"><h4 class="ap-h"><a class="num" href="#${esc([S.deck,S.part,S.place,`a${aph}`].join('/'))}" aria-label="Aphorism ${aph}">§ ${aph}</a></h4>${text?`<p lang="${lane}">${ital(esc(text.replace(/^\s*\d{1,3}\.\s*/,'')))}${marks}</p>`:''}${refs}${vns}</div>`;
+    if(cont)return `<div class="ap ap-cont${hold?' ap-hold':''}" id="${id}" data-cont="${cont}">${text?`<p lang="${lane}">${ital(esc(text))}${marks}</p>`:''}${refs}${vns}</div>`;
+    return `<div class="ap plain-row${hold?' ap-hold':''}" id="${id}">${text?`<p class="plain">${ital(esc(text))}${marks}</p>`:''}${vns}</div>`;
   }).join('');
 }
 const richLane=l=>{const B=PL.base;if(!B)return false;const k=`rich_${l}`;if(B[k]==null)B[k]=(B[l]||[]).some(x=>x&&x.length>3&&x[3]);return B[k];};
 function basePageHTML(side,slug,n,cols,lanes){
+  const vit=S.deck==='vitringa';
   const col=l=>{
-    const bs=cols[l]||[];
+    let bs=cols[l]||[],ll=l;
+    // a plate with no English: its Latin, so the page is not empty
+    if(!bs.length&&vit&&l==='en'&&lanes.length===1&&(cols.la||[]).length){bs=cols.la;ll='la';}
     if(!bs.length)return `<div class="ln" lang="${l}"><p class="note">No ${l==='en'?'English':'Latin'} on this page.</p></div>`;
-    return `<div class="ln" lang="${l}">${S.deck==='vitringa'&&richLane(l)?vitRows(bs,l,side):linesHTML(bs,l,new Map(),null)}</div>`;
+    return `<div class="ln" lang="${ll}">${ll!==l?'<p class="note vnote">The Latin; this page has no English.</p>':''}${vit&&richLane(ll)?vitRows(bs,ll,side):linesHTML(bs,ll,new Map(),null)}</div>`;
   };
-  return `<section class="pg" data-n="${n}"><a class="pgno" href="${read(slug,n)}" title="Open this page in the reader">${atw(slug)} ${esc(n)}</a>${lanes.length>1?`<div class="duo">${col('la')}${col('en')}</div>`:col(lanes[0])}</section>`;
+  const mark=vit?`<a class="pgno pgm" href="${read(slug,n)}" title="Open this page in the reader" aria-label="${esc(`${atw(slug)} ${n}, open in the reader`)}" data-p="${esc(`${atw(slug)} ${n}`)}"></a>`:`<a class="pgno" href="${read(slug,n)}" title="Open this page in the reader">${atw(slug)} ${esc(n)}</a>`;
+  return `<section class="pg${vit?' vpg':''}" data-n="${n}">${mark}${lanes.length>1?`<div class="duo">${col('la')}${col('en')}</div>`:col(lanes[0])}</section>`;
 }
 function drawBase(side){
   const host=PANE[side],B=baseOf(),pagesEl=host.querySelector('.pages');
@@ -1956,7 +1952,7 @@ function sheetDown(){
   const c=SHEET._from;if(c&&c.isConnected)c.focus();
   return true;
 }
-const PRESSED='.card .ref[aria-pressed="true"],a.mv-open[aria-pressed="true"],a.pr-pg[aria-pressed="true"],a.hol[aria-pressed="true"]';
+const PRESSED='.vn .ref[aria-pressed="true"],a.mv-open[aria-pressed="true"],a.pr-pg[aria-pressed="true"],a.hol[aria-pressed="true"]';
 async function besideOpen(l,chip,hl){
   if(!l)return;
   const [surface,slug,page,title,author]=l,PW=window.FRPageWindow,pg=page!=null&&page!=='';
@@ -1967,16 +1963,20 @@ async function besideOpen(l,chip,hl){
   box.querySelector('.who').textContent=author||surface;
   box.querySelector('.what').textContent=`${title||''}${pg?`, ${atw(slug)} ${page}`:''}`;
   op.href=href;op.hidden=false;
-  bb.innerHTML='<p class="empty">Opening the page…</p>';
+  // a work a note of Vitringa's names (owner: "the aphorism's own note first"): the note leads, the page under it
+  const vn=chip&&chip.closest&&chip.closest('details.vn'),ap=vn&&vn.closest('.ap'),an=ap?ap.dataset.aph||ap.dataset.cont||'':'',mk=vn?((vn.querySelector('.vn-m')||vn.querySelector('.vn-c')||{}).textContent||''):'';
+  const lead=vn?`<div class="bb-lead"><p class="bb-k">${esc(`Martin Vitringa’s note ${mk}${an?` on § ${an}`:''}`)}</p>${(vn.querySelector('.nt')||{}).outerHTML||''}</div>`:'';
+  bb.innerHTML=`${lead}<div class="bb-pw"><p class="empty">Opening the page…</p></div>`;
+  const pwb=bb.querySelector('.bb-pw');
   if(!pg){
-    const nt=chip&&chip.closest('.nt'),all=nt?nt.textContent:'',name=chip?chip.textContent:'',at=nt?all.indexOf(name):-1;
-    const cited=(at>=0?name+all.slice(at+name.length).split(/;|\.\s(?=[A-Z]{3,})/)[0]:'').slice(0,220);
-    bb.innerHTML=`<div class="nopage"><p class="np-h">${S.deck==='vitringa'?'Vitringa cites this work without a page we can place.':'This passage has no page we can place.'}</p>${cited?`<p class="np-c">“${esc(cited.trim())}”</p>`:''}<p><a class="np-a" href="${esc(href)}" target="_blank" rel="noopener">Open the work in the reader ↗</a></p></div>`;
+    const li=chip&&chip.closest('li'),nt=chip&&chip.closest('.nt'),all=nt?nt.textContent:'',name=chip?chip.textContent:'',at=nt?all.indexOf(name):-1;
+    const cited=(li&&li.querySelector('.vn-at')?li.querySelector('.vn-at').textContent:at>=0?name+all.slice(at+name.length).split(/;|\.\s(?=[A-Z]{3,})/)[0]:'').slice(0,220);
+    pwb.innerHTML=`<div class="nopage"><p class="np-h">${S.deck==='vitringa'?'Vitringa cites this work without a page we can place.':'This passage has no page we can place.'}</p>${cited?`<p class="np-c">“${esc(cited.trim())}”</p>`:''}<p><a class="np-a" href="${esc(href)}" target="_blank" rel="noopener">Open the work in the reader ↗</a></p></div>`;
     return;
   }
-  const ok=PW&&!isFam(slug)?await PW.fill(bb,{slug,page,hl:hl||''}).catch(()=>false):false;
-  if(!bb.isConnected)return;
-  if(!ok)bb.innerHTML=`<p class="empty">This page cannot be shown here. <a href="${esc(href)}">Open it in the reader</a>.</p>`;
+  const ok=PW&&!isFam(slug)?await PW.fill(pwb,{slug,page,hl:hl||''}).catch(()=>false):false;
+  if(!pwb.isConnected)return;
+  if(!ok)pwb.innerHTML=`<p class="empty">This page cannot be shown here. <a href="${esc(href)}">Open it in the reader</a>.</p>`;
   // a problem's page or a disputation's opens on the page itself, at its words where they are found on it
   else if(hl!=null){const c=bb.querySelector('.pw-cited'),t=(c&&c.querySelector('mark'))||c,bar=bb.querySelector('.pw-bar');if(t)bb.scrollTop+=t.getBoundingClientRect().top-bb.getBoundingClientRect().top-(bar?bar.offsetHeight:0)-12;}
 }
@@ -1996,28 +1996,24 @@ function tipShow(ch){
   TIP.style.top=`${below?r.bottom+6:r.top-h-6}px`;
 }
 function tipHide(){clearTimeout(tipT);TIP.classList.remove('on');if(tipFor){tipFor.removeAttribute('aria-describedby');tipFor=null;}}
+document.addEventListener('toggle',e=>{const d=e.target;if(!d||!d.classList||!d.classList.contains('vn')||!d.id)return;const m=document.querySelector(`.mk[aria-controls="${CSS.escape(d.id)}"]`);if(m)m.setAttribute('aria-expanded',String(d.open));},true);
 document.addEventListener('pointerover',e=>{
-  const ch=e.target.closest&&e.target.closest('.card .ref');
+  const ch=e.target.closest&&e.target.closest('.vn .ref');
   if(!ch||e.pointerType!=='mouse'||ch===tipFor)return;
   clearTimeout(tipT);tipT=setTimeout(()=>tipShow(ch),300);
 });
-document.addEventListener('pointerout',e=>{const ch=e.target.closest&&e.target.closest('.card .ref');if(ch&&!ch.contains(e.relatedTarget))tipHide();});
-document.addEventListener('focusin',e=>{const ch=e.target.closest&&e.target.closest('.card .ref');if(ch)tipShow(ch);});
-document.addEventListener('focusout',e=>{if(e.target.closest&&e.target.closest('.card .ref'))tipHide();});
+document.addEventListener('pointerout',e=>{const ch=e.target.closest&&e.target.closest('.vn .ref');if(ch&&!ch.contains(e.relatedTarget))tipHide();});
+document.addEventListener('focusin',e=>{const ch=e.target.closest&&e.target.closest('.vn .ref');if(ch)tipShow(ch);});
+document.addEventListener('focusout',e=>{if(e.target.closest&&e.target.closest('.vn .ref'))tipHide();});
 document.addEventListener('click',e=>{
   const alt=e.target.closest('[data-alt]');
   if(alt){S.alt=alt.dataset.alt||null;S.j=null;go();return;}
-  // one note open under an aphorism, from its mark; click or tap only
+  // a note's mark opens its note, folded under the aphorism, and shuts it again
   const mk=e.target.closest('.ap .mk');
-  if(mk){
-    const row=mk.closest('.ap'),card=document.getElementById(mk.getAttribute('aria-controls')),open=mk.getAttribute('aria-expanded')==='true';
-    row.querySelectorAll('.mk').forEach(m=>m.setAttribute('aria-expanded','false'));row.querySelectorAll('.card').forEach(c=>{c.hidden=true;});
-    if(!open&&card){mk.setAttribute('aria-expanded','true');card.hidden=false;}
-    return;
-  }
+  if(mk){const d=document.getElementById(mk.getAttribute('aria-controls'));if(d){d.open=!d.open;if(d.open)d.scrollIntoView({block:'nearest'});}return;}
   const num=e.target.closest('.ap .num');
   if(num&&!(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button!==0)){e.preventDefault();const n=num.closest('.ap').dataset.aph;if(n){S.art=`a${n}`;go();}return;}
-  const ch=e.target.closest('.card a.ref');
+  const ch=e.target.closest('.vn a.ref');
   if(ch&&!(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button!==0)){e.preventDefault();tipHide();besideOpen(LINKS[+ch.dataset.li],ch);return;}
   if(e.target.closest('[data-sheet-close]')){sheetDown();return;}
   if(e.target.closest('[data-beside-back]')){document.querySelectorAll(PRESSED).forEach(c=>c.removeAttribute('aria-pressed'));SHOWN.b='';if(S.deck==='vitringa'&&S.r){S.r=null;S.i=null;go();}else render();return;}
@@ -2029,8 +2025,8 @@ document.addEventListener('click',e=>{
 document.addEventListener('keydown',e=>{
   if(e.key!=='Escape'||!$('#grid').hidden)return;
   if(sheetDown()){e.preventDefault();return;}
-  const a=document.activeElement,row=a&&a.closest&&a.closest('.ap'),open=(row&&row.querySelector('.mk[aria-expanded="true"]'))||[...document.querySelectorAll('.ap .mk[aria-expanded="true"]')].pop();
-  if(open){open.click();open.focus();tipHide();e.preventDefault();}
+  const a=document.activeElement,d=(a&&a.closest&&a.closest('details.vn[open]'))||(a&&a.matches&&a.matches('.mk[aria-expanded="true"]')?document.getElementById(a.getAttribute('aria-controls')):null);
+  if(d){d.open=false;const m=document.querySelector(`.mk[aria-controls="${CSS.escape(d.id)}"]`),sm=d.querySelector('summary');if(m)m.focus();else if(sm)sm.focus();tipHide();e.preventDefault();}
 });
 // inside a dossier: a holder's view, a split's opinion, a holder's chip lead to their own dossiers
 document.addEventListener('click',e=>{
@@ -2127,12 +2123,14 @@ function keepInView(side){
 // A COMMENTATOR'S PLACE, page after page, with his divisions of it as the pane's contents
 async function paneWork(side,slug,focus){
   const host=PANE[side],cs=commentators(true),c=cs.find(x=>x.slug===slug),token=++RUN[side];
-  const key=['work',PL.key,slug,LANE].join('|');
+  const key=['work',PL.key,slug,LANE,side==='b'?S.art||'':''].join('|');
   if(!c){SHOWN[side]='';const w=D.texts.works[slug]||[];
     host.innerHTML=`<header class="ph"><div class="ph-row">${sourceSelect(side,cs,slug)}</div>${side==='b'?`<button type="button" class="back" data-back>← All ${WHO()}</button>`:''}
       <h2>${esc(w[0]||slug)}${born({y:w[4]||9999})}</h2>${w[1]?`<p class="what">${workLine({t:w[1],vol:w[2]||'',y:w[4]||9999})}</p>`:''}</header><div class="scroll">${absentNote(slug,side)}</div>`;return;}
   const {items} = c;
   if(focus==null&&S.deck==='summa'&&S.art){const k=items.findIndex(x=>String(x[4]||'')===String(S.art));if(k>=0)focus=k;}
+  const lead=side==='b'?leadFor(slug):null;
+  if(focus==null&&lead&&lead.page!=null&&lead.page!==''){const k=items.reduce((b,x,i)=>(+x[1]<=+lead.page?i:b),-1);if(k>=0)focus=k;}
   const toc=items.length>1?`<select data-toc="${side}" aria-label="${esc(c.a)}'s divisions of this ${noun()}">${items.map((x,k)=>`<option value="${k}"${k===focus?' selected':''}${headTitle(x[0])}>${' '.repeat(Math.max(0,Math.min(3,x[2])-1))}${esc(headSplit(x[0]).en.slice(0,110))} · ${atw(slug)} ${esc(x[1])}</option>`).join('')}</select>`:'';
   const cur=items[focus!=null?focus:0]||items[0];
   const head=`<header class="ph"><div class="ph-row">${sourceSelect(side,cs,slug)}<a class="open" data-open="${side}" href="${read(slug,cur[1],cur[3])}">Open in the reader ↗</a></div>
@@ -2140,13 +2138,14 @@ async function paneWork(side,slug,focus){
     <h2>${esc(c.a||c.t)}${born(c)}</h2><p class="what">${workLine(c)} · ${esc(pp(c))}</p>${toc}</header>`;
   if(SHOWN[side]===key){host.querySelector('.ph').outerHTML=head;if(focus!=null)scrollToEl(side,document.getElementById(`${side}-i${focus}`),true);return;}
   SHOWN[side]=key;
-  host.innerHTML=`${head}<div class="scroll"><div class="pages"></div><div class="sk" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><p class="end" hidden></p></div>`;
+  host.innerHTML=`${head}<div class="scroll">${lead?lead.html:''}<div class="pages"></div><div class="sk" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><p class="end" hidden></p></div>`;
   // a division beyond the first fifty pages of a long place (the Salmanticenses' grace runs to a hundred and forty) is read from
   // its own page; the place's opening stays a click away
-  const fp=focus!=null?+items[focus][1]:c.from,start=fp>c.from+MAXP-6?Math.max(c.from,fp-1):c.from;
+  // with a lead the pages begin at its place, under it, so it stays in view; else a far division is read from its own page
+  const fp=focus!=null?+items[focus][1]:c.from,start=lead&&focus!=null?Math.max(c.from,fp-1):fp>c.from+MAXP-6?Math.max(c.from,fp-1):c.from;
   const pagesEl=host.querySelector('.pages'),last=Math.min(c.to,start+MAXP-1),lanes=LANE==='both'?['la','en']:[LANE];
-  if(start>c.from)pagesEl.insertAdjacentHTML('beforebegin',`<p class="end" style="border:0;margin:.6rem 0 0;padding:0">${esc(c.a)} begins this ${noun()} at p. ${esc(c.from)}. <a href="${read(slug,c.from,items[0][3])}">Read it from there in the reader ↗</a></p>`);
-  let drawn=0,landed=focus==null;host.dataset.moved='';
+  if(start>c.from)pagesEl.insertAdjacentHTML('beforebegin',`<p class="end begin" style="border:0;margin:.6rem 0 0;padding:0">${esc(c.a)} begins this ${noun()} at p. ${esc(c.from)}. <a href="${read(slug,c.from,items[0][3])}">Read it from there in the reader ↗</a></p>`);
+  let drawn=0,landed=focus==null||!!lead;host.dataset.moved='';
   // a Father in Migne or an EEBO book has no work folder (its meta.json is not there, so blocksOf finds no pages): it is read as the
   // Scripture page reads it (FRCommentaryText, commentary-pane.js, two columns a step in Migne); where that reader is not on the site,
   // the pane says so and links the reader at the page
@@ -2177,9 +2176,36 @@ async function paneWork(side,slug,focus){
   }
   if(token!==RUN[side])return;
   host.querySelector('.sk')?.remove();
-  const end=host.querySelector('.end');end.hidden=false;
+  const end=host.querySelector('.scroll>.end:not(.begin)');end.hidden=false;
   end.innerHTML=drawn<c.to?`${esc(c.a)} goes on to ${atw(slug)} ${esc(c.to)} on this ${noun()}. <a href="${read(slug,drawn+1)}">Read on in the reader from ${atw(slug)} ${esc(drawn+1)} ↗</a>`:`End of ${esc(c.a)} on this ${noun()}. <a href="${read(slug,c.to)}">Read on in the reader ↗</a>`;
   spy(side);
+}
+// WHAT THE WORK SAYS HERE (2026-10-22, owner: the reading beside "isnt immediately relevant"): a work read beside a problem in view
+// opens on the problem's own place in it (its argued row, its disputation at length: the heading, the volume, the page, the words); a
+// work read beside an aphorism in view opens under the note of Vitringa's on it that names the work. The reading lands on that page.
+function leadFor(slug){
+  const P=PL.props,cfg=PRB();
+  if(P&&cfg&&Array.isArray(P.problems)&&/^p\d+$/.test(S.art||'')){
+    const p=P.problems.find(x=>String(x.n)===S.art.slice(1));
+    if(!p)return null;
+    const hd=x=>{const h=String(x||'').split(/\s+\u2014\s+/).map(t=>tidyCaps(t.trim()));return /:$/.test(h[0])&&h[1]?`${h[0]} ${h[1]}`:h[0];};
+    const rows=[...(p.argued||[]).filter(e=>e&&e.slug===slug).map(e=>({page:e.page,head:hd(e.heading),vol:e.vol||'',quote:e.quote||'',kind:AKL[e.kind]||''})),
+      ...(p.moves||p.voetius||[]).filter(m=>m&&m.slug===slug).map(m=>({page:m.page,head:[m.disp,m.q].filter(Boolean).join(': '),vol:'',quote:m.quote||'',kind:''}))];
+    if(!rows.length)return null;
+    return {page:rows[0].page,html:`<section class="wk-lead tg"><p class="wk-k">On ${esc(cfg.one)} ${esc(p.n)}: ${esc(p.q||'')}</p>${rows.map(r=>`<p class="wk-h">${r.kind?`<span class="arg-k">${esc(r.kind)}</span> `:''}${esc(r.head||'')}${r.vol?` · ${esc(r.vol)}`:''}</p>${r.quote?qbHTML({quote:r.quote,w:slug,p:r.page}):r.page!=null&&r.page!==''?`<p class="ob-pg">${ccPg(slug,r.page)}</p>`:''}`).join('')}</section>`};
+  }
+  if(S.deck==='vitringa'&&/^a\d+$/.test(S.art||'')){
+    const n=S.art.slice(1),B=baseOf(),hits=[];
+    if(!B)return null;
+    for(const l of LANE==='la'?['la','en']:['en','la']){
+      for(const x of B[l]||[]){const o=x[3];if(!o||(String(o.aph)!==n&&String(o.cont)!==n))continue;for(const nt of o.notes||[])for(const k of nt[2]||[])if(k&&k[1]===slug&&fold(String(nt[1]||'')).includes(fold(k[0]||'')))hits.push({m:String(nt[0]||''),t:String(nt[1]||''),page:k[2]});}
+      if(hits.length)break;
+    }
+    if(!hits.length)return null;
+    const pg=hits.find(h=>h.page!=null&&h.page!=='');
+    return {page:pg?pg.page:null,html:`<section class="wk-lead tg"><p class="wk-k">Cited in Martin Vitringa’s note${hits.length>1?'s':''} on § ${esc(n)}</p>${hits.map(h=>`<div class="wk-nt"><p class="wk-h"><span class="vn-m">${esc(h.m)}</span>${h.page!=null&&h.page!==''?` ${ccPg(slug,h.page)}`:''}</p><p class="nt">${smallCaps(ital(esc(h.t)))}</p></div>`).join('')}</section>`};
+  }
+  return null;
 }
 // the contents follow the reading: the division last passed is the one shown, and "Open in the reader" opens it
 function spy(side){
