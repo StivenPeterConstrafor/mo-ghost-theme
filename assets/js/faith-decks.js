@@ -11,6 +11,15 @@ window.__FR_DECKS_TEXT__=window.__FR_DECKS_TEXT__==null?"":window.__FR_DECKS_TEX
 const BLOB=(window.__FR_BLOB_BASE__||"").replace(/\/$/,"");
 const VER=window.__FR_VER?(`?v=${window.__FR_VER}`):"";
 const $=s=>document.querySelector(s);
+// the height a host pins above the page (--sticky, in whatever length it is given: a rem here, on Mere Orthodoxy a calc() of the height
+// its header publishes), measured in pixels on a probe inside the page
+let STK=null;
+function stickyPx(){
+  const host=$('#desk')||document.body;
+  if(!STK){STK=document.createElement('i');STK.setAttribute('aria-hidden','true');STK.style.cssText='position:absolute;visibility:hidden;width:0;height:var(--sticky,.75rem);pointer-events:none';}
+  host.appendChild(STK);const h=STK.offsetHeight;STK.remove();
+  return h||12;
+}
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const ROMAN=n=>{const m=[[1000,'M'],[900,'CM'],[500,'D'],[400,'CD'],[100,'C'],[90,'XC'],[50,'L'],[40,'XL'],[10,'X'],[9,'IX'],[5,'V'],[4,'IV'],[1,'I']];let o='';for(const [v,s] of m)while(n>=v){o+=s;n-=v;}return o;};
 const PARTS=[['Ia','First Part'],['I-II','First Part of the Second'],['II-II','Second Part of the Second'],['III','Third Part']];
@@ -372,7 +381,7 @@ function scrollerOf(side){const s=PANE[side].querySelector('.scroll');return s&&
 function scrollToEl(side,el,flash){
   if(!el)return;const s=scrollerOf(side);
   if(s)s.scrollTop+=el.getBoundingClientRect().top-s.getBoundingClientRect().top-12;
-  else window.scrollTo({top:window.scrollY+el.getBoundingClientRect().top-(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sticky'))||12)*16-70});
+  else window.scrollTo({top:window.scrollY+el.getBoundingClientRect().top-stickyPx()-70});
   if(flash){const t=el.classList.contains('anc')?el.closest('.pg'):el;if(t){t.classList.remove('flash');void t.offsetWidth;t.classList.add('flash');}}
 }
 function sourceSelect(side,cs,current){
@@ -1206,6 +1215,26 @@ function rcvCardHTML(s,x){
 // THE BAND under the disputation's head: the opinions' holders by school (a share bar), Suárez's verdicts on the opinions (a tally in the
 // verdict colours), and the holders through time (the module's era strip: a holder once, at his birth year, in his school's colour, the
 // legend switching a school off, the readout naming a column)
+// AN ERA ON A NARROW STRIP (owner, at a phone's width: the era row "cut"): a name that does not fit its span takes its short form, and
+// is left out only when that does not fit either; fitted after the module lays the strip out, when the fonts come and as its width changes
+const ERA_SHORT={'Early patristic':'Early patr.','Later patristic':'Later patr.','Carolingian':'Carol.','High medieval':'High med.','Reformation':'Ref.','Seventeenth century':'17th c.','Later authors':'Later'};
+function eraFit(root){
+  (root||document).querySelectorAll('.pgraph .tg-eras>span').forEach(x=>{
+    const full=x.dataset.full||(x.dataset.full=x.getAttribute('title')||x.textContent);
+    x.textContent=full;x.style.visibility='';
+    if(!x.getClientRects().length)return;
+    if(x.scrollWidth>x.clientWidth+1&&ERA_SHORT[full])x.textContent=ERA_SHORT[full];
+    x.style.visibility=x.scrollWidth>x.clientWidth+1?'hidden':'';
+  });
+}
+let ERA_RO=null;
+function eraWatch(root){
+  eraFit(root);
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>eraFit(root));
+  if(typeof ResizeObserver!=='function')return;
+  if(!ERA_RO)ERA_RO=new ResizeObserver(es=>{requestAnimationFrame(()=>{for(const e of es)if(e.target.isConnected)eraFit(e.target);});});
+  (root||document).querySelectorAll('.pgraph .tg-era').forEach(f=>ERA_RO.observe(f));
+}
 function mGraphHTML(P){
   const g=P.graph||{};
   if(!TG)return '';
@@ -1222,7 +1251,7 @@ function mGraphHTML(P){
   }
   const R=PL.rec&&PL.rec.sections?Object.values(PL.rec.sections):[];
   for(const x of R)for(const r of (x&&x.reception)||[]){const nm=String(r.author||'').trim(),yy=Number(r.year);if(!nm||seen.has(nm))continue;seen.add(nm);if(yy>0&&yy<2100)items.push({y:yy,t:TGK[mschool(r.school)],name:nm});}
-  const marks=[{y:SUAREZ_Y,label:'Suárez',p:-1}].concat(items.slice().sort((a,b)=>(cnt.get(b.name)-cnt.get(a.name))||(a.y-b.y)).map((x,i)=>({y:x.y,label:x.name,p:i})));
+  const marks=[{y:SUAREZ_Y,label:'Suárez',p:-1}].concat(items.slice().sort((a,b)=>(cnt.get(b.name)-cnt.get(a.name))||(a.y-b.y)).map((x,i)=>({y:x.y,label:x.name,p:i}))).slice(0,matchMedia('(max-width:480px)').matches?4:undefined);
   const strip=items.length?TG.eraStrip(TG.bin(items,25),{unit:'author',units:'authors',labels:TGL,title:'The authors Suárez cites and those who received him, at their birth years',legendLabel:'Schools shown',marks}):'';
   const box=(h,body)=>`<div class="pg-c"><h3 class="pg-h">${h}</h3>${body}</div>`;
   return `<section class="pgraph pg-schools tg" aria-label="This disputation in figures">${parts.length?box('The opinions’ holders, by school',tgBar(parts,'The holders of the opinions in this disputation, by school')):''}`
@@ -1254,7 +1283,7 @@ async function paneSections(side){
   const sc=host.querySelector('.pscroll'),ctl=host.querySelector('.pctl');
   if(host._ro)host._ro.disconnect();
   if(sc&&ctl&&typeof ResizeObserver==='function'){host._ro=new ResizeObserver(()=>{sc.style.scrollPaddingTop=getComputedStyle(ctl).position==='sticky'?`${ctl.offsetHeight+8}px`:'';});host._ro.observe(ctl);}
-  if(TG){TG.mount(host);TG.layout(host);}
+  if(TG){TG.mount(host);TG.layout(host);eraWatch(host);}
   clampMore(host);
   applySections(side);
   accOpen(host,accKey());
@@ -1281,7 +1310,7 @@ async function fillCards(side){
   });
   applySections(side);
   markSel();
-  if(TG)TG.layout(host);
+  if(TG){TG.layout(host);eraWatch(host);}
   qbAuto(host);
   qbFullAll(host);
 }
@@ -1856,7 +1885,7 @@ async function paneDossier(side){
   if(!d){host.innerHTML=`<header class="ph"><div class="ph-row">${rmodeHTML()}</div></header><div class="scroll"><p class="note">Choose a ${S.deck==='metaphysics'?'section':PRB().one} on the left.</p></div>`;return;}
   host.innerHTML=`<header class="ph"><div class="ph-row">${rmodeHTML()}</div><p class="dos-ctx" aria-live="polite">${dosCtx(d)}</p></header><div class="scroll dos tg" tabindex="-1">${d.html}</div>`;
   host._mv=host._mv||[];
-  if(TG){TG.mount(host);TG.layout(host);}
+  if(TG){TG.mount(host);TG.layout(host);eraWatch(host);}
   qbAuto(host);
   qbFullAll(host);
   detailFocus(host.querySelector('.dos'));
@@ -2117,7 +2146,7 @@ const commentaryText=()=>CPT||(CPT=!CP_JS?Promise.resolve(null):window.FRComment
 // on a phone the panes take turns: a work opened from the list is shown from its top, not wherever the list had been scrolled to
 function keepInView(side){
   if(!isPhone())return;
-  const {top} = PANE[side].getBoundingClientRect(),st=(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sticky'))||.75)*16+52;
+  const {top} = PANE[side].getBoundingClientRect(),st=stickyPx()+52;
   if(top<0||top>innerHeight*.6)window.scrollTo({top:Math.max(0,window.scrollY+top-st)});
 }
 // A COMMENTATOR'S PLACE, page after page, with his divisions of it as the pane's contents
@@ -2211,7 +2240,7 @@ function leadFor(slug){
 function spy(side){
   const host=PANE[side],sel=host.querySelector('select[data-toc]'),open=host.querySelector('a[data-open]');
   const slug=(host.querySelector('select[data-src]')||{}).value;if(!sel||!slug)return;
-  const s=scrollerOf(side),top=s?s.getBoundingClientRect().top:((parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sticky'))||1)*16+60);
+  const s=scrollerOf(side),top=s?s.getBoundingClientRect().top:stickyPx()+60;
   let cur=null;for(const a of host.querySelectorAll('[data-item]')){if(a.getBoundingClientRect().top-top<=48)cur=a;else break;}
   if(!cur)return;
   const k=+cur.dataset.item.split('-i')[1];if(String(k)===sel.value)return;

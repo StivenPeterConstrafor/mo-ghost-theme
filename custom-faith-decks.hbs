@@ -908,9 +908,26 @@
 .tfr-tool .wk-nt+.wk-nt{margin-top:.6rem;padding-top:.5rem;border-top:1px solid var(--border)}
 .tfr-tool .bb-lead{margin:.7rem 0 .9rem;padding:.7rem .85rem;border:1px solid var(--border);border-radius:8px;background:var(--tint)}
 .tfr-tool .bb-k{margin:0;font:italic .9375rem/1.4 var(--font-display);color:var(--muted)}
+@media (max-width:980px){.tfr-tool .switch{position:static;top:auto;z-index:auto;margin:0 0 .75rem;padding:0;background:none}
+}
+.tfr-tool .ph h2,.tfr-tool .ph .what,.tfr-tool .ph .pbase{text-wrap:balance}
+@container (max-width:30rem){.tfr-tool .pgraph .tg-ax span.e2{display:block}
+}
+@media (max-width:480px){.tfr-tool .pgraph .tg-pf-tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.2rem .9rem}
+.tfr-tool .pgraph .tg-pf-tr>span{display:block;min-width:0;white-space:normal;padding-left:1.05rem;text-indent:-1.05rem}
+.tfr-tool .pgraph .tg-pf-tr .tg-sw{margin-right:.35rem}
+.tfr-tool .pgraph .tg-pf-tr .tg-ct{margin-left:.3rem}
+}
+@media (max-width:980px){.tfr-tool .row1 .acc-t:not([aria-expanded="true"]){padding-top:0;padding-bottom:0;margin:.45rem 0}
+}
 .tfr-tool{background:transparent}
 .tfr-tool .wrap{padding-top:1.2rem}
-.tfr-tool{--sticky:9rem}
+.tfr-tool{--sticky:calc(var(--mo-mast,61px) + var(--tfr-rail-h,46px) + .75rem)}
+body:has(>.site-header.is-hidden) .tfr-tool{--sticky:calc(var(--tfr-rail-h,46px) + .75rem)}
+@media (prefers-reduced-motion:no-preference){.tfr-tool .pane{transition:top .25s ease,height .25s ease}}
+.tfr-tool .desk{width:auto;max-width:none;margin:0;padding:0}
+.tfr-tool .bsheet .bb{padding-bottom:calc(2rem + 80px + env(safe-area-inset-bottom,0px))}
+@media (min-width:981px){.tfr-tool .scroll{padding-bottom:calc(2.5rem + 80px)}}
 </style>
 {{/contentFor}}
 {{!-- /the-faith-received/commentary-decks/: Commentary decks, as The Faith Received has it (tools/prdl_reader_prototype/decks.html), in this site's
@@ -955,4 +972,4 @@
 </div></main>
 <link rel="stylesheet" href="{{asset "css/port/work-hub.css"}}&amp;frv=0374a552e8452478"><script src="{{asset "js/port/page-window.js"}}&amp;frv=2023bacb69cf7ee4"></script>
 <link rel="stylesheet" href="{{asset "css/port/tradition-graphics.css"}}&amp;frv=cc8cf6f7c7831d99"><script src="{{asset "js/port/tradition-graphics.js"}}&amp;frv=3780efc0f7559ddf"></script>
-<script src="{{asset "js/faith-decks.js"}}&amp;frv=6cb7336461f815fc"></script>
+<script src="{{asset "js/faith-decks.js"}}&amp;frv=4b6e46302f22e47b"></script>
