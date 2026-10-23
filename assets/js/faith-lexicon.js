@@ -5,6 +5,7 @@
      terms/<id>.json            the headword, its forms and its senses; a sense is a gloss and the pages that define it
      history/<n>.json.gz        every work that defines a term, oldest author first
      redirects.json             an id merged into another entry
+   and, for the author names: v1/author_aliases.json and v1/bible/<shelf>/rooms/index.json, the rooms a name opens.
    Every string in these files is data. Each one goes through esc() before it is drawn, and a link is built from encodeURIComponent.
    The Define popover in the reader links here by #<term id>. A sense is #<term id>/<number>. The list state is ?l=<letter>, ?t=<tab>, ?q=<text>. */
 (() => {
@@ -12,9 +13,11 @@
   window.__FR_BLOB_BASE__ = window.__FR_BLOB_BASE__ || 'https://mo-tfr-library.mo-podcast-feed.workers.dev';
   window.__FR_READER_PATH__ = window.__FR_READER_PATH__ || '/the-faith-received/read/';
   window.__FR_LEXICON_PATH__ = window.__FR_LEXICON_PATH__ || '/the-faith-received/lexicon/';
+  window.__FR_AUTHOR_PATH__ = window.__FR_AUTHOR_PATH__ || '/the-faith-received/author/';
   const BLOB = String(window.__FR_BLOB_BASE__).replace(/\/$/, '');
   const READER = window.__FR_READER_PATH__;
   const PATH = window.__FR_LEXICON_PATH__;
+  const AUTHP = window.__FR_AUTHOR_PATH__;
   const TITLE = 'Lexicon | The Faith Received | Mere Orthodoxy';
   const $ = (s) => document.querySelector(s);
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -203,11 +206,51 @@
   }
 
   /* ── An entry ────────────────────────────────────────────────────────────────────────────────────────────────────── */
+  /* AN AUTHOR'S PAGE (2026-10-23, Ian: "for migne we name pelagius but clicking we get to uncertain author. fix this and elsewhere"). A name
+     opens the author's page when a room holds exactly that person (through the alias ledger, one hop, as the room builders fold), on the
+     work's own shelf when the work is a Patrologia's. An unnamed designation ("Uncertain author", "Anonymous") or a joint attribution opens
+     nothing: a room of that name, perhaps on another shelf, is not this work's author. The rule of The Faith Received's lexicon. */
+  const nk = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+  const UNNAMED = /^(?:unknown|anonymous|anonymus|various|uncertain|unattributed)\b/i;
+  const SHELF_OF = { pld: 'pl', pg: 'gf', po: 'po' };
+  const SHELVES = ['pl', 'gf', 'po', 'md', 'rc', 'rf', 'lu', 'ed', 'hl'];
+  let ROOMS = null;
+  let ALIAS = {};
+  const roomsP = Promise.all([get('/v1/author_aliases.json'), ...SHELVES.map((sh) => get(`/v1/bible/${sh}/rooms/index.json`))]).then(([al, ...xs]) => {
+    ALIAS = al.data || {};
+    const m = new Map();
+    xs.forEach((x, i) => ((x.data && x.data.authors) || []).forEach((r) => { const k = nk(r.a); if (!m.has(k)) m.set(k, []); m.get(k).push({ ...r, sh: SHELVES[i] }); }));
+    ROOMS = m;
+  });
+  function roomOf(name, w) {
+    if (!ROOMS || !name || UNNAMED.test(name) || name.includes(';')) return null;
+    const rs = ROOMS.get(nk(Object.hasOwn(ALIAS, name) ? ALIAS[name] : name));
+    if (!rs) return null;
+    const sh = SHELF_OF[String(w || '').split('-')[0]];
+    if (sh) return rs.find((r) => r.sh === sh) || null;
+    return rs.slice().sort((a, b) => (b.w || 0) - (a.w || 0))[0];
+  }
+  const roomHref = (r) => `${AUTHP}?a=${encodeURIComponent(nk(r.a))}`;
+  const nameHTML = (n, w) => {
+    const r = roomOf(n, w);
+    return r ? `<a class="lx-au" href="${esc(roomHref(r))}">${esc(n)}</a>` : `<span class="lx-au" data-w="${esc(w || '')}">${esc(n)}</span>`;
+  };
+  /* names drawn before the rooms arrived become links when they do */
+  function linkAuthors(root) {
+    if (!ROOMS || !root) return;
+    root.querySelectorAll('span.lx-au[data-w]').forEach((s) => {
+      const r = roomOf(s.textContent, s.dataset.w);
+      if (!r) return;
+      const a = document.createElement('a');
+      a.className = 'lx-au'; a.href = roomHref(r); a.textContent = s.textContent;
+      s.replaceWith(a);
+    });
+  }
   const SRC = 3;
   const SSTEP = 12;
   const STEP = 20;
   const srcRow = ([w, p, a, ti], j) => {
-    return `<li${j >= SRC ? ' hidden' : ''}><span class="lx-who">${a ? `<span class="lx-au">${esc(a)}</span>, ` : ''}${esc(ti || w)}</span><a class="lx-btn lx-open" href="${esc(read(w, p))}" aria-label="Open p. ${esc(p)} of ${esc(ti || w)}${esc(a ? ` by ${a}` : '')} in the reader">Open p. ${esc(p)}</a></li>`;
+    return `<li${j >= SRC ? ' hidden' : ''}><span class="lx-who">${a ? `${nameHTML(a, w)}, ` : ''}${esc(ti || w)}</span><a class="lx-btn lx-open" href="${esc(read(w, p))}" aria-label="Open p. ${esc(p)} of ${esc(ti || w)}${esc(a ? ` by ${a}` : '')} in the reader">Open p. ${esc(p)}</a></li>`;
   };
   function senseHTML(s, i, id) {
     const src = s.src || [];
@@ -241,7 +284,7 @@
     const s = c % 100 >= 11 && c % 100 <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' }[c % 10] || 'th');
     return `${c}${s} century`;
   };
-  const who = (a) => (a ? `<span class="lx-au">${esc(a[0] || 'Unknown author')}</span>${a[1] ? ` (${esc(a[1])})` : ''}` : '');
+  const who = (a, w) => (a ? `${nameHTML(a[0] || 'Unknown author', w)}${a[1] ? ` (${esc(a[1])})` : ''}` : '');
   /* the works draw forty at a time, as the page scrolls toward the end of the list, each century under its own head */
   const HSTEP = 40;
   function histRows(h, from, to, last) {
@@ -251,7 +294,7 @@
       const a = h.authors[r[2]] || [];
       const c = cent(a[2]);
       if (c !== lastC) { out += `<li class="lx-hc">${esc(c)}</li>`; lastC = c; }
-      out += `<li class="lx-hr"><p class="lx-hw2">${who(a)}${a.length ? ', ' : ''}<a href="${esc(read(r[0], r[3]))}">${esc(r[1] || r[0])}, p. ${esc(r[3])}</a>${r[5] > 1 ? ` (${nf(r[5])} pages)` : ''}</p><p>${esc(r[4])}</p></li>`;
+      out += `<li class="lx-hr"><p class="lx-hw2">${who(a, r[0])}${a.length ? ', ' : ''}<a href="${esc(read(r[0], r[3]))}">${esc(r[1] || r[0])}, p. ${esc(r[3])}</a>${r[5] > 1 ? ` (${nf(r[5])} pages)` : ''}</p><p>${esc(r[4])}</p></li>`;
     });
     return [out, lastC];
   }
@@ -269,6 +312,7 @@
     let drawn = Math.min(HSTEP, h.rows.length);
     const method = window.TFRMethod ? window.TFRMethod.html("<p>Each line is a one-line English summary made by machine. Open the page to read the author's own words.</p>") : '';
     box.innerHTML = `<h3 id="lx-hist-h">Every work that defines it <small>${nf(h.works)}</small></h3><p class="lx-hnote">${span}</p>${method}<ol class="lx-hlist">${html}</ol><div class="lx-sentinel" aria-hidden="true"></div>`;
+    roomsP.then(() => { if (seq === TSEQ) linkAuthors(box); });
     const ol = box.querySelector('.lx-hlist');
     const sentinel = box.querySelector('.lx-sentinel');
     if (IO) IO.disconnect();
@@ -333,6 +377,7 @@
       senses.length ? `<section aria-labelledby="lx-sen-h"><h3 id="lx-sen-h">Senses <small>${nf(senses.length)}</small></h3><ol class="lx-senses">${senses.slice(0, shown).map((s, i) => senseHTML(s, i, tid)).join('')}</ol>${moreBtn()}</section>` : '<p class="lx-note">This term has no sense recorded yet.</p>'
     }<section class="lx-hist" id="lx-hist"></section>`;
     S.rendered = tid;
+    roomsP.then(() => { if (seq === TSEQ) linkAuthors($('#lx-entry .lx-senses')); });
     const want = S.sense;
     box.onclick = (e) => {
       const sm = e.target.closest('#lx-smore');
