@@ -290,6 +290,44 @@
   const A = window.FRCommentaryAnchor;
   let pane, layout, observer;
 
+  // the key row's edges: faded where it runs on past the screen (is-runs, is-scrolled, is-end), never cut at its start
+  const keyEdges = (el) => {
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    el.classList.toggle('is-runs', max > 2);
+    el.classList.toggle('is-scrolled', el.scrollLeft > 2);
+    el.classList.toggle('is-end', max > 2 && el.scrollLeft >= max - 2);
+  };
+  // the chosen key in view in its row, when the row runs past the screen
+  const keyInView = () => {
+    const el = pane && pane.querySelector('.cp-keys'), on = el && el.querySelector('.cp-key[aria-pressed="true"]');
+    if (!el || wide.matches) return;
+    if (on) {
+      const a = el.getBoundingClientRect(), b = on.getBoundingClientRect();
+      if (b.left < a.left + 8 || b.right > a.right - 24) el.scrollLeft += b.left - a.left - 24;
+    }
+    keyEdges(el);
+  };
+  // a control the site floats at the left edge (its text-to-speech pill): where it lies over the sheet, the sheet's words start to its right
+  function clearEdge() {
+    if (!pane || wide.matches || SITE.name !== 'mo') return;
+    const r = pane.getBoundingClientRect();
+    let right = 0;
+    for (let y = Math.max(0, r.top + 4); y < Math.min(innerHeight, r.bottom); y += 20) {
+      for (const x of [4, 14, 26]) {
+        for (const el of document.elementsFromPoint(x, y)) {
+          if (el === pane || pane.contains(el)) continue;
+          let f = el;
+          while (f && f !== document.body && getComputedStyle(f).position !== 'fixed') f = f.parentElement;
+          if (!f || f === document.body || f.contains(pane) || f.closest('.fr-survey, header, .site-header')) continue;
+          const q = f.getBoundingClientRect();
+          if (q.left < 24 && q.width < 140) right = Math.max(right, q.right);
+        }
+      }
+    }
+    // 14px past it: the tint a note's words sit on reaches 10px into the margin (.cp-hit), and it stays clear too
+    pane.style.setProperty('--cp-clear-left', right ? `${Math.ceil(right + 14)}px` : '0px');
+  }
   function build() {
     layout = document.querySelector(SITE.layout);
     if (!layout || layout.querySelector('.cp-pane')) return !!layout;
@@ -342,6 +380,37 @@
     // row is sticky, so it stays in reach as the page scrolls; head() points it at the verse the rail is on.
     if (SITE.name === 'mo') tabs.insertAdjacentHTML('beforeend', '<a class="btn cp-desk" href="/the-faith-received/scripture/desk/">Verse Desk</a>');
     pane.prepend(tabs);
+    /* THE PHONE'S SHEET (2026-10-23, owner: "This is a mess do a design pass on mobile for this for MereO"). Under 900px the pane is a
+     * sheet over the text (commentary-pane.css): a grip at its top raises it to the full screen and lowers it again, by a tap or a drag;
+     * the key commentaries are one row that scrolls sideways, its edges fading where it runs on; and a control the site floats at the
+     * left edge of the screen (its text-to-speech pill) is kept clear of the sheet's words. The grip is drawn only on a phone. */
+    if (SITE.name === 'mo') {
+      pane.insertAdjacentHTML('afterbegin', '<button type="button" class="cp-grip" aria-expanded="false" aria-label="Raise the panel to the full screen"><span aria-hidden="true"></span></button>');
+      const grip = pane.querySelector('.cp-grip');
+      const raise = (up) => {
+        pane.classList.toggle('cp-full', up);
+        grip.setAttribute('aria-expanded', String(up));
+        grip.setAttribute('aria-label', up ? 'Lower the panel' : 'Raise the panel to the full screen');
+        setTimeout(clearEdge, 260);
+      };
+      let y0 = null, dragged = false;
+      grip.addEventListener('pointerdown', (e) => { y0 = e.clientY; dragged = false; if (grip.setPointerCapture) grip.setPointerCapture(e.pointerId); });
+      grip.addEventListener('pointermove', (e) => { if (y0 != null && Math.abs(e.clientY - y0) > 8) dragged = true; });
+      grip.addEventListener('pointerup', (e) => {
+        if (y0 == null) return;
+        const dy = e.clientY - y0; y0 = null;
+        if (dragged && dy < -24) raise(true); else if (dragged && dy > 24) raise(false);
+      });
+      grip.addEventListener('pointercancel', () => { y0 = null; });
+      grip.addEventListener('click', () => { if (dragged) { dragged = false; return; } raise(!pane.classList.contains('cp-full')); });
+      const keysEl = pane.querySelector('.cp-keys'), tabsEl = pane.querySelector(':scope > .cp-tabs');
+      keysEl.addEventListener('scroll', () => keyEdges(keysEl), { passive: true });
+      // the views' row fades at its edges the same way where it runs past the screen
+      tabsEl.addEventListener('scroll', () => keyEdges(tabsEl), { passive: true });
+      requestAnimationFrame(() => keyEdges(tabsEl));
+      addEventListener('resize', () => { keyEdges(keysEl); keyEdges(tabsEl); clearEdge(); }, { passive: true });
+      setTimeout(clearEdge, 1500); setTimeout(clearEdge, 5000);
+    }
     layout.addEventListener('click', (e) => {
       const b = e.target.closest('.cp-tabs [data-tab]'); if (b) return setTab(b.dataset.tab);
       const vb = e.target.closest('.cp-rec [data-cp-verse]'); if (vb) { e.preventDefault(); return select(+vb.dataset.cpVerse); }
@@ -429,7 +498,7 @@
   function select(v) {
     const b = SITE.pick(v), el = SITE.verseEl(v);
     S.pin = true;
-    if (el) el.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    if (el) el.scrollIntoView({ block: SITE.name === 'mo' && !wide.matches ? 'start' : 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     if (b) b.click(); else show(v, true);
   }
   // a commentary's note on the verse, from the Reception view: that commentary, at that note, in the Commentary view
@@ -591,6 +660,7 @@
     box.querySelector('.cp-cr-h').textContent = `Creeds, confessions and catechisms (${fmt(n)})`;
     const open = CF.open && (n > 3 || whole.length || papal.length);
     box.classList.toggle('is-open', !!open);
+    box.classList.toggle('is-empty', !n && !open);
     const btn = box.querySelector('.cp-cr-all');
     btn.hidden = !(n > 3 || whole.length);
     btn.textContent = open ? 'Show fewer' : n > 3 ? `Show all ${fmt(n)}` : n ? 'Show more' : `Show ${fmt(whole.length)} citing the chapter`;
@@ -732,6 +802,7 @@
   const isCur = (c) => !!(S.cur && (S.cur.slug === c.slug || setOf(S.cur) === setOf(c)));
   function markKeys() {
     pane.querySelectorAll('.cp-key').forEach((b) => { const c = S.list.find((x) => x.slug === b.dataset.slug); b.setAttribute('aria-pressed', String(!!c && isCur(c))); });
+    keyInView();
   }
   function fillList() {
     const w = where() || {};
@@ -757,6 +828,7 @@
     const btn = (c) => `<button type="button" class="cp-key" data-slug="${esc(c.slug)}" aria-pressed="${isCur(c)}" title="${esc(`${c.t}${volShort(c.vol) ? ` (${volShort(c.vol)})` : ''}, ${c.a}`)}">${esc(short(c.a))}</button>`;
     const row = (label, xs) => xs.length ? `<div class="cp-keys-row" role="group" aria-label="${esc(label)}"><span class="cp-keys-lab" aria-hidden="true">${esc(label)}</span>${xs.map(btn).join('')}</div>` : '';
     pane.querySelector('.cp-keys').innerHTML = head.length + tail.length < 2 ? '' : row(`On ${refName(w) === 'Psalm' ? 'the Psalms' : refName(w)}`, head) + row('Whole Bible', tail);
+    keyInView();
     if (listOpen()) renderDir();
   }
   /* THE DIRECTORY (10-21, owner: "need to be able to click into all chapter and whole bible commentaries seamlessly, and every should
@@ -1347,7 +1419,7 @@
     if (pick) {
       setTab('c', true); S.pin = true;
       choose(pick.slug, true);
-      const el = w.v && SITE.verseEl(w.v); if (el) el.scrollIntoView({ block: 'center', behavior: 'auto' });
+      const el = w.v && SITE.verseEl(w.v); if (el) el.scrollIntoView({ block: SITE.name === 'mo' && !wide.matches ? 'start' : 'center', behavior: 'auto' });
     } else choose(c ? c.slug : null);
     S.firstEl = document.querySelector(SITE.verses);
     watch();
