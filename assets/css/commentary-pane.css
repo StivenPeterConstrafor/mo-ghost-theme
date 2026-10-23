@@ -360,14 +360,12 @@ html.cp-site-mo .cp-body p { max-width: none; }
 @container cp-rail (min-width: 1040px) { html.cp-site-mo .cp-body { font-size: 18px; line-height: 1.7; } }
 @container cp-rail (min-width: 1200px) { html.cp-site-mo .cp-body { font-size: 20px; line-height: 1.75; } }
 
-/* ── The Verse Desk, always in reach (Ian, 2026-10-20) ── The last control in the tab row, a site button (.btn, hollow). The row
-   sticks under the masthead and the TFR rail while the rail scrolls, and its copy in the Citations panel sticks to the top of that
-   panel, so the Desk is one press away on every tab, at every verse, at any depth. */
+/* ── The Verse Desk (Ian, 2026-10-20) ── The last control in the tab row, a site button (.btn, hollow). On a desktop the row and its
+   clone in the Citations panel scroll away with the rail (Ian, 10-23: the stuck row let the list show above it). The phone's sheet
+   keeps its row pinned (the 899px rules above and below). */
 html.cp-site-mo .cp-tabs { align-items: center; }
-html.cp-site-mo .cp-pane > .cp-tabs { position: sticky; top: var(--sd-top, 0px); z-index: 2; margin: -18px -20px 16px; padding: 6px 20px 0; background: var(--cp-paper); transition: top 0.25s ease; }
-html.cp-site-mo .sd-side > .cp-tabs { position: sticky; top: 0; z-index: 2; background: var(--cp-paper); }
+html.cp-site-mo .cp-pane > .cp-tabs { margin: -18px -20px 16px; padding: 6px 20px 0; background: var(--cp-paper); }
 html.cp-site-mo .cp-tabs .cp-desk { flex: none; min-height: 36px; margin: 0 0 6px 12px; padding: 6px 14px; font-size: 14px; }
-@media (prefers-reduced-motion: reduce) { html.cp-site-mo .cp-pane > .cp-tabs { transition: none; } }
 @media (max-width: 899px) {
   /* the phone's sheet: the row is already pinned to the top of the sheet, so only the button is fitted to it */
   html.cp-site-mo .cp-pane > .cp-tabs { top: 0; margin: 0 -14px 6px; padding: 0 14px; }
