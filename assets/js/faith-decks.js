@@ -908,8 +908,24 @@ const AKIND=['selectae','system','disputation','commentary'];
 // its own heading at that page (its English half), the page with Preview; the rest counted
 const AKL={selectae:'Selectae',system:'System',disputation:'Disputation',commentary:'Commentary'};
 const argHead=h=>tidyCaps(String(h||'').split(/\s+\u2014\s+/)[0].trim());
+// HIS OWN DISPUTATION (2026-10-23; owner: "can we redesign how the select disputations interact with the syllabus", then "maybe the
+// select should be alongside the other sets but highlighted since voetius had a disputation on it"). A thesis or problem of the
+// Selectae placed under the problem it argues (props: an argued row with own:true, its disputation, its number, its verdict, how it
+// bears on the problem, his answer and distinction, his words) stands first among the places and is marked as his: the badge in
+// inverted ink, the row on the tint under a rule of ink, the thesis in full under its head.
+const OWNREL={argues:'argues this problem',distinguishes:'answers it by a distinction',states:'states the question'};
+function ownArgHTML(e){
+  const w=D.texts.works[e.slug]||[],v=MVV[e.verdict]||['','',''],pg=e.page!=null&&e.page!=='',n=String(e.n??'').trim().replace(/\.$/,''),kind=cap1(String(e.item_kind||'thesis'));
+  const label=!n?kind:/^(?:\d+|[IVXLCDM]+)[a-z]?$/i.test(n)?`${kind} ${n}`:n,disp=tidyCaps(String(e.disp||'').trim());
+  return `<li class="arg-own"${e.quote?` data-tg-pv-hl="${esc(String(e.quote).slice(0,400))}"`:''}><p class="arg-h"><span class="own-b">His own disputation</span> <b>${esc(e.author||w[0]||'')}</b>${disp?` \u00b7 <em>${esc(disp)}</em>`:''}${e.vol?` \u00b7 ${esc(e.vol)}`:''}</p>`
+    +`${pg?`<p class="pth-pg"><a href="${read(e.slug,e.page)}">p. ${esc(e.page)}</a> ${pvBtn(e.slug,e.page)}</p>`:''}`
+    +`<div class="own-t"><p class="mv-h">${v[0]?`<span class="seal sm s-${v[1]}" data-s="${v[0]}" aria-hidden="true"></span>`:''}<span class="mv-k">${esc(label)}</span>${v[2]?` <span class="mv-v">\u00b7 ${esc(v[2])}</span>`:''}${OWNREL[e.rel]?` <span class="mv-v">\u00b7 ${OWNREL[e.rel]}</span>`:''}</p>`
+    +`<p class="mv-q">${esc(argHead(e.heading))}</p>${e.answer?`<p class="mv-a">${esc(e.answer)}</p>`:''}${forkHTML(e.distinguo)}${advPairs(e.against)?`<p class="mv-adv">Against ${advPairs(e.against)}</p>`:''}</div>`
+    +`${e.quote?`<p class="pth-q">\u201c${esc(e.quote)}\u201d</p>`:''}</li>`;
+}
 function arguedHTML(list,more){
-  return `<ol class="pth-rows arg-rows">${list.map(e=>{const w=D.texts.works[e.slug]||[],pg=e.page!=null&&e.page!=='',who=e.author||w[0]||'',work=e.work||w[1]||'',hd=argHead(e.heading);
+  const rows=list.some(e=>e&&e.own)?[...list].sort((a,b)=>(b&&b.own?1:0)-(a&&a.own?1:0)):list;
+  return `<ol class="pth-rows arg-rows">${rows.map(e=>{if(e.own)return ownArgHTML(e);const w=D.texts.works[e.slug]||[],pg=e.page!=null&&e.page!=='',who=e.author||w[0]||'',work=e.work||w[1]||'',hd=argHead(e.heading);
     return `<li${e.quote?` data-tg-pv-hl="${esc(String(e.quote).slice(0,400))}"`:''}><p class="arg-h">${AKL[e.kind]?`<span class="arg-k">${AKL[e.kind]}</span> `:''}<b>${esc(who)}</b>${work?` · <em>${esc(work)}</em>`:''}${e.vol?` · ${esc(e.vol)}`:''}${hd?` · ${esc(hd)}`:''}</p>`
       +`${pg?`<p class="pth-pg"><a href="${read(e.slug,e.page)}">p. ${esc(e.page)}</a> ${pvBtn(e.slug,e.page)}</p>`:''}${e.quote?`<p class="pth-q">“${esc(e.quote)}”</p>`:''}</li>`;}).join('')}</ol>${Number(more)>0?`<p class="pth-more">+${fmtN(more)} more</p>`:''}`;
 }
@@ -924,6 +940,9 @@ function probRow(side,p,i,ctx){
   const [main,under]=LANE==='la'&&la?[[la,'la'],[en,'en']]:[[en,'en'],[la,'la']];
   const anti=adv&&Array.isArray(p.antithesis)&&p.antithesis.length&&String(p.against||'').trim()?advPairs(p.antithesis):'';
   const qpg=p.quote_page!=null&&p.quote_page!==''?p.quote_page:p.page,bid=`${side}-pb${esc(n)}`,links=argLinks(p);
+  // his own disputation among the places it is argued, or a Selectae disputation joined to the problem (the Reformed deck's moves are
+  // his): a marker beside the verdict, so the eye finds the problems he disputed (owner 10-23: 47 problems had it only as joined moves)
+  const own=(Array.isArray(p.argued)&&p.argued.some(e=>e&&e.own))||(S.deck==='reformed'&&mv.length>0);
   const part=(k,label,inner)=>`<section class="pr-sec" data-ps="${k}"><h4 class="pr-sh">${label}</h4>${inner}</section>`;
   const forks=fm.map(m=>`<p class="fk-h">As ${esc(moveWho(m).s||'the disputation')} distinguishes it in ${moveLink(m,ctx.host)}</p>${forkHTML(m.distinguo)}`).join('');
   const quoted=!!p.quote||obs.some(o=>o.quote)||mv.some(m=>m.quote);
@@ -939,7 +958,7 @@ function probRow(side,p,i,ctx){
     +`<p class="sec-links arg-links"><button type="button" class="res-of" data-osel="p${esc(n)}/" data-sheet="1">${ctx.authors.length?'Who agrees and where it is argued':'Where it is argued'}</button>${links?` · ${links}`:''}</p>`;
   return `<li class="pr ln1" id="${side}-p${esc(n)}" data-i="${i}"><div class="pr-m"><a class="pr-n" href="#${esc([S.deck,S.part,S.place,`p${n}`].join('/'))}" data-n="${esc(n)}" aria-label="${esc(cap1(cfg.one))} ${esc(n)}"></a>`
     +`${sl?`<span class="seal sm s-${sl[1]}" data-s="${esc(sl[0])}" aria-hidden="true"></span>`:''}</div>${ctx.authors.length?stripHTML(p,ctx.authors,cfg.who):''}`
-    +`<div class="pr-b"><p class="row1"><button type="button" class="acc-t" aria-expanded="false" aria-controls="${bid}" lang="${main[1]}">${main[0]}</button><span class="row-meta"><span class="row-v">${esc(verdict)}</span></span></p>`
+    +`<div class="pr-b"><p class="row1"><button type="button" class="acc-t" aria-expanded="false" aria-controls="${bid}" lang="${main[1]}">${main[0]}</button><span class="row-meta">${own?`<span class="own-m" title="${esc(`${cfg.who} disputed this ${cfg.one} in his Selectae disputationes`)}">Selectae</span>`:''}<span class="row-v">${esc(verdict)}</span></span></p>`
     +`<div class="acc-b" id="${bid}" hidden>${body}</div></div></li>`;
 }
 // THE GRAPH BAND under the title's head, in the module's share bar (tradition-graphics.css .tg-pf): the verdicts in the answer colours,
@@ -968,6 +987,47 @@ function graphHTML(P,cfg){
     +`${pa.length?box('Their adversaries, by party',tgBar(pa,'The adversaries named, by party')):''}`
     +`${agN?`<p class="pg-agree"><span class="pg-h">Beside ${esc(cfg.who)}</span> ${fmtN(ag.agrees)} agree, <span class="pg-dif">${fmtN(ag.differs)} differ</span>${Number(ag.silent)?`, ${fmtN(ag.silent)} silent`:''}</p>`:''}</section>`;
 }
+// THE SELECTAE ON A TITLE (2026-10-23, the owner's words above). Where a title's parked Selectae items have been placed (props: argued
+// rows with own:true under the problems they argue; the rest left in `more`, those that belong under another title with title_to), the
+// heap under the list gives way to one quiet fold, closed: the disputations of the Selectae on the title, one row each with its volume,
+// its pages and how many of its theses stand on this title, the problems it settles as links to their rows, and the theses that settle
+// none folded under it, each that belongs elsewhere naming the title. A file the pass has not touched keeps the heap as it was.
+const selOn=P=>!!P&&((P.problems||[]).some(p=>Array.isArray(p.argued)&&p.argued.some(e=>e&&e.own))||(P.more||[]).some(m=>m&&m.title_to));
+// a place of the deck by its key: its title as the Syllabus numbers it, its name, and its address
+function placeRef(k){
+  const g=G(),p=g&&(g._places||[]).find(x=>x[1]===String(k));
+  if(!p)return null;
+  const t=(/TIT(?:ULUS|\.)?\s*([IVXLC]+)/.exec(p[3]||'')||[])[1];
+  return {href:`#${[S.deck,p[0],p[1]].join('/')}`,name:`${t?`Title ${t}, `:''}${p[2]}`};
+}
+function selFoldHTML(P,host){
+  const cfg=PRB(),by=new Map(),vn=s=>Number((/-vol-(\d+)$/.exec(String(s||''))||[])[1])||0;
+  // a placed thesis whose disputation the build misnamed (disp_was) gathers the theses still parked under that name with it
+  const alias=new Map();for(const p of P.problems||[])for(const e of p.argued||[])if(e&&e.own&&e.disp_was&&e.disp)alias.set(String(e.disp_was).trim(),String(e.disp).trim());
+  const at=(d0,slug)=>{const d=String(d0||'').trim(),k=alias.get(d)||d;if(!by.has(k))by.set(k,{d:k,slug,vol:'',pages:[],own:new Set(),items:new Set(),kinds:{},rest:[]});return by.get(k);};
+  const count=(g,key,kind)=>{if(g.items.has(key))return;g.items.add(key);const k=kind==='problem'?'problem':'thesis';g.kinds[k]=(g.kinds[k]||0)+1;};
+  for(const p of P.problems||[])for(const e of p.argued||[]){
+    if(!e||!e.own)continue;
+    const g=at(e.disp,e.slug);g.own.add(String(p.n));count(g,[e.slug,e.page,e.n,e.heading].join('|'),e.item_kind);
+    if(e.vol&&!g.vol)g.vol=e.vol;if(Number.isFinite(+e.page))g.pages.push(+e.page);
+  }
+  for(const m of P.more||[]){if(!m)continue;const g=at(m.disp,m.slug);g.rest.push(m);count(g,[m.slug,m.page,m.n,m.q].join('|'),m.kind);if(Number.isFinite(+m.page))g.pages.push(+m.page);}
+  const lo=g=>(g.pages.length?Math.min(...g.pages):Infinity);
+  const ds=[...by.values()].sort((a,b)=>vn(a.slug)-vn(b.slug)||lo(a)-lo(b));
+  const kinds=g=>[['thesis','thesis','theses'],['problem','problem','problems']].filter(([k])=>g.kinds[k]).map(([k,o,m])=>`${g.kinds[k]} ${g.kinds[k]===1?o:m}`).join(' and ');
+  const to=m=>{const r=m.title_to?placeRef(m.title_to):null;return r?`<p class="sel-to">Belongs under <a href="${esc(r.href)}">${esc(r.name)}</a></p>`:'';};
+  const row=g=>{
+    const w=D.texts.works[g.slug]||[],vol=g.vol||w[2]||(vn(g.slug)?`Vol. ${vn(g.slug)}`:''),a=g.pages.length?Math.min(...g.pages):null,b=g.pages.length?Math.max(...g.pages):null;
+    const placed=g.items.size-g.rest.length,ns=[...g.own].sort((x,y)=>Number(x)-Number(y)),nf=g.rest.filter(m=>m.title_to&&placeRef(m.title_to)).length;
+    return `<li class="sel-d"><p class="sel-h">${esc(tidyCaps(g.d)||'A disputation')}</p>`
+      +`<p class="sel-at">${[vol,a!=null?(a===b?`p. ${a}`:`pp. ${a}–${b}`):'',`${kinds(g)} on this ${noun()}${placed?`, ${placed} placed`:''}`].filter(Boolean).map(esc).join(' · ')}</p>`
+      +`${ns.length?`<p class="sel-s">Settles ${ns.length===1?cfg.one:cfg.many} ${ns.map(n=>`<a href="#${esc([S.deck,S.part,S.place,`p${n}`].join('/'))}" data-psel="p${esc(n)}">${esc(n)}</a>`).join(', ')}</p>`:''}`
+      +`${g.rest.length?`<details class="sel-r"><summary>${g.rest.length} not placed${nf?`, ${nf===g.rest.length?(nf===1?'':'all '):`${nf} `}belonging under ${nf===1?`another ${noun()}`:`other ${nouns()}`}`:''}</summary><ol class="argued tg">${g.rest.map(m=>moveHTML(m,host).replace(/<\/li>$/,`${to(m)}</li>`)).join('')}</ol></details>`:''}</li>`;
+  };
+  return `<details class="pmore sel-fold"><summary><h3>Disputations of the Selectae on this ${noun()} <small>${ds.length}</small></h3></summary>`
+    +`<p class="sel-note">A thesis that argues a ${esc(cfg.one)} above stands with it, first among the places where it is argued. Those that argue none are folded here under their disputation.</p>`
+    +`<ol class="sel-ds">${ds.map(row).join('')}</ol></details>`;
+}
 // the verdicts pressed in the filter strip, kept from place to place; a find box narrows the list by the problems' words
 const PF=new Set();
 async function paneProblems(side){
@@ -995,7 +1055,7 @@ async function paneProblems(side){
     +`<div class="scroll pscroll${authors.length?' has-strip':''}">${ps.some(p=>!(p.moves||p.voetius||[]).length&&!(Array.isArray(p.argued)&&p.argued.length))?`<p class="pr-where">Where these ${cfg.many} are argued: <button type="button" class="res-of" data-gob>see the ${esc(GRID[S.deck].head.toLowerCase())} beside this ${noun()}</button></p>`:''}${graphHTML(P,cfg)}<div class="pctl">${strip?`<div class="pfilter" role="group" aria-label="Show the ${cfg.many} by their verdict">${strip}</div>`:''}`
     +`${head}</div>`
     +`${groups.map(g=>`<section class="pgrp">${g.ch?`<h3 class="pchap">${esc(g.ch)}</h3>`:''}<ol class="probs acc">${g.rows.join('')}</ol></section>`).join('')}<p class="note pnone" hidden>None of the ${cfg.many} in this ${noun()} match.</p>`
-    +`${more.length?`<details class="pmore"><summary><h3>${esc(cfg.more)} <small>${more.length}</small></h3></summary><ol class="argued tg">${more.map(m=>moveHTML(m,host)).join('')}</ol></details>`:''}`
+    +`${selOn(P)?selFoldHTML(P,host):more.length?`<details class="pmore"><summary><h3>${esc(cfg.more)} <small>${more.length}</small></h3></summary><ol class="argued tg">${more.map(m=>moveHTML(m,host)).join('')}</ol></details>`:''}`
     +`${P.slug&&to!=null?`<p class="end"><a href="${read(P.slug,to)}">Read on in the reader ↗</a></p>`:''}</div>`;
   // what the browser scrolls into view itself (a focused fold, a found word) clears the filter strip that stays at the pane's top
   const sc=host.querySelector('.pscroll'),ctl=host.querySelector('.pctl');
@@ -1843,7 +1903,7 @@ function probRecBody(p,ag){
   const KC={selectae:'var(--fg)',system:'color-mix(in srgb,var(--fg) 68%,var(--card-bg))',disputation:'color-mix(in srgb,var(--fg) 42%,var(--card-bg))',commentary:'color-mix(in srgb,var(--fg) 22%,var(--card-bg))'};
   const counts=ag.length?`${TG?`<div class="pgraph tg rec-kinds">${tgBar([...kinds].map(([k,n])=>({l:AKL[k]||k,n,c:KC[k]||'var(--muted)'})),'The places by kind')}</div>`:''}<p class="rec-sub">By author: ${[...auth].map(([a,n])=>`${esc(surnameOf(a)||a)} <span class="cc-ct">${n}</span>`).join(', ')}</p>`:'';
   return `<section class="rec" aria-labelledby="rec-h"><h3 class="rec-hh" id="rec-h">Reception</h3>${who}`
-    +`${ag.length?`<h4>Argued in ${esc(cfg.systems||'the systems')} <span class="cc-ct">${fmtN(ag.length+agMore)}</span></h4>${counts}<div class="f1-set">${AKIND.concat('other').filter(k=>ag.some(e=>(AKIND.includes(e.kind)?e.kind:'other')===k)).map((k,ki)=>{const list=ag.filter(e=>(AKIND.includes(e.kind)?e.kind:'other')===k);return fold1(`ag-${p.n}`,`<span class="f1-k">${AKL[k]||'Other'}</span> <span class="cc-ct">${list.length}</span>${peek(list.map(e=>surnameOf(e.author||'')||e.author))}`,`<div class="pths tg">${arguedHTML(list,0)}</div>`,{open:ki===0});}).join('')}</div>${agMore?`<p class="pth-more">+${fmtN(agMore)} more</p>`:''}`:''}`
+    +`${ag.length?`<h4>Argued in ${esc(cfg.systems||'the systems')} <span class="cc-ct">${fmtN(ag.length+agMore)}</span></h4>${counts}<div class="f1-set">${AKIND.concat('other').filter(k=>ag.some(e=>(AKIND.includes(e.kind)?e.kind:'other')===k)).map((k,ki)=>{const list=ag.filter(e=>(AKIND.includes(e.kind)?e.kind:'other')===k);return fold1(`ag-${p.n}`,`<span class="f1-k">${AKL[k]||'Other'}</span> <span class="cc-ct">${list.length}</span>${peek(list.map(e=>surnameOf(e.author||'')||e.author))}`,`<div class="pths tg">${arguedHTML(list.slice(0,8),0)}${list.length>8?`<details class="ag-rest"><summary>Show the other ${fmtN(list.length-8)}</summary>${arguedHTML(list.slice(8),0)}</details>`:''}</div>`,{open:ki===0});}).join('')}</div>${agMore?`<p class="pth-more">+${fmtN(agMore)} more</p>`:''}`:''}`
     +`${links?`<p class="sec-links arg-links">${links}</p>`:''}${!ag.length?`<p class="rec-note">Where else it is argued: <button type="button" class="res-of" data-rm="works">the ${esc(GRID[S.deck].head.toLowerCase())} beside this ${noun()}</button>.</p>`:''}</section>`;
 }
 // ── the dossier of what is chosen: its title, its column, and what to bring into view in it
@@ -2098,6 +2158,9 @@ document.addEventListener('click',e=>{
   if(os&&side==='a'){const [a,b]=os.dataset.osel.split('/');selectDos(a,b||null,os,{sheet:true,to:os.dataset.to||null,ob:os.dataset.ob!=null?os.dataset.ob:null});return;}
   const as=e.target.closest('[data-asel]');
   if(as&&side==='a'){selectDos(as.dataset.asel,null,as,{sheet:true});return;}
+  // a problem a disputation of the Selectae settles: its row opened and brought into view
+  const ps=e.target.closest('a[data-psel]');
+  if(ps&&plain&&side==='a'){e.preventDefault();selectDos(ps.dataset.psel,null,ps,{sheet:false,reveal:true});return;}
   const pw=e.target.closest('a.pg[data-pw]');
   if(pw&&plain&&side==='a'){e.preventDefault();const [sl,pg]=pw.dataset.pw.split('|'),w=D.texts.works[sl]||[],hl=((pw.closest('[data-tg-pv-hl]')||{}).dataset||{}).tgPvHl||'';besideOpen([pw.textContent.trim(),sl,pg,w[1]||'',w[0]||''],pw,hl);return;}
   const hs=e.target.closest('a[data-hsel]');

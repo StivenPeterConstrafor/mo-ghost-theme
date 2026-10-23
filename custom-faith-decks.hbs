@@ -465,6 +465,10 @@
 .tfr-tool .sec-lk{font-weight:600}
 .tfr-tool .pr-where{margin:.7rem 0 .1rem;font:.875rem/1.6 var(--sans);color:var(--muted)}
 .tfr-tool .pth-more{margin:.4rem 0 0;font:.8125rem/1.5 var(--sans);color:var(--muted)}
+.tfr-tool .ag-rest{margin:.5rem 0 0}
+.tfr-tool .ag-rest>summary{cursor:pointer;list-style:none;font:.8125rem/1.5 var(--sans);color:var(--muted);text-decoration:underline;text-underline-offset:.15em}
+.tfr-tool .ag-rest>summary::-webkit-details-marker{display:none}
+.tfr-tool .ag-rest[open]>summary{margin-bottom:.5rem}
 @container (max-width:40rem){.tfr-tool .pth-rows>li{grid-template-columns:minmax(0,1fr)}
 .tfr-tool .pth-who small{display:inline}
 .tfr-tool .pth-who small::before{content:" · "}
@@ -622,6 +626,30 @@
 .tfr-tool .arg-rows>li{grid-template-columns:minmax(0,1fr) auto}
 .tfr-tool .arg-rows .pth-q{grid-column:1/-1;margin:.1rem 0 0 1.1rem;font:italic .9375rem/1.55 var(--font-body)}
 .tfr-tool .arg-links{margin:.5rem 0 0}
+.tfr-tool .arg-rows>li.arg-own,.tfr-tool .arg-rows>li.arg-own:first-child{margin:0 0 .35rem;padding:.7rem .8rem .8rem;border-top:1px solid var(--fg);border-radius:0 0 6px 6px;background:var(--tint)}
+.tfr-tool .arg-rows>li.arg-own+li:not(.arg-own){border-top-color:var(--border)}
+.tfr-tool .own-b{display:inline-block;margin-right:.3rem;padding:0 .5rem;border-radius:999px;background:var(--fg);color:var(--bg);font:600 .75rem/1.6 var(--sans);letter-spacing:.01em;white-space:nowrap;vertical-align:.08em}
+.tfr-tool .own-t{grid-column:1/-1;min-width:0;margin:.35rem 0 0}
+.tfr-tool .own-t .mv-h .seal{margin-right:.45rem;vertical-align:-.25rem}
+.tfr-tool .own-t .fork{margin:.5rem 0 0 .9rem}
+.tfr-tool .own-m{display:inline-block;padding:0 .42rem;border-radius:999px;background:var(--fg);color:var(--bg);font:600 .6875rem/1.55 var(--sans);letter-spacing:.02em}
+.tfr-tool .sel-note{max-width:68ch;margin:.7rem 0 0;font:.875rem/1.55 var(--sans);color:var(--muted);text-wrap:pretty}
+.tfr-tool .sel-ds{list-style:none;margin:.5rem 0 0;padding:0;max-width:68ch}
+.tfr-tool .sel-d{padding:.65rem 0 .7rem;border-top:1px solid var(--border)}
+.tfr-tool .sel-h{margin:0;font:500 1.0625rem/1.4 var(--font-display);text-wrap:balance}
+.tfr-tool .sel-at{margin:.15rem 0 0;font:.8125rem/1.6 var(--sans);color:var(--muted);font-variant-numeric:tabular-nums}
+.tfr-tool .sel-s{margin:.2rem 0 0;font:.875rem/1.7 var(--sans);color:var(--fg)}
+.tfr-tool .sel-s a{color:var(--fg);text-underline-offset:3px;font-variant-numeric:tabular-nums}
+.tfr-tool .sel-r{margin:.3rem 0 0}
+.tfr-tool .sel-r>summary{display:inline-flex;align-items:center;gap:.4rem;min-height:2rem;cursor:pointer;list-style:none;font:600 .8125rem/1.4 var(--sans);color:var(--muted)}
+.tfr-tool .sel-r>summary::-webkit-details-marker{display:none}
+.tfr-tool .sel-r>summary::after{content:"";width:.34rem;height:.34rem;border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:rotate(-45deg)}
+.tfr-tool .sel-r[open]>summary::after{transform:rotate(45deg)}
+.tfr-tool .sel-r>summary:hover{color:var(--fg)}
+.tfr-tool .sel-r>.argued{margin:.35rem 0 .2rem}
+.tfr-tool .sel-to{margin:.5rem 0 0;font:.8125rem/1.6 var(--sans);color:var(--muted)}
+.tfr-tool .sel-to a{color:var(--fg);text-underline-offset:3px}
+.tfr-tool :is(.sel-s a,.sel-to a,.sel-r>summary):focus-visible{outline:2px solid var(--fg);outline-offset:2px}
 .tfr-tool .rec-kinds{margin:.2rem 0 0}
 .tfr-tool .dl-more{display:none}
 .tfr-tool .wrap :is(a,button,select,summary){touch-action:manipulation;-webkit-tap-highlight-color:color-mix(in srgb,var(--fg) 10%,transparent)}
@@ -977,4 +1005,4 @@ body:has(>.site-header.is-hidden) .tfr-tool{--sticky:calc(var(--tfr-rail-h,46px)
 <link rel="stylesheet" href="{{asset "css/port/tradition-graphics.css"}}&amp;frv=cc8cf6f7c7831d99"><script src="{{asset "js/port/tradition-graphics.js"}}&amp;frv=3780efc0f7559ddf"></script>
 <script src="{{asset "js/page/commentary-pages.js"}}&amp;frv=9c286408d1cfdaf8"></script>
 <script src="{{asset "js/faith-decks-desk.js"}}&amp;frv=4efc7b6db6ad14c7"></script>
-<script src="{{asset "js/faith-decks.js"}}&amp;frv=66fc719586e57417"></script>
+<script src="{{asset "js/faith-decks.js"}}&amp;frv=49352a788ce8c07b"></script>
