@@ -935,7 +935,7 @@ const argLinks=p=>[p.atlas?`<a href="${ATLASP}#${encodeURIComponent(p.atlas)}">A
 // its adversaries and its page, the answer, the question stated with its words, the objections it answers with theirs, its distinction;
 // then, folded, the disputations that argue it at length in their own words
 function probRow(side,p,i,ctx){
-  const cfg=PRB(),sl=sealOf(p),verdict=p.verdict||ctx.marks[p.mark]||'',mv=p.moves||p.voetius||[],fm=mv.filter(m=>branches(m).length>1),adv=advOf(p,ctx),n=String(p.n??i+1),obs=Array.isArray(p.objections)?p.objections:[];
+  const cfg=PRB(),sl=sealOf(p),verdict=p.verdict||ctx.marks[p.mark]||'',mv=(Array.isArray(p.moves)&&p.moves.length?p.moves:Array.isArray(p.voetius)&&p.voetius.length?p.voetius:[]),fm=mv.filter(m=>branches(m).length>1),adv=advOf(p,ctx),n=String(p.n??i+1),obs=Array.isArray(p.objections)?p.objections:[];
   const la=p.la?`${esc(p.la)}${p.mark_la?` <span class="pr-mk">${esc(p.mark_la)}</span>`:''}`:'',en=esc(p.q||'');
   const [main,under]=LANE==='la'&&la?[[la,'la'],[en,'en']]:[[en,'en'],[la,'la']];
   const anti=adv&&Array.isArray(p.antithesis)&&p.antithesis.length&&String(p.against||'').trim()?advPairs(p.antithesis):'';
@@ -992,7 +992,9 @@ function graphHTML(P,cfg){
 // heap under the list gives way to one quiet fold, closed: the disputations of the Selectae on the title, one row each with its volume,
 // its pages and how many of its theses stand on this title, the problems it settles as links to their rows, and the theses that settle
 // none folded under it, each that belongs elsewhere naming the title. A file the pass has not touched keeps the heap as it was.
-const selOn=P=>!!P&&((P.problems||[]).some(p=>Array.isArray(p.argued)&&p.argued.some(e=>e&&e.own))||(P.more||[]).some(m=>m&&m.title_to));
+// (10-23 evening: the whole Reformed deck is through the pass, so every Reformed title with parked items shows the fold, own rows or not;
+// 8.2, 9.2, 9.3 and 10.4 had parked items and no own rows and kept the heap)
+const selOn=P=>!!P&&((P.problems||[]).some(p=>Array.isArray(p.argued)&&p.argued.some(e=>e&&e.own))||(S.deck==='reformed'&&(P.more||[]).some(m=>m&&(m.disp||m.title_to||m.title_from))));
 // a place of the deck by its key: its title as the Syllabus numbers it, its name, and its address
 function placeRef(k){
   const g=G(),p=g&&(g._places||[]).find(x=>x[1]===String(k));
@@ -1015,7 +1017,9 @@ function selFoldHTML(P,host){
   const lo=g=>(g.pages.length?Math.min(...g.pages):Infinity);
   const ds=[...by.values()].sort((a,b)=>vn(a.slug)-vn(b.slug)||lo(a)-lo(b));
   const kinds=g=>[['thesis','thesis','theses'],['problem','problem','problems']].filter(([k])=>g.kinds[k]).map(([k,o,m])=>`${g.kinds[k]} ${g.kinds[k]===1?o:m}`).join(' and ');
-  const to=m=>{const r=m.title_to?placeRef(m.title_to):null;return r?`<p class="sel-to">Belongs under <a href="${esc(r.href)}">${esc(r.name)}</a></p>`:'';};
+  // an item moved here from another title says where it was filed (title_from); one that belongs elsewhere says where (title_to)
+  const to=m=>{const r=m.title_to?placeRef(m.title_to):null,f=m.title_from?placeRef(m.title_from):null;
+    return `${f?`<p class="sel-to">From <a href="${esc(f.href)}">${esc(f.name)}</a></p>`:''}${r?`<p class="sel-to">Belongs under <a href="${esc(r.href)}">${esc(r.name)}</a></p>`:''}`;};
   const row=g=>{
     const w=D.texts.works[g.slug]||[],vol=g.vol||w[2]||(vn(g.slug)?`Vol. ${vn(g.slug)}`:''),a=g.pages.length?Math.min(...g.pages):null,b=g.pages.length?Math.max(...g.pages):null;
     const placed=g.items.size-g.rest.length,ns=[...g.own].sort((x,y)=>Number(x)-Number(y)),nf=g.rest.filter(m=>m.title_to&&placeRef(m.title_to)).length;
