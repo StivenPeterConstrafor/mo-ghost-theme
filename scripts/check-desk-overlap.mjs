@@ -91,8 +91,9 @@ if (args.includes("--serve")) { console.log(`serving the harness at ${base}/topi
 // ── Headless Chrome over the DevTools protocol ─────────────────
 const profile = mkdtempSync(path.join(tmpdir(), "desk-overlap-"));
 const chrome = spawn(chromePath, ["--headless=new", "--disable-gpu", "--no-first-run", "--hide-scrollbars", `--user-data-dir=${profile}`, "--remote-debugging-port=0", "about:blank"], { stdio: "ignore" });
-const cleanup = () => { try { chrome.kill(); } catch (_) { /* gone */ } server.close(); try { rmSync(profile, { recursive: true, force: true }); } catch (_) { /* busy */ } };
+const cleanup = () => { try { chrome.kill("SIGKILL"); } catch (_) { /* gone */ } server.close(); try { rmSync(profile, { recursive: true, force: true }); } catch (_) { /* busy */ } };
 process.on("exit", cleanup);
+for (const sig of ["SIGINT", "SIGTERM"]) process.on(sig, () => process.exit(130));
 let port = 0;
 for (let i = 0; i < 100 && !port; i += 1) {
   await new Promise((res) => setTimeout(res, 150));
