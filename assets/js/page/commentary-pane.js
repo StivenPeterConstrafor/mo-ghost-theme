@@ -1235,6 +1235,9 @@
       // (10-22) EEBO is the module's (commentary-pages.js exports it there), not the loader's: PG.EEBO was undefined and threw here
       if (!bodyEl.textContent.trim()) bodyEl.innerHTML = `<p class="cp-empty">${window.FRCommentaryPages.EEBO.test(cur.slug) ? 'Opening the book (a large file, loaded once)…' : 'Opening the page…'}</p>`;
     }
+    // an EEBO book with repeating page numbers: the chapter's place first, so the pages read are the right part's
+    await eeboCursor(cur, w.ch);
+    if (tok !== S.token) return;
     try {
       if (t.how === 'collected') {
         const ns = [...new Set(t.items.map((x) => +x[1]))];
