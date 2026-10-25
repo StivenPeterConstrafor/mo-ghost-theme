@@ -276,6 +276,22 @@
   // from PG left both undefined, so every commentary page threw in show() and the catch below reported "could not be loaded")
   const { page } = PG;
   const { stride, paragraphs } = window.FRCommentaryPages;
+  /* THE PLACE OF A CHAPTER IN A BOOK WITH REPEATING PAGE NUMBERS (10-25): the map's anchors for the work on this book, taken in
+   * chapter order, each at the first occurrence of its printed number at or after the one before (greedy, monotonic); the cursor
+   * for chapter ch is the occurrence its anchor resolved to, kept in PG.eeboCur[slug] for every page read of that work until
+   * another chapter is opened. */
+  async function eeboCursor(c, ch) {
+    if (!c || !window.FRCommentaryPages.EEBO.test(c.slug)) return null;
+    const d = await PG.eebo(c.slug).catch(() => null);
+    if (!d || !d.repeats) { delete PG.eeboCur[c.slug]; return null; }
+    let cur = 0;
+    for (const k of Object.keys(c.an || {}).map(Number).filter((x) => x > 0 && x <= Number(ch)).sort((a, b) => a - b)) {
+      const is = d.all.get(String(c.an[k])) || []; const i = is.find((x) => x >= cur);
+      if (i != null) cur = i;
+    }
+    PG.eeboCur[c.slug] = cur;
+    return cur;
+  }
   // a verse's note opens its paragraph: "12. PROPTEREA…", "Vers. 12.", "V. 12", "Verse 12."
   const noteRx = (v) => new RegExp(`^(?:ver(?:s(?:e|us)?)?\\.?\\s*|v\\.\\s*)?\\(?${v}\\b\\s*[.:,)\\]]`, 'i');
 
@@ -1100,6 +1116,7 @@
     const w = where(), v = dirVerse() || 1, c = volumeFor(S.list.find((x) => x.slug === slug), v);
     if (!c || !w) return '';
     slug = c.slug;
+    await eeboCursor(c, w.ch);
     const name = refName(w);
     let t = quickTargetOf(c, v);
     if (t && t.how === 'book') { await headPage(c, w.book, w.ch); t = quickTargetOf(c, v); }
