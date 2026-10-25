@@ -69,12 +69,20 @@
       .replace(/<span class="pb" data-n="(\d+)"><\/span>/g, (m, n) => `\n\uE000${n}\uE000\n`)
       .replace(/<\/(?:p|h\d|div|li|blockquote|tr)>|<br\s*\/?>/gi, '\n')
       .replace(/<[^>]+>/g, '');
+    // EVERY OCCURRENCE OF A PAGE NUMBER (10-25): a book whose paginations restart (Gouge's four parts, Trapp's volumes, the
+    // Westminster Annotations' misprinted leaves) prints the same number more than once; each printed page is one occurrence in
+    // document order (pages.occ), pages.all lists each number's occurrences, pages.repeats says whether any repeats; the Map
+    // itself keeps the first occurrence under each number, as before
+    const occ = [], all = new Map();
+    let o = { n: '0', lines: [] }; occ.push(o); all.set('0', [0]);
     for (const line of decode(flat).split('\n')) {
       const mark = /^\uE000(\d+)\uE000$/.exec(line);
-      if (mark) { cur = mark[1]; continue; }
+      if (mark) { o = { n: mark[1], lines: [] }; occ.push(o); if (!all.has(mark[1])) all.set(mark[1], []); all.get(mark[1]).push(occ.length - 1); continue; }
       const t = line.replace(/\s+/g, ' ').trim();
-      if (t) { if (!pages.has(cur)) pages.set(cur, []); pages.get(cur).push(t); }
+      if (t) o.lines.push(t);
     }
+    for (const [n, is] of all) if (!pages.has(n)) pages.set(n, occ[is[0]].lines);
+    pages.occ = occ; pages.all = all; pages.repeats = [...all.values()].some((is) => is.length > 1);
     return pages;
   }
 
@@ -132,8 +140,10 @@
       const data = await env.json(`${base}/eebo/${id}.json.gz`);
       const pages = eeboPageMap(data);
       const nums = [...pages.keys()].map(Number).filter((n) => n > 0);
-      return { pages, last: nums.length ? Math.max(...nums) : 0, meta: data.meta || {} };
+      return { pages, occ: pages.occ, all: pages.all, repeats: pages.repeats, last: nums.length ? Math.max(...nums) : 0, meta: data.meta || {} };
     });
+    // the place a commentary was opened at in a book with repeating page numbers: {slug: occurrence index}, set by the pane
+    const eeboCur = {};
 
     // {meta, p: {n, en, la} | null, last}
     async function page(slug, n) {
@@ -149,8 +159,12 @@
       }
       if (EEBO.test(slug)) {
         const d = await eebo(slug);
-        const lines = d.pages.get(String(n));
-        return { meta: d.meta, p: lines && lines.length ? { n, en: lines.join('\n'), la: '' } : null, last: d.last };
+        // a repeated page number is read at the occurrence at or after the chapter's place (the pane sets eeboCur when it opens a
+        // commentary on a chapter); a book without repeats, or no place known, reads its first
+        const at = eeboCur[slug];
+        let lines = d.pages.get(String(n)), k = 0;
+        if (d.repeats && at != null) { const is = d.all.get(String(n)) || []; const i = is.find((x) => x >= at); if (i != null) { lines = d.occ[i].lines; k = is.indexOf(i); } }
+        return { meta: d.meta, p: lines && lines.length ? { n, en: lines.join('\n'), la: '' } : null, last: d.last, occ: k + 1 };
       }
       const meta = await env.json(`${base}/v1/works/${slug}/meta.json`);
       // the last page the work HAS: the shards run past n_pages where front matter is appended after the text (the WA volumes; 10-25)
@@ -204,6 +218,7 @@
         // its tradition: the shelf, or for the Reformed, Lutheran and Roman Catholic the map's tradition (10-20)
         c.sh = c.sh || (e.sh === 'x' ? (X_SHELF[e.tr] || 'x') : e.sh);
         c.k = c.k || e.k; c.cov = Math.max(c.cov || 0, Object.keys(e.an || {}).length || ((Number(e.c2) || 0) - (Number(e.c1) || 0) + 1));
+        c.an = Object.assign(c.an || {}, e.an || {});   // every chapter's anchor: the pane's eeboCursor walks them in order
         if (e.an && e.an[ch] != null) { c.open = e.an[ch]; if (e.an[String(+ch + 1)] != null) c.close = e.an[String(+ch + 1)]; }
       }
       for (const [slug, w] of Object.entries((ov && ov.works) || {})) if (w.sigla) sigla[slug] = w.sigla;
@@ -217,7 +232,7 @@
       return { works: [...by.values()].filter((c) => Object.keys(c.notes).length || c.open != null), meta, sigla, nv: ((file && file.verses) || []).length };
     }
 
-    return { page, listWorks, canonCols, teiPages, eebo };
+    return { page, listWorks, canonCols, teiPages, eebo, eeboCur };
   }
 
   return { CANON, EEBO, stride, paragraphs, scanTei, eeboPageMap, createPages, decode };
