@@ -200,7 +200,8 @@
         return { p: lines && lines.length ? { n, en: lines.join("\n"), la: "" } : null, last: d.last, src: "" };
       }
       const meta = await D.json(`${D.base}/v1/works/${slug}/meta.json`);
-      const last = meta.n_pages || (meta.shards && meta.shards.length && meta.shards[meta.shards.length - 1].to);
+      // the last page the work HAS (the shards run past n_pages where front matter is appended after the text; 10-25)
+      const last = Math.max(meta.n_pages || 0, (meta.shards && meta.shards.length && meta.shards[meta.shards.length - 1].to) || 0) || undefined;
       const src = SRC_NAME[meta.src_lang] || "Latin";
       if (!(meta.shards || []).length && meta.has_tei) {
         const lanes = await teiPages(slug, meta);

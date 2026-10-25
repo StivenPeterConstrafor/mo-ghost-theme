@@ -153,7 +153,8 @@
         return { meta: d.meta, p: lines && lines.length ? { n, en: lines.join('\n'), la: '' } : null, last: d.last };
       }
       const meta = await env.json(`${base}/v1/works/${slug}/meta.json`);
-      const last = meta.n_pages || (meta.shards && meta.shards.length && meta.shards[meta.shards.length - 1].to);
+      // the last page the work HAS: the shards run past n_pages where front matter is appended after the text (the WA volumes; 10-25)
+      const last = Math.max(meta.n_pages || 0, (meta.shards && meta.shards.length && meta.shards[meta.shards.length - 1].to) || 0) || undefined;
       if (!(meta.shards || []).length && meta.has_tei) {
         const lanes = await teiPages(slug, meta);
         const p = { n, en: (lanes.en.get(String(n)) || []).join('\n'), la: (lanes.la.get(String(n)) || []).join('\n') };
