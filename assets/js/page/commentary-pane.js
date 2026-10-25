@@ -853,7 +853,10 @@
     const row = (label, xs) => xs.length ? `<div class="cp-keys-row" role="group" aria-label="${esc(label)}"><span class="cp-keys-lab" aria-hidden="true">${esc(label)}</span>${xs.map(btn).join('')}</div>` : '';
     const setBtn = ({ s, c }) => `<button type="button" class="cp-key" data-slug="${esc(c.slug)}" data-set="${esc(s.id)}" aria-pressed="${isCur(c)}" title="${esc(`${s.title}, ${s.author}${volShort(c.vol) ? ` (${volShort(c.vol)})` : ''}`)}">${esc(s.label)}</button>`;
     const tradRow = ([k, name]) => { const xs = sets.filter((x) => x.s.trad === k); return xs.length ? `<div class="cp-keys-row cp-keys-trad" role="group" aria-label="${esc(name)}"><span class="cp-keys-sub">${esc(name)}</span><span class="cp-keys-chips">${xs.map(setBtn).join('')}</span></div>` : ''; };
-    const wholeRows = sets.length ? `<div class="cp-keys-whole" role="group" aria-label="Whole-Bible commentaries, by tradition"><span class="cp-keys-lab cp-keys-wl">Whole Bible</span>${SETS.trads.map(tradRow).join('')}</div>` : '';
+    // on a phone the sets fold behind one line (10-25: five scrolling strips left the commentary no room); on a wide screen they
+    // stand open as before
+    const narrow = matchMedia('(max-width: 640px)').matches;
+    const wholeRows = sets.length ? `<details class="cp-keys-whole"${narrow ? '' : ' open'} role="group" aria-label="Whole-Bible commentaries, by tradition"><summary class="cp-keys-lab cp-keys-wl">Whole Bible<small class="cp-keys-n">${sets.length} ${sets.length === 1 ? 'set' : 'sets'}</small></summary>${SETS.trads.map(tradRow).join('')}</details>` : '';
     pane.querySelector('.cp-keys').innerHTML = head.length + tail.length + sets.length < 2 ? '' : row(`On ${refName(w) === 'Psalm' ? 'the Psalms' : refName(w)}`, head) + row('Whole Bible', tail) + wholeRows;
     keyInView();
     if (listOpen()) renderDir();

@@ -98,6 +98,10 @@ html.cp-site-mo .cp-top > .cp-eyebrow, html.cp-site-mo .cp-top > .cp-ref { grid-
 /* the whole-Bible sets by tradition (10-23): a small label, then one quiet row a tradition */
 .cp-keys-whole { display: flex; flex-direction: column; gap: 4px; padding-top: 6px; border-top: 1px solid var(--cp-rule); }
 .cp-keys-wl { margin-bottom: 1px; }
+/* the sets are a disclosure: open and label-only on a wide screen, one line with its count and a chevron on a phone */
+.cp-keys-whole > summary { display: flex; align-items: baseline; gap: 6px; list-style: none; cursor: default; }
+.cp-keys-whole > summary::-webkit-details-marker { display: none; }
+.cp-keys-n { display: none; }
 .cp-keys-sub { flex: none; width: 9.5em; padding-top: 5px; font-size: 0.75rem; letter-spacing: 0.02em; color: var(--cp-muted, #6b6b6b); }
 .cp-keys-trad { flex-wrap: nowrap; align-items: flex-start; }
 .cp-keys-chips { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
@@ -382,8 +386,13 @@ html.cp-site-mo .cp-tabs .cp-desk { flex: none; min-height: 36px; margin: 0 0 6p
 .cp-rec-most button:hover { background: var(--cp-ground); }
 .cp-rec-most button:focus-visible, .cp-more:focus-visible { outline: 2px solid var(--cp-ink); outline-offset: 2px; }
 @media (max-width: 640px) {
-  .cp-keys-row { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; margin: 0 -16px; padding: 2px 16px; }
+  .cp-keys-row { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; margin: 0 -16px; padding: 2px 16px;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); }
   .cp-keys-row::-webkit-scrollbar { display: none; }
+  .cp-keys-whole > summary { align-items: center; min-height: 36px; cursor: pointer; }
+  .cp-keys-whole > summary::after { content: ""; flex: none; width: 0.4em; height: 0.4em; margin: 0 4px 0 auto; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-0.1em) rotate(45deg); }
+  .cp-keys-whole[open] > summary::after { transform: translateY(0.15em) rotate(-135deg); }
+  .cp-keys-n { display: inline; font-size: 0.75rem; color: var(--cp-faint, var(--cp-muted)); }
   .cp-keys-sub { width: auto; padding-top: 0; align-self: center; margin-right: 4px; }
   .cp-keys-trad { align-items: center; }
   .cp-keys-chips { flex-wrap: nowrap; }
