@@ -730,8 +730,12 @@
       const have = slugs.map((s) => S.list.find((c) => c.slug === s)).filter(Boolean);
       const c = have.find((x) => x.open != null) || have.find((x) => Object.keys(x.notes).length) || have[0];
       // (10-25, owner: "change if there's no commentator, like Augustine on Romans") a key stands on the chapter only when it has a
-      // note in it, or touches a good part of it (a verse in four, three at least); Augustine's fragments on Romans 3 do neither
-      const says = c && (Object.keys(c.notes).length || c.collected || (c.touch || 0) >= Math.max(3, Math.ceil((S.nv || 0) / 4)));
+      // note in it, or touches a good part of it (a verse in four, three at least), or the map gives the chapter room in the work:
+      // a page per twelve verses or more (Calov's one page on Psalm 13 stays; Augustine's Exposition of Propositions, under a column
+      // for Romans 3's thirty-one verses, does not). A chapter with no page after it (the book's last, a sermon on the pericope) is
+      // taken at the map's word.
+      const span = c && c.open != null && c.close != null && Number(c.close) >= Number(c.open) ? (Number(c.close) - Number(c.open) + 1) / Math.max(1, S.nv || 1) : null;
+      const says = c && (Object.keys(c.notes).length || c.collected || (c.touch || 0) >= Math.max(3, Math.ceil((S.nv || 0) / 4)) || (c.open != null && (span == null || span >= 0.08)));
       if (c && says) { c.born = born; out.push(c); }
     }
     return out;
