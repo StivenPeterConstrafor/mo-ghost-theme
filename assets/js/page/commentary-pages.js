@@ -178,9 +178,11 @@
         if (!by.has(slug)) by.set(slug, { slug, a: a || '', t: t || slug, notes: {}, open: null });
         return by.get(slug);
       };
-      const rowsBy = new Map();
+      const rowsBy = new Map(), touch = new Map();
       for (const v of (file && file.verses) || []) {
         for (const r of v.rows || []) if (r.w && !meta[r.w]) meta[r.w] = { a: r.a || '', t: r.t || r.w };
+        // how much of the chapter a work touches (10-25): the verses it has any row on, for the pane's featured strip
+        for (const r of v.rows || []) if (r.w) { if (!touch.has(r.w)) touch.set(r.w, new Set()); touch.get(r.w).add(v.v); }
         for (const r of v.rows || []) if (r.w && (r.how === 'explicit' || r.how === 'exegesis') && +r.p > 0) {
           if (!rowsBy.has(r.w)) rowsBy.set(r.w, {});
           const byV = rowsBy.get(r.w); (byV[v.v] || (byV[v.v] = [])).push({ w: r.w, how: r.how, g: r.g, p: r.p });
@@ -210,8 +212,8 @@
         if (x.c) { c.collected = x.c; for (const v of Object.keys(x.c)) if (!(v in c.notes)) c.notes[v] = x.c[v][0][1]; }
         if (x.pv) c.pv = Object.assign(c.pv || {}, x.pv);
       }
-      for (const c of by.values()) c.rows = rowsBy.get(c.slug) || {};
-      return { works: [...by.values()].filter((c) => Object.keys(c.notes).length || c.open != null), meta, sigla };
+      for (const c of by.values()) { c.rows = rowsBy.get(c.slug) || {}; c.touch = (touch.get(c.slug) || new Set()).size; }
+      return { works: [...by.values()].filter((c) => Object.keys(c.notes).length || c.open != null), meta, sigla, nv: ((file && file.verses) || []).length };
     }
 
     return { page, listWorks, canonCols, teiPages, eebo };

@@ -185,7 +185,7 @@
   const X_SHELF = { Reformed: 'rf', 'Continental Reformed': 'rf', 'Roman Catholic': 'rc', Lutheran: 'lu', Medieval: 'md', 'English Divines': 'ed' };
   async function commentaries(book, ch) {
     // the map, the overlay and the reception file are the loader's own fetches (one cache): read again here, not fetched again
-    const [{ works, meta, sigla }, dev, ov, rec] = await Promise.all([PG.listWorks(book, ch),
+    const [{ works, meta, sigla, nv }, dev, ov, rec] = await Promise.all([PG.listWorks(book, ch),
       json(`${BASE}/v1/devotion.json.gz`).catch(() => null), json(`${BASE}/v1/bible/commentary-overlay.json`).catch(() => null),
       json(`${BASE}/v1/reception/scripture/${book}/${ch}.json`).catch(() => null), loadRank(), loadSets(), railReady()]);
     Object.assign(S.meta, meta); Object.assign(SIGLA, sigla);
@@ -262,6 +262,10 @@
       // passage; a series through the book (Augustine's Tractates on John, Chrysostom's homilies) is read as its commentary (weigh)
       if (c.k === 'sermons' && !(c.cov >= 5) && c.wb === 0) c.kd = 'sermons';
     }
+    // the chapter's verse count, for the featured strip's rule (10-25): a curated key with no note in the chapter is featured only when
+    // it touches a good part of it (c.touch, counted by the loader: Aquinas on Romans 3 has rows on most verses, none marked a note;
+    // Augustine's Exposition of Propositions two quotations)
+    S.nv = nv || 0;
     return [...by.values()].sort((x, y) => x.wb - y.wb || y.score - x.score || x.a.localeCompare(y.a));
   }
 
@@ -725,7 +729,10 @@
     for (const [, slugs, born] of (RANK.books[book] || [])) {
       const have = slugs.map((s) => S.list.find((c) => c.slug === s)).filter(Boolean);
       const c = have.find((x) => x.open != null) || have.find((x) => Object.keys(x.notes).length) || have[0];
-      if (c) { c.born = born; out.push(c); }
+      // (10-25, owner: "change if there's no commentator, like Augustine on Romans") a key stands on the chapter only when it has a
+      // note in it, or touches a good part of it (a verse in four, three at least); Augustine's fragments on Romans 3 do neither
+      const says = c && (Object.keys(c.notes).length || c.collected || (c.touch || 0) >= Math.max(3, Math.ceil((S.nv || 0) / 4)));
+      if (c && says) { c.born = born; out.push(c); }
     }
     return out;
   }
@@ -838,11 +845,16 @@
     // shows its first four. One button an author and one name once (10-21): the Glossa's two volumes were "Glossa, Glossa".
     const tierOf = (c) => (RANK.works[c.slug] || [])[4] || 0;
     const firsts = firstsOf(onBook);
-    const book = (keys.length ? keys.slice(0, 10) : firsts.filter((c) => tierOf(c)).sort((x, y) => tierOf(x) - tierOf(y) || y.score - x.score).slice(0, 5))
+    // (10-25, owner: "have the featured commentaries list more") sixteen, not ten: every curated key that speaks on the chapter,
+    // then the chapter's other commentaries with notes on it by their standing, all in the order their authors came
+    const CAP = 16;
+    const book = (keys.length ? keys.slice(0, CAP) : firsts.filter((c) => tierOf(c)).sort((x, y) => tierOf(x) - tierOf(y) || y.score - x.score).slice(0, 5))
       .sort((x, y) => when(x) - when(y) || y.score - x.score);
     const seenA = new Set(), seenL = new Set();
     const keep = (c) => { const k = aKey(c.a) || c.slug, l = short(c.a); if (seenA.has(k) || seenL.has(l)) return false; seenA.add(k); seenL.add(l); return true; };
     const head = (book.length ? book : firsts.slice(0, 4)).filter(keep), tail = SETS.list.length ? [] : firstsOf(whole).filter(keep).slice(0, 6);
+    for (const c of firsts) { if (head.length >= CAP) break; if (c.kd === 'sermons' || !Object.keys(c.notes).length) continue; if (keep(c)) head.push(c); }
+    head.sort((x, y) => when(x) - when(y) || y.score - x.score);
     // THE WHOLE-BIBLE SETS ON THIS CHAPTER (10-23): every set the registry knows that has a volume here, one button a set (its volumes
     // folded: the one that holds the chapter, else the one with notes on it, else where the book begins), by tradition in their order,
     // each in its author's order; a book's key commentator may stand in both rows (owner: "its ok to have things appear twice")
