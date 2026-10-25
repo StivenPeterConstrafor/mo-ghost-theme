@@ -127,7 +127,9 @@
     'Westminster Assembly': 'Westminster Annotations', 'Gregory I': 'Gregory the Great', 'Theophylact, Archbishop of Bulgaria': 'Theophylact',
     'The critics, collected by John Pearson and others': 'Critici Sacri', 'Cornelius a Lapide': 'Lapide', 'collected by Thomas Aquinas': 'Catena Aurea',
     'collected by Thomas Aquinas The catena': 'Catena Aurea',
-    'Denys the Carthusian': 'Denys', 'Willem van Est': 'Estius', 'Nicholas of Lyra': 'Lyra', 'Matthew Poole': 'Poole' };
+    'Denys the Carthusian': 'Denys', 'Willem van Est': 'Estius', 'Nicholas of Lyra': 'Lyra', 'Matthew Poole': 'Poole',
+    // Fathers whose given name alone names another man on the same strip (10-25: "John" on Galatians 2 was John of Damascus)
+    'John of Damascus': 'Damascene', 'Gregory of Nyssa': 'Nyssen', 'Gregory of Nazianzus': 'Nazianzen' };
   const short = (a) => {
     if (SHORT[a]) return SHORT[a];
     // "The catena, collected by Thomas Aquinas" in the chapter files
