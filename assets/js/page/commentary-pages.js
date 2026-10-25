@@ -73,16 +73,21 @@
     // Westminster Annotations' misprinted leaves) prints the same number more than once; each printed page is one occurrence in
     // document order (pages.occ), pages.all lists each number's occurrences, pages.repeats says whether any repeats; the Map
     // itself keeps the first occurrence under each number, as before
-    const occ = [], all = new Map();
+    // two marks of one number in a row (a page's two columns, a misprinted leaf) are one page; markIdx maps each printed mark, counted
+    // in document order, to its occurrence, for an entry's start mark (spm) on the map
+    const occ = [], all = new Map(), markIdx = [];
     let o = { n: '0', lines: [] }; occ.push(o); all.set('0', [0]);
     for (const line of decode(flat).split('\n')) {
       const mark = /^\uE000(\d+)\uE000$/.exec(line);
-      if (mark) { o = { n: mark[1], lines: [] }; occ.push(o); if (!all.has(mark[1])) all.set(mark[1], []); all.get(mark[1]).push(occ.length - 1); continue; }
+      if (mark) {
+        if (mark[1] !== o.n) { o = { n: mark[1], lines: [] }; occ.push(o); if (!all.has(mark[1])) all.set(mark[1], []); all.get(mark[1]).push(occ.length - 1); }
+        markIdx.push(occ.length - 1); continue;
+      }
       const t = line.replace(/\s+/g, ' ').trim();
       if (t) o.lines.push(t);
     }
     for (const [n, is] of all) if (!pages.has(n)) pages.set(n, occ[is[0]].lines);
-    pages.occ = occ; pages.all = all; pages.repeats = [...all.values()].some((is) => is.length > 1);
+    pages.occ = occ; pages.all = all; pages.markIdx = markIdx; pages.repeats = [...all.values()].some((is) => is.length > 1);
     return pages;
   }
 
@@ -140,7 +145,7 @@
       const data = await env.json(`${base}/eebo/${id}.json.gz`);
       const pages = eeboPageMap(data);
       const nums = [...pages.keys()].map(Number).filter((n) => n > 0);
-      return { pages, occ: pages.occ, all: pages.all, repeats: pages.repeats, last: nums.length ? Math.max(...nums) : 0, meta: data.meta || {} };
+      return { pages, occ: pages.occ, all: pages.all, markIdx: pages.markIdx, repeats: pages.repeats, last: nums.length ? Math.max(...nums) : 0, meta: data.meta || {} };
     });
     // the place a commentary was opened at in a book with repeating page numbers: {slug: occurrence index}, set by the pane
     const eeboCur = {};
@@ -219,6 +224,7 @@
         c.sh = c.sh || (e.sh === 'x' ? (X_SHELF[e.tr] || 'x') : e.sh);
         c.k = c.k || e.k; c.cov = Math.max(c.cov || 0, Object.keys(e.an || {}).length || ((Number(e.c2) || 0) - (Number(e.c1) || 0) + 1));
         c.an = Object.assign(c.an || {}, e.an || {});   // every chapter's anchor: the pane's eeboCursor walks them in order
+        if (e.spm != null) c.spm = e.spm;   // where the entry's first chapter opens, as a count of the book's printed page marks
         if (e.an && e.an[ch] != null) { c.open = e.an[ch]; if (e.an[String(+ch + 1)] != null) c.close = e.an[String(+ch + 1)]; }
       }
       for (const [slug, w] of Object.entries((ov && ov.works) || {})) if (w.sigla) sigla[slug] = w.sigla;

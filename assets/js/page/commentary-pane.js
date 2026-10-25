@@ -284,7 +284,9 @@
     if (!c || !window.FRCommentaryPages.EEBO.test(c.slug)) return null;
     const d = await PG.eebo(c.slug).catch(() => null);
     if (!d || !d.repeats) { delete PG.eeboCur[c.slug]; return null; }
-    let cur = 0;
+    // the chain starts at the entry's start mark (spm: the printed mark, counted in document order, where its first chapter opens),
+    // else at the top of the book; a chapter whose number has no page at or after the one before leaves the place where it was
+    let cur = c.spm != null && d.markIdx && d.markIdx[Number(c.spm) - 1] != null ? d.markIdx[Number(c.spm) - 1] : 0;
     for (const k of Object.keys(c.an || {}).map(Number).filter((x) => x > 0 && x <= Number(ch)).sort((a, b) => a - b)) {
       const is = d.all.get(String(c.an[k])) || []; const i = is.find((x) => x >= cur);
       if (i != null) cur = i;
