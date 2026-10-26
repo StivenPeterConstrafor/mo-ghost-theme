@@ -280,10 +280,24 @@
    * chapter order, each at the first occurrence of its printed number at or after the one before (greedy, monotonic); the cursor
    * for chapter ch is the occurrence its anchor resolved to, kept in PG.eeboCur[slug] for every page read of that work until
    * another chapter is opened. */
+  /* THE READER'S PAGE IDS IN A BOOK WITH REPEATING PAGE NUMBERS (10-25): the reader (reader-core.js, loadEeboCanon) keeps the bare
+   * printed number for the first page so numbered and gives the k-th repeat (k from 1) the id 100000*k+n, counting the occurrences
+   * as eeboPageMap does (two marks of one number in a row are one page). readerPage says the id of the occurrence page() reads for
+   * a printed number under the chapter's place (PG.eeboCur), so a link opens the page the pane shows; any other work keeps its
+   * number. The citations list (cfHref) keeps the mined page as it was mined. */
+  const eeboReaderId = (n, k) => (k ? 100000 * k + Number(n) : Number(n));
+  function readerPage(slug, n) {
+    const d = (S.eeboData || {})[slug], at = PG.eeboCur[slug];
+    if (!d || !d.repeats || at == null) return n;
+    const is = d.all.get(String(n)) || [], i = is.find((x) => x >= at);
+    return i == null ? n : eeboReaderId(n, is.indexOf(i));
+  }
+  const readHref = (slug, p) => SITE.read(slug, readerPage(slug, p));
   async function eeboCursor(c, ch) {
     if (!c || !window.FRCommentaryPages.EEBO.test(c.slug)) return null;
     const d = await PG.eebo(c.slug).catch(() => null);
     if (!d || !d.repeats) { delete PG.eeboCur[c.slug]; return null; }
+    S.eeboData = S.eeboData || {}; S.eeboData[c.slug] = d;
     // the chain starts at the entry's start mark (spm: the printed mark, counted in document order, where its first chapter opens),
     // else at the top of the book; a chapter whose number has no page at or after the one before leaves the place where it was
     let cur = c.spm != null && d.markIdx && d.markIdx[Number(c.spm) - 1] != null ? d.markIdx[Number(c.spm) - 1] : 0;
@@ -1125,7 +1139,7 @@
     if (!t) { try { t = await resolve(c, v, w); } catch (err) { t = null; } }
     if (!t && c.open != null) t = { p: c.open, how: 'chapter' };
     if (!t) return `<p class="vr-empty">Nothing in it is indexed on ${esc(name)} ${esc(w.ch)}.</p>`;
-    const acts = (p) => `<p class="vr-pv-acts"><button type="button" class="vr-pv-read" data-vr-read="${esc(slug)}">Read beside the text</button><a href="${esc(SITE.read(slug, p))}">Open in the reader</a></p>`;
+    const acts = (p) => `<p class="vr-pv-acts"><button type="button" class="vr-pv-read" data-vr-read="${esc(slug)}">Read beside the text</button><a href="${esc(readHref(slug, p))}">Open in the reader</a></p>`;
     const cut = (s, n) => (s.length > n ? `${s.slice(0, n).replace(/\s+\S*$/, '')}…` : s);
     if (t.how === 'collected') {
       const items = t.items.slice(0, 3), ns = [...new Set(items.map((x) => +x[1]))];
@@ -1286,7 +1300,7 @@
     // page under the chapter's heading is said to be that, at its own page (10-22)
     const setWhere = (p, found) => {
       const pg = `<span class="cp-pg">${esc(pgOf(sh.slug, p))}</span>`;
-      whereEl.innerHTML = `<span>${found ? `Its note on ${esc(ref(S.verse))}, ${pg}, found on the page` : `${esc(say)}, ${pg}`}</span> <span class="cp-go"><span aria-hidden="true">· </span><a href="${esc(SITE.read(sh.slug, p))}">Open in the reader</a></span>`;
+      whereEl.innerHTML = `<span>${found ? `Its note on ${esc(ref(S.verse))}, ${pg}, found on the page` : `${esc(say)}, ${pg}`}</span> <span class="cp-go"><span aria-hidden="true">· </span><a href="${esc(readHref(sh.slug, p))}">Open in the reader</a></span>`;
     };
     setWhere(sh.p, false);
     const pages = sh.pages || [];
@@ -1358,7 +1372,7 @@
   function paintCollected(sh, t, bookName, body, whereEl) {
     const n = t.items.length, crit = new Set(t.items.map((x) => x[0])).size;
     whereEl.innerHTML = `<span>${t.nearest ? `No critic on ${sh.ch}:${S.verse}. ` : ''}${crit} ${crit === 1 ? 'critic' : 'critics'} on ${esc(bookName)} ${sh.ch}:${t.v}, ${esc(pgOf(sh.slug, t.items[0][1]))}</span>`
-      + ` <span class="cp-go"><span aria-hidden="true">· </span><a href="${esc(SITE.read(sh.slug, t.items[0][1]))}">Open in the reader</a></span>`;
+      + ` <span class="cp-go"><span aria-hidden="true">· </span><a href="${esc(readHref(sh.slug, t.items[0][1]))}">Open in the reader</a></span>`;
     const anyEn = Object.values(sh.byPage || {}).some((p) => p && p.en), lane = S.lang === 'la' || !anyEn ? 'la' : 'en';
     pane.querySelector('.cp-lang').hidden = !anyEn;
     const rxV = noteRx(t.v);
@@ -1371,7 +1385,7 @@
       const pick = (ln) => paragraphs(p[ln]).filter((x) => rx.test(x))[k] || paragraphs(p[ln]).filter((x) => rx.test(x))[0];
       let note = (pick(lane) || pick(lane === 'en' ? 'la' : 'en') || '').replace(/^#{1,6}\s+/, '');
       if (note.length > 1100) note = `${note.slice(0, 1100).replace(/\s+\S*$/, '')} …`;
-      return `<section class="cp-crit" id="cp-c${i}"><h4><span>${esc(who)}</span><a href="${esc(SITE.read(sh.slug, pn))}">${esc(pgOf(sh.slug, pn))}</a></h4>`
+      return `<section class="cp-crit" id="cp-c${i}"><h4><span>${esc(who)}</span><a href="${esc(readHref(sh.slug, pn))}">${esc(pgOf(sh.slug, pn))}</a></h4>`
         + `<p>${note ? esc(note) : '<span class="cp-empty">The note could not be found on its page.</span>'}</p></section>`;
     }).join('');
     body.querySelectorAll('[data-cp-jump]').forEach((a) => { a.onclick = (e) => { e.preventDefault(); const s = body.querySelector(`#cp-c${a.dataset.cpJump}`); if (s) s.scrollIntoView({ block: 'start' }); }; });
