@@ -185,6 +185,21 @@
   // the set a work belongs to (one author, one title or slug stem: the list folds its volumes under one entry)
   const setOf = (c) => { const VR = window.FRVerseRail; return VR && VR.workKey ? VR.workKey(c) : c.slug; };
   const X_SHELF = { Reformed: 'rf', 'Continental Reformed': 'rf', 'Roman Catholic': 'rc', Lutheran: 'lu', Medieval: 'md', 'English Divines': 'ed' };
+  /* AN ANCHOR IN ITS ORDER (10-28): the notes may move a chapter's opening only when the map's page for it is out of order with the
+   * chapters either side (Poole's Psalm 51 once sat at p. 612, between pp. 458 and 460). A page in order is the chapter's own: notes
+   * elsewhere are cross-references from the chapters round it or a preface's summary (Cajetan on Matthew 12 opens at p. 71, "CHAPTER
+   * XII", while his notes on its verses at pp. 62-67 sit in chapters 10 and 11; Calov's John 3 opens at p. 720, his notes on it at pp.
+   * 703-708 discuss John 1). A page that falls back to a low number is a pagination starting over (Mede's Clavis), not a slip. A work
+   * with no pages on the map for the chapter's neighbours is left to the notes, as before. */
+  function anchorInOrder(c, ch) {
+    const at = (k) => { const v = c.an && c.an[String(k)]; return v == null || v === '' ? null : Number(v); };
+    const n = Number(ch), here = at(n), prev = at(n - 1), next = at(n + 1);
+    if (here == null) return false;
+    if (prev != null && next != null) return prev <= next ? prev <= here && here <= next : true;
+    if (prev != null) return here >= prev;
+    if (next != null) return here <= next;
+    return false;
+  }
   async function commentaries(book, ch) {
     // the map, the overlay and the reception file are the loader's own fetches (one cache): read again here, not fetched again
     const [{ works, meta, sigla, nv }, dev, ov, rec] = await Promise.all([PG.listWorks(book, ch),
@@ -247,7 +262,7 @@
       const lo = Number(c.open), hi = Number(c.close);
       if (lo > 0 && hi > lo) {
         const out = Object.entries(c.notes).filter(([, p]) => { const n = Number(p); return n && (n < lo - 2 || n > hi + 2); });
-        if (out.length >= 3 && out.length > Object.keys(c.notes).length - out.length) {
+        if (out.length >= 3 && out.length > Object.keys(c.notes).length - out.length && !anchorInOrder(c, ch)) {
           // the run of them, out from the middle one while the pages run on: where it begins the chapter opens, where it ends it closes
           const ps = out.map(([, p]) => Number(p)).sort((a, b) => a - b), mid = Math.floor(ps.length / 2);
           let i = mid, j = mid;
