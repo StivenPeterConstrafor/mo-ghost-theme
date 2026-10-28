@@ -1519,7 +1519,17 @@
       setTab('c', true); S.pin = true;
       choose(pick.slug, true);
       const el = w.v && SITE.verseEl(w.v); if (el) el.scrollIntoView({ block: SITE.name === 'mo' && !wide.matches ? 'start' : 'center', behavior: 'auto' });
-    } else choose(c ? c.slug : null);
+    } else {
+      choose(c ? c.slug : null);
+      /* AN ADDRESS THAT NAMES A VERSE KEEPS THE PANE ON IT (10-28; a reader's report: "The Revelation 12:7 link opens discussions of
+       * Matthew 1:7", then of Revelation 12:1). The rail follows the verse at the top of the reading line, and on load that is the
+       * chapter's first verse: the follower replaced the address's verse before the page reached it. A named verse now pins the rail
+       * and is brought into view; the reader's own scrolling hands the rail back to the reading line, as after a click. */
+      if (w.v) {
+        S.pin = true;
+        const el = SITE.verseEl(w.v); if (el) el.scrollIntoView({ block: SITE.name === 'mo' && !wide.matches ? 'start' : 'center', behavior: 'auto' });
+      }
+    }
     S.firstEl = document.querySelector(SITE.verses);
     watch();
   }

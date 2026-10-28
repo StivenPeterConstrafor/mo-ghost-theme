@@ -1501,6 +1501,20 @@ function frResolveSourceHeading(position){
   const text=row=>frSourceHeadingFold(row.querySelector('.hen')?.textContent||row.querySelector('.hla')?.textContent||row.textContent);
   return rows.find(row=>text(row)===wanted)||rows.find(row=>text(row).includes(wanted)&&wanted.length>=1)||(rows.length===1?rows[0]:null)||null;
 }
+// A PAGE THAT OPENS WITH A HEADING LANDS ON THE HEADING (10-28, reader report on Polanus, Syntagma I ch. XIX "not set in a heading
+// box"): b<page>-0 is the page's first TEXT row and heading rows carry no id, so a contents click or ?p= arrival put the row under
+// the heading at the masthead line and the chapter's heading box sat just out of view. Walk back over the heading rows directly
+// above it in the same folio and land on the first of them.
+function frPageOpeningHead(row,id){
+  if(frReaderBlockReference(id)?.index!=='0')return null;
+  let first=null;
+  for(let node=row.previousElementSibling;node;node=node.previousElementSibling){
+    if(!node.classList?.contains('row'))continue;
+    if(!node.classList.contains('rhead'))break;
+    if(node.getClientRects().length)first=node;
+  }
+  return first;
+}
 function frResolveReaderAnchor(position){
   if(position.sourcePath)return frResolveSourceHeading(position);
   if(position.at&&position.page!=null&&window.__readerBuilt){const h=frHeadingIn(frFolioOf(position.page),position.at);if(h&&h.isConnected&&h.getClientRects().length)return h;}
@@ -1509,7 +1523,7 @@ function frResolveReaderAnchor(position){
   const visible=node=>{if(node?.closest?.('.frontmatter'))document.getElementById('app')?.classList.add('show-fm');return node?.isConnected&&node.getClientRects().length?node:null;};
   // A search occurrence is temporary UI; keep its canonical body ID as the saved location.
   if(position.focusId)return visible(document.getElementById(position.focusId));
-  const exact=visible(document.getElementById(position.id));if(exact)return exact;
+  const exact=visible(document.getElementById(position.id));if(exact)return frPageOpeningHead(exact,position.id)||exact;
   const block=frReaderBlockReference(position.id);
   if(!block||block.index!=='0'||!window.__readerBuilt)return null;
   return Array.from(document.querySelectorAll('#reading .pganchor')).filter(node=>String(node.dataset.page)===block.page).map(visible).find(Boolean)
