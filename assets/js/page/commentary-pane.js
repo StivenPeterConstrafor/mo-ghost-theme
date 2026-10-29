@@ -132,7 +132,7 @@
     'John of Damascus': 'Damascene', 'Gregory of Nyssa': 'Nyssen', 'Gregory of Nazianzus': 'Nazianzen',
     // (10-28 key audit) names the rule below shortens wrongly
     'Rabanus Maurus': 'Rabanus', 'Hrabanus Maurus': 'Rabanus', 'Pope Gregory I': 'Gregory the Great', "Jacques Lefèvre d'Étaples": 'Lefèvre',
-    'Theodore of Mopsuestia': 'Theodore of Mopsuestia' };
+    'Theodore of Mopsuestia': 'Theodore of Mopsuestia', 'Abbot William': 'William of St Thierry' };
   // a given name several medieval writers share is kept with its place ("William of St Thierry", "Richard of St Victor", "Martin of León")
   const SHARED = /^(William|Richard|Hugh|Martin|Matthew|Peter|Robert|Henry|Nicholas|Stephen|Walter|Gilbert|Alan|Adam|Geoffrey|Odo|Bruno)\s+of\s+(.+)$/;
   const short = (a) => {
@@ -810,8 +810,9 @@
       const have = slugs.map((s) => S.list.find((c) => c.slug === s)).filter(Boolean);
       // (10-28 key audit) a volume of its own (a page or notes on the chapter) before a page that only cites it (wb 2): Luther on Psalm 51
       // opens his 1532 lectures (WA 40.2), not a citation in the Operationes (WA 5); a citing page alone never makes a key stand (saysOn)
-      const own = have.filter((x) => x.wb !== 2);
-      const c = own.find((x) => x.open != null) || own.find((x) => Object.keys(x.notes).length) || own[0] || have[0];
+      const own = have.filter((x) => x.wb !== 2), placed = own.filter((x) => !x.hit);
+      const c = placed.find((x) => x.open != null) || placed.find((x) => Object.keys(x.notes).length) || own.find((x) => x.open != null)
+        || own.find((x) => Object.keys(x.notes).length) || own[0] || have[0];
       // (10-25, owner: "change if there's no commentator, like Augustine on Romans") a key stands on the chapter only when it has a
       // note in it, or touches a good part of it (a verse in four, three at least), or the map gives the chapter room in the work:
       // a page per twelve verses or more (Calov's one page on Psalm 13 stays; Augustine's Exposition of Propositions, under a column

@@ -76,7 +76,7 @@
     // shortens wrongly
     "John of Damascus": "Damascene", "Gregory of Nyssa": "Nyssen", "Gregory of Nazianzus": "Nazianzen",
     "Rabanus Maurus": "Rabanus", "Hrabanus Maurus": "Rabanus", "Pope Gregory I": "Gregory the Great", "Jacques Lefèvre d'Étaples": "Lefèvre",
-    "Theodore of Mopsuestia": "Theodore of Mopsuestia" };
+    "Theodore of Mopsuestia": "Theodore of Mopsuestia", "Abbot William": "William of St Thierry" };
   // a given name several medieval writers share is kept with its place ("William of St Thierry", "Richard of St Victor", "Martin of León")
   const SHARED = /^(William|Richard|Hugh|Martin|Matthew|Peter|Robert|Henry|Nicholas|Stephen|Walter|Gilbert|Alan|Adam|Geoffrey|Odo|Bruno)\s+of\s+(.+)$/;
   const short = (a) => {
@@ -404,8 +404,9 @@
     for (const [, slugs, born] of (M.RANK.books[M.book] || [])) {
       const have = slugs.map((s) => M.list.find((c) => c.slug === s)).filter(Boolean);
       // (10-28 key audit) a volume of its own before a page that only cites the chapter (wb 2); a citing page alone never stands (saysOn)
-      const own = have.filter((x) => x.wb !== 2);
-      const c = own.find((x) => x.open != null) || own.find((x) => Object.keys(x.notes).length) || own[0] || have[0];
+      const own = have.filter((x) => x.wb !== 2), placed = own.filter((x) => !x.hit);
+      const c = placed.find((x) => x.open != null) || placed.find((x) => Object.keys(x.notes).length) || own.find((x) => x.open != null)
+        || own.find((x) => Object.keys(x.notes).length) || own[0] || have[0];
       if (c && saysOn(M, c)) { c.born = born; keys.push(c); }
     }
     const when = (c) => c.born || yearOf(M, c.a, c) || 9999;
