@@ -501,6 +501,14 @@
       closeList(); choose(slug, true);
       const nb = kept && [...pane.querySelectorAll('.cp-key')].find((x) => x.dataset.slug === slug); if (nb) nb.focus();
     };
+    // (10-28) a key row is one line on every screen: a mouse wheel turned over it scrolls it sideways, and at either end the pane's own
+    pane.querySelector('.cp-keys').addEventListener('wheel', (e) => {
+      const row = e.target.closest('.cp-keys-row:not(.cp-keys-trad)');
+      if (!row || row.scrollWidth <= row.clientWidth + 1 || Math.abs(e.deltaX) >= Math.abs(e.deltaY)) return;
+      const next = Math.min(row.scrollWidth - row.clientWidth, Math.max(0, row.scrollLeft + e.deltaY));
+      if (next === row.scrollLeft) return;
+      row.scrollLeft = next; e.preventDefault();
+    }, { passive: false });
     // Close (Scripture page only): the same way out as the Citations panel's, which the reader's script carries out
     const closeBtn = pane.querySelector('.cp-close');
     if (closeBtn) closeBtn.onclick = () => window.dispatchEvent(new Event('sd:close-verse'));
@@ -626,7 +634,7 @@
     /* RECEPTION, ORGANIZED (10-21, scripture-verse-rail.js): one line of counts, the century strip, the commentaries on the verse
      * (each author once, keys first, then by tradition), each period's witnesses by standing with the gist behind the row and the
      * rest of the period one click away in Citations; one methodology line for the view. */
-    const VR = window.FRVerseRail, keys = curated(w.book), keySet = new Set(keys.map((c) => c.slug));
+    const VR = window.FRVerseRail, keys = [...curated(w.book), ...keySetsOn()], keySet = new Set(keys.map((c) => c.slug));
     const ns = Object.entries(rv.notes || {}).map(([slug, p]) => {
       const c = S.list.find((x) => x.slug === slug) || S.meta[slug] || {};
       return { slug, p, a: c.a || '', t: c.t || slug, sh: c.sh || '' };
@@ -773,6 +781,18 @@
    * are things that are important"). rank.json `books` lists them for the books readers open most, most needed first, each author with
    * his works in the order to open them and his year; on the chapter, each author's first work that has the chapter's page (Luther on
    * Psalm 51: his lectures of 1532, not the Summaries). Other books: the tier rule in fillList. */
+  function saysOn(c) {
+    const span = c && c.open != null && c.close != null && Number(c.close) >= Number(c.open) ? (Number(c.close) - Number(c.open) + 1) / Math.max(1, S.nv || 1) : null;
+    return !!(c && (Object.keys(c.notes).length || c.collected || (c.touch || 0) >= Math.max(3, Math.ceil((S.nv || 0) / 4)) || (c.open != null && (span == null || span >= 0.08))));
+  }
+  /* THE GLOSS AMONG THE KEYS (10-28, owner: "how come gloss doesn't show up on the commentaries at the top?"): a whole-Bible set the
+   * registry marks as a key (sets.json `key`: the year it stands at among the keys; the Glossa Ordinaria, c. 1100) is a key on every
+   * chapter where its volume says something, in the book's row and among the Reception's keys; it keeps its button with the sets too */
+  function keySetsOn() {
+    const out = [];
+    for (const { s, c } of setsOn(S.list, S.verse || 1)) if (s.key && saysOn(c)) { if (!c.born) c.born = s.key; out.push(c); }
+    return out;
+  }
   function curated(book) {
     const out = [];
     for (const [, slugs, born] of (RANK.books[book] || [])) {
@@ -783,9 +803,7 @@
       // a page per twelve verses or more (Calov's one page on Psalm 13 stays; Augustine's Exposition of Propositions, under a column
       // for Romans 3's thirty-one verses, does not). A chapter with no page after it (the book's last, a sermon on the pericope) is
       // taken at the map's word.
-      const span = c && c.open != null && c.close != null && Number(c.close) >= Number(c.open) ? (Number(c.close) - Number(c.open) + 1) / Math.max(1, S.nv || 1) : null;
-      const says = c && (Object.keys(c.notes).length || c.collected || (c.touch || 0) >= Math.max(3, Math.ceil((S.nv || 0) / 4)) || (c.open != null && (span == null || span >= 0.08)));
-      if (c && says) { c.born = born; out.push(c); }
+      if (c && saysOn(c)) { c.born = born; out.push(c); }
     }
     return out;
   }
@@ -906,6 +924,7 @@
     const seenA = new Set(), seenL = new Set();
     const keep = (c) => { const k = aKey(c.a) || c.slug, l = short(c.a); if (seenA.has(k) || seenL.has(l)) return false; seenA.add(k); seenL.add(l); return true; };
     const head = (book.length ? book : firsts.slice(0, 4)).filter(keep), tail = SETS.list.length ? [] : firstsOf(whole).filter(keep).slice(0, 6);
+    for (const c of keySetsOn()) if (keep(c)) head.push(c);
     for (const c of firsts) { if (head.length >= CAP) break; if (c.kd === 'sermons' || !Object.keys(c.notes).length) continue; if (keep(c)) head.push(c); }
     head.sort((x, y) => when(x) - when(y) || y.score - x.score);
     // THE WHOLE-BIBLE SETS ON THIS CHAPTER (10-23): every set the registry knows that has a volume here, one button a set (its volumes
@@ -920,9 +939,16 @@
     const tradRow = ([k, name]) => { const xs = sets.filter((x) => x.s.trad === k); return xs.length ? `<div class="cp-keys-row cp-keys-trad" role="group" aria-label="${esc(name)}"><span class="cp-keys-sub">${esc(name)}</span><span class="cp-keys-chips">${xs.map(setBtn).join('')}</span></div>` : ''; };
     // on a phone the sets fold behind one line (10-25: five scrolling strips left the commentary no room); on a wide screen they
     // stand open as before
+    // Mere Orthodoxy's wide pane runs the sets on in the key row's one sideways line (open); on the phone's sheet they fold, open when one
+    // of them is the commentary read (10-28)
     const narrow = matchMedia('(max-width: 640px)').matches;
-    const wholeRows = sets.length ? `<details class="cp-keys-whole"${narrow ? '' : ' open'} role="group" aria-label="Whole-Bible commentaries, by tradition"><summary class="cp-keys-lab cp-keys-wl">Whole Bible<small class="cp-keys-n">${sets.length} ${sets.length === 1 ? 'set' : 'sets'}</small></summary>${SETS.trads.map(tradRow).join('')}</details>` : '';
+    const wholeRows = sets.length ? `<details class="cp-keys-whole"${!narrow || sets.some(({ c }) => isCur(c)) ? ' open' : ''} role="group" aria-label="Whole-Bible commentaries, by tradition"><summary class="cp-keys-lab cp-keys-wl">Whole Bible<small class="cp-keys-n">${sets.length} ${sets.length === 1 ? 'set' : 'sets'}</small></summary>${SETS.trads.map(tradRow).join('')}</details>` : '';
     pane.querySelector('.cp-keys').innerHTML = head.length + tail.length + sets.length < 2 ? '' : row(`On ${refName(w) === 'Psalm' ? 'the Psalms' : refName(w)}`, head) + row('Whole Bible', tail) + wholeRows;
+    // the pressed key in sight on its sideways row (10-28)
+    for (const r of pane.querySelectorAll('.cp-keys-row:not(.cp-keys-trad)')) {
+      const on = r.querySelector('.cp-key[aria-pressed="true"]'); if (!on || r.scrollWidth <= r.clientWidth + 1) continue;
+      r.scrollLeft += on.getBoundingClientRect().left - r.getBoundingClientRect().left - (r.clientWidth - on.offsetWidth) / 2;
+    }
     keyInView();
     if (listOpen()) renderDir();
   }
@@ -951,7 +977,9 @@
 
   function nameCur() {
     pane.querySelector('.cp-who').textContent = S.cur ? [authorName(S.cur), centuryOf(S.cur.slug)].filter(Boolean).join(dot) || 'Commentary' : 'No commentary';
-    pane.querySelector('.cp-what').textContent = S.cur ? `${S.cur.t}${volShort(S.cur.vol) ? ` (${volShort(S.cur.vol)})` : ''}` : '';
+    // a key set's volume named by the set too (10-28): "The Ordinary Gloss (Glossa Ordinaria): Epistle to the Romans"
+    const ks = S.cur && SETS.list.find((x) => x.key && x.id === setIdOf(S.cur.slug));
+    pane.querySelector('.cp-what').textContent = S.cur ? `${ks && !String(S.cur.t).includes(ks.label) ? `${ks.title}: ` : ''}${S.cur.t}${volShort(S.cur.vol) ? ` (${volShort(S.cur.vol)})` : ''}` : '';
     pane.querySelector('.cp-what').title = S.cur && S.cur.tl ? `As printed: ${S.cur.tl}` : '';
   }
   // Only the reader's own choice is remembered (fr_cp_pick): the old key held whatever opened first, Lapide for nearly everyone.

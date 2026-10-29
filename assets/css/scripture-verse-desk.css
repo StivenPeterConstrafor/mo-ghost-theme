@@ -186,3 +186,41 @@ span.vdb-arrow{color:var(--vdb-line)}
 /* the whole-Bible sets, by tradition (10-23) */
 .vdb-wh{margin:.85rem 0 .2rem;color:var(--vdb-muted);font:600 var(--vdb-small)/1.4 var(--vdb-body);letter-spacing:.02em}
 .vdb-gp > .vdb-wh:first-child{margin-top:.35rem}
+
+/* ── THE READING AT THE SIDE (10-28): on a wide screen the list keeps its place and the row chosen is read beside it ──────────────── */
+.vdb-side{display:none}
+/* Mere Orthodoxy's desk sits under its header and the library's rail, whose heights it keeps in --sd-top */
+.vdb-site-mo{--vdb-side-top:calc(var(--sd-top,0px) + 16px)}
+@media (min-width:1180px){
+  .vdb-has-side .vdb-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(24rem,.95fr);gap:0 2.25rem;align-items:start}
+  .vdb-has-side .vdb-main{min-width:0}
+  .vdb-has-side .vdb-side{position:sticky;top:var(--vdb-side-top,76px);display:flex;flex-direction:column;min-width:0;max-height:calc(100vh - var(--vdb-side-top,76px) - 16px);
+    border:1px solid var(--vdb-line);border-radius:6px;background:var(--vdb-sheet);overflow:hidden}
+  .vdb-has-side .vdb-side:focus{outline:none}
+  /* the row itself reads at the side: no Preview button, and the work's column is narrower */
+  .vdb-has-side .vdb-groups .vdb-pv{display:none}
+  .vdb-has-side .vdb-rb{grid-template-columns:minmax(8.5rem,12.5rem) minmax(0,1fr)}
+  .vdb-has-side .vdb-r.is-sel>.vdb-rl{margin:0 -.6rem;padding:0 .6rem;border-radius:6px;background:var(--vdb-wash)}
+  .vdb-has-side .vdb-r.is-sel>.vdb-rl .vdb-who{font-weight:600}
+}
+.vdb-sk{display:flex;flex:none;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;padding:.7rem 1.1rem .65rem;border-bottom:1px solid var(--vdb-line);
+  -webkit-mask-image:linear-gradient(to right,transparent,#000 1.1rem,#000 calc(100% - 2rem),transparent);mask-image:linear-gradient(to right,transparent,#000 1.1rem,#000 calc(100% - 2rem),transparent)}
+.vdb-sk::-webkit-scrollbar{display:none}
+.vdb-skb{flex:none;min-height:30px;padding:3px 10px;border:1px solid var(--vdb-line);border-radius:999px;background:transparent;color:var(--vdb-ink);font:.8125rem/1.4 var(--vdb-body);cursor:pointer}
+.vdb-skb:hover{border-color:var(--vdb-ink)}
+.vdb-skb[aria-pressed="true"]{background:var(--vdb-ink);border-color:var(--vdb-ink);color:var(--vdb-stone)}
+.vdb-sh{flex:none;padding:.85rem 1.1rem .75rem;border-bottom:1px solid var(--vdb-line)}
+.vdb .vdb-shw{margin:0;font:500 1.375rem/1.25 var(--vdb-display);text-wrap:balance}
+.vdb-shw small{margin-left:.5rem;color:var(--vdb-muted);font:400 var(--vdb-small)/1.3 var(--vdb-body);font-variant-numeric:tabular-nums}
+.vdb .vdb-sht{margin:.1rem 0 0;font:.9375rem/1.45 var(--vdb-body);text-wrap:pretty}
+.vdb-sht cite{font-style:italic}
+.vdb .vdb-shp{margin:.4rem 0 0;color:var(--vdb-muted);font:var(--vdb-small)/1.5 var(--vdb-body);text-wrap:pretty}
+.vdb-sha{display:flex;flex-wrap:wrap;align-items:center;gap:0 1.1rem;margin:.25rem 0 0;font:.875rem/1.3 var(--vdb-body)}
+.vdb-sha .vdb-lane{margin-right:.2rem}
+.vdb-sb{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:1rem 1.1rem 1.6rem}
+.vdb-sb .vdb-q{max-width:66ch}
+.vdb .vdb-sph{margin:1.5rem 0 .3rem;padding-top:.85rem;border-top:1px solid var(--vdb-line);color:var(--vdb-ink);font:500 1rem/1.3 var(--vdb-display)}
+.vdb-sb>div:first-child .vdb-scps+*{margin-top:0}
+.vdb-spb{display:inline-flex;align-items:center;min-height:2rem;padding:0;border:0;background:none;color:var(--vdb-ink);font:inherit;font-variant-numeric:tabular-nums;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;cursor:pointer}
+.vdb-scps li.is-on .vdb-spb{font-weight:600;text-decoration-thickness:2px}
+@media (prefers-reduced-motion:no-preference){.vdb-has-side .vdb-sb>*{animation:vdb-in .18s var(--vdb-ease)}}

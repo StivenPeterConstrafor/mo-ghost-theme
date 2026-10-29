@@ -156,7 +156,8 @@
   const VD = window.FRVerseDesk;
   if (VD) {
     VD.mount($root.querySelector("[data-sd-vdb]"), {
-      base: window.__FR_BLOB_BASE__, site: "mo", book: { slug: book.lib, name: book.name }, ch: c, verse: v, verses: [],
+      // (10-28, owner: "incorporate our commentary offerings to the side") on a wide screen the row chosen is read beside the list
+      base: window.__FR_BLOB_BASE__, site: "mo", side: true, book: { slug: book.lib, name: book.name }, ch: c, verse: v, verses: [],
       text: () => verseAndLast.then((d) => d.text || `${label} is not in the ${short}.`),
       translation: book.ap ? { name: S.APOCRYPHA_TEXT } : { code: t, name: S.textName(book, t), options: S.TRANSLATIONS.map((x) => [x[0], x[1], x[2]]),
         set(code) { S.rememberTranslation(code); follow(S.deskHref(book, c, v, code === "ESV" ? "" : code)); } },
