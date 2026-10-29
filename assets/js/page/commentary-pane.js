@@ -129,13 +129,22 @@
     'collected by Thomas Aquinas The catena': 'Catena Aurea',
     'Denys the Carthusian': 'Denys', 'Willem van Est': 'Estius', 'Nicholas of Lyra': 'Lyra', 'Matthew Poole': 'Poole',
     // Fathers whose given name alone names another man on the same strip (10-25: "John" on Galatians 2 was John of Damascus)
-    'John of Damascus': 'Damascene', 'Gregory of Nyssa': 'Nyssen', 'Gregory of Nazianzus': 'Nazianzen' };
+    'John of Damascus': 'Damascene', 'Gregory of Nyssa': 'Nyssen', 'Gregory of Nazianzus': 'Nazianzen',
+    // (10-28 key audit) names the rule below shortens wrongly
+    'Rabanus Maurus': 'Rabanus', 'Hrabanus Maurus': 'Rabanus', 'Pope Gregory I': 'Gregory the Great', "Jacques Lefèvre d'Étaples": 'Lefèvre',
+    'Theodore of Mopsuestia': 'Theodore of Mopsuestia' };
+  // a given name several medieval writers share is kept with its place ("William of St Thierry", "Richard of St Victor", "Martin of León")
+  const SHARED = /^(William|Richard|Hugh|Martin|Matthew|Peter|Robert|Henry|Nicholas|Stephen|Walter|Gilbert|Alan|Adam|Geoffrey|Odo|Bruno)\s+of\s+(.+)$/;
   const short = (a) => {
     if (SHORT[a]) return SHORT[a];
     // "The catena, collected by Thomas Aquinas" in the chapter files
     if (/catena/i.test(a) && /aquinas/i.test(a)) return 'Catena Aurea';
     // the Greek catalogue's "Archbishop of Bulgaria Theophylact", "Bishop of Trikka Oecumenius": the name comes last
     if (/^(?:Arch)?bishop\b/i.test(a || '')) return String(a).trim().split(/\s+/).pop();
+    // a doubtful author is the pseudo-writer ("Uncertain author (Jerome of Stridon?)" → "Pseudo-Jerome"); a birth date is no name
+    const unc = /^Uncertain author\s*\((.+?)\??\)\s*$/i.exec(String(a || '').trim()); if (unc) return `Pseudo-${short(unc[1].replace(/\?$/, ''))}`;
+    const a0 = String(a || '').replace(/\s*\((?:c\.\s*)?\d{3,4}\s*[–-]?\s*(?:\d{3,4})?\)?\s*$/, '').trim(); if (a0 !== String(a || '').trim() && a0) return short(a0);
+    const sh = SHARED.exec(a0); if (sh) return `${sh[1]} of ${sh[2].replace(/^Saint[-\s]+/i, 'St ')}`;
     const b = String(a || '').replace(/^Uncertain author\s*\(?/i, '').replace(/\)$/, '').replace(/\s+(?:of|the)\s+.*$/i, '').trim();
     const p = b.split(/\s+/);
     return /^[IVXL]+$/.test(p[p.length - 1]) ? b : p[p.length - 1];
@@ -782,6 +791,7 @@
    * his works in the order to open them and his year; on the chapter, each author's first work that has the chapter's page (Luther on
    * Psalm 51: his lectures of 1532, not the Summaries). Other books: the tier rule in fillList. */
   function saysOn(c) {
+    if (!c || c.wb === 2) return false;
     const span = c && c.open != null && c.close != null && Number(c.close) >= Number(c.open) ? (Number(c.close) - Number(c.open) + 1) / Math.max(1, S.nv || 1) : null;
     return !!(c && (Object.keys(c.notes).length || c.collected || (c.touch || 0) >= Math.max(3, Math.ceil((S.nv || 0) / 4)) || (c.open != null && (span == null || span >= 0.08))));
   }
@@ -790,14 +800,18 @@
    * chapter where its volume says something, in the book's row and among the Reception's keys; it keeps its button with the sets too */
   function keySetsOn() {
     const out = [];
-    for (const { s, c } of setsOn(S.list, S.verse || 1)) if (s.key && saysOn(c)) { if (!c.born) c.born = s.key; out.push(c); }
+    // (10-28 key audit) the span test aside: Migne's abridged Gloss gives many chapters a column or less, and its page there is its gloss
+    for (const { s, c } of setsOn(S.list, S.verse || 1)) if (s.key && c && c.wb !== 2 && (c.open != null || Object.keys(c.notes).length || c.collected)) { if (!c.born) c.born = s.key; out.push(c); }
     return out;
   }
   function curated(book) {
     const out = [];
     for (const [, slugs, born] of (RANK.books[book] || [])) {
       const have = slugs.map((s) => S.list.find((c) => c.slug === s)).filter(Boolean);
-      const c = have.find((x) => x.open != null) || have.find((x) => Object.keys(x.notes).length) || have[0];
+      // (10-28 key audit) a volume of its own (a page or notes on the chapter) before a page that only cites it (wb 2): Luther on Psalm 51
+      // opens his 1532 lectures (WA 40.2), not a citation in the Operationes (WA 5); a citing page alone never makes a key stand (saysOn)
+      const own = have.filter((x) => x.wb !== 2);
+      const c = own.find((x) => x.open != null) || own.find((x) => Object.keys(x.notes).length) || own[0] || have[0];
       // (10-25, owner: "change if there's no commentator, like Augustine on Romans") a key stands on the chapter only when it has a
       // note in it, or touches a good part of it (a verse in four, three at least), or the map gives the chapter room in the work:
       // a page per twelve verses or more (Calov's one page on Psalm 13 stays; Augustine's Exposition of Propositions, under a column

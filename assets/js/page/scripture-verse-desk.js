@@ -71,9 +71,20 @@
     "Westminster Assembly": "Westminster Annotations", "Gregory I": "Gregory the Great", "Theophylact, Archbishop of Bulgaria": "Theophylact",
     "The critics, collected by John Pearson and others": "Critici Sacri", "Cornelius a Lapide": "Lapide", "collected by Thomas Aquinas": "Catena Aurea",
     "collected by Thomas Aquinas The catena": "Catena Aurea", "The catena, collected by Thomas Aquinas": "Catena Aurea", "Denys the Carthusian": "Denys",
-    "Willem van Est": "Estius", "Willem Hessels van Est": "Estius", "Nicholas of Lyra": "Lyra", "Matthew Poole": "Poole" };
+    "Willem van Est": "Estius", "Willem Hessels van Est": "Estius", "Nicholas of Lyra": "Lyra", "Matthew Poole": "Poole",
+    // Fathers whose given name alone names another man on the same strip (the pane's, 10-25), and (10-28 key audit) names the rule below
+    // shortens wrongly
+    "John of Damascus": "Damascene", "Gregory of Nyssa": "Nyssen", "Gregory of Nazianzus": "Nazianzen",
+    "Rabanus Maurus": "Rabanus", "Hrabanus Maurus": "Rabanus", "Pope Gregory I": "Gregory the Great", "Jacques Lefèvre d'Étaples": "Lefèvre",
+    "Theodore of Mopsuestia": "Theodore of Mopsuestia" };
+  // a given name several medieval writers share is kept with its place ("William of St Thierry", "Richard of St Victor", "Martin of León")
+  const SHARED = /^(William|Richard|Hugh|Martin|Matthew|Peter|Robert|Henry|Nicholas|Stephen|Walter|Gilbert|Alan|Adam|Geoffrey|Odo|Bruno)\s+of\s+(.+)$/;
   const short = (a) => {
     if (SHORT[a]) return SHORT[a];
+    // a doubtful author is the pseudo-writer ("Uncertain author (Jerome of Stridon?)" → "Pseudo-Jerome"); a birth date is no name
+    const unc = /^Uncertain author\s*\((.+?)\??\)\s*$/i.exec(String(a || "").trim()); if (unc) return `Pseudo-${short(unc[1].replace(/\?$/, ""))}`;
+    const a0 = String(a || "").replace(/\s*\((?:c\.\s*)?\d{3,4}\s*[–-]?\s*(?:\d{3,4})?\)?\s*$/, "").trim(); if (a0 !== String(a || "").trim() && a0) return short(a0);
+    const sh = SHARED.exec(a0); if (sh) return `${sh[1]} of ${sh[2].replace(/^Saint[-\s]+/i, "St ")}`;
     // a body, a collection or an unnamed author is named whole ("Acts of the Council of Trent", "Various authors")
     if (/^(?:various|unknown|anonymous|acts|canons|decrees|council|the)\b/i.test(a || "")) return properName(a);
     if (/catena/i.test(a) && /aquinas/i.test(a)) return "Catena Aurea";
@@ -384,6 +395,7 @@
    * a note in it, rows on a verse in four, or a page per twelve verses), then the whole-Bible sets the registry marks as keys (10-28: the
    * Glossa Ordinaria, c. 1100), one an author */
   const saysOn = (M, c) => {
+    if (!c || c.wb === 2) return false;
     const span = c.open != null && c.close != null && Number(c.close) >= Number(c.open) ? (Number(c.close) - Number(c.open) + 1) / Math.max(1, M.nv || 1) : null;
     return !!(Object.keys(c.notes).length || c.collected || (c.touch || 0) >= Math.max(3, Math.ceil((M.nv || 0) / 4)) || (c.open != null && (span == null || span >= 0.08)));
   };
@@ -391,7 +403,9 @@
     const keys = [];
     for (const [, slugs, born] of (M.RANK.books[M.book] || [])) {
       const have = slugs.map((s) => M.list.find((c) => c.slug === s)).filter(Boolean);
-      const c = have.find((x) => x.open != null) || have.find((x) => Object.keys(x.notes).length) || have[0];
+      // (10-28 key audit) a volume of its own before a page that only cites the chapter (wb 2); a citing page alone never stands (saysOn)
+      const own = have.filter((x) => x.wb !== 2);
+      const c = own.find((x) => x.open != null) || own.find((x) => Object.keys(x.notes).length) || own[0] || have[0];
       if (c && saysOn(M, c)) { c.born = born; keys.push(c); }
     }
     const when = (c) => c.born || yearOf(M, c.a, c) || 9999;
@@ -409,7 +423,8 @@
       if (!s.key) continue;
       const vols = M.list.filter((c) => M.SETS.of[c.slug] === s.id && c.wb !== 2 && c.kd !== "sermons");
       const c = vols.find((x) => x.open != null) || vols.find((x) => Object.keys(x.notes).length) || vols.find((x) => x.bookAt != null);
-      if (c && saysOn(M, c) && keep(c)) { if (!c.born) c.born = s.key; M.head.push(c); }
+      // the span test aside (10-28 key audit): Migne's abridged Gloss gives many chapters a column or less
+      if (c && (c.open != null || Object.keys(c.notes).length || c.collected) && keep(c)) { if (!c.born) c.born = s.key; M.head.push(c); }
     }
     M.head.sort((x, y) => when(x) - when(y) || y.score - x.score);
     M.tail = M.SETS && M.SETS.list.length ? [] : firstsOf(whole).filter(keep).slice(0, 6);
@@ -1143,6 +1158,7 @@
       side.innerHTML = `${keys}<header class="vdb-sh"><p class="vdb-shw">${esc(info.who)}${info.when ? `<small>${esc(info.when)}</small>` : ""}</p>`
         + `<p class="vdb-sht"><cite>${esc(info.what)}</cite></p><p class="vdb-shp" data-vdb-shp hidden></p><div class="vdb-sha" data-vdb-sha></div></header>`
         + '<div class="vdb-sb" data-vdb-sb><div data-vdb-sq><p class="vdb-wait" role="status">Opening the page…</p></div><div data-vdb-spg></div></div>';
+      fitSide();
       const bar = side.querySelector(".vdb-sk"), on = bar && bar.querySelector('.vdb-skb[aria-pressed="true"]');
       if (on) bar.scrollLeft += on.getBoundingClientRect().left - bar.getBoundingClientRect().left - (bar.clientWidth - on.offsetWidth) / 2;
       const q = side.querySelector("[data-vdb-sq]"), where = side.querySelector("[data-vdb-shp]"), acts = side.querySelector("[data-vdb-sha]");
@@ -1198,6 +1214,16 @@
       }
       return false;
     }
+    // the pane keeps its head below the masthead to the end of the page: where the list's column ends above the screen's foot, the pane
+    // is as tall as the room left in it (at least 280 px), so the column's end never pushes it up under the masthead
+    const fitSide = () => {
+      const side = host.querySelector("[data-vdb-side]"), cols = host.querySelector(".vdb-cols");
+      if (dead || !side || !cols) return;
+      if (!sideMode()) { side.style.maxHeight = ""; return; }
+      const top = parseFloat(root.getComputedStyle(side).top) || 76;
+      side.style.maxHeight = `${Math.round(Math.max(280, Math.min(root.innerHeight - top - 16, cols.getBoundingClientRect().bottom - top)))}px`;
+    };
+    if (WIDE) { root.addEventListener("scroll", fitSide, { passive: true }); root.addEventListener("resize", fitSide, { passive: true }); }
     if (WIDE) WIDE.addEventListener("change", () => {
       if (dead || !VM) return;
       if (sideMode()) { host.querySelectorAll(".vdb-groups .vdb-r.is-open").forEach((r) => openRow(r, false, true)); sideShow(st.r || sideFirst(), { quiet: true }); }
@@ -1381,7 +1407,7 @@
       verse: () => v,
       after: () => $("[data-vdb-after]"),
       toolArea: () => host.querySelector("[data-vdb-toolarea]"),
-      destroy() { dead = true; },
+      destroy() { dead = true; if (WIDE) { root.removeEventListener("scroll", fitSide); root.removeEventListener("resize", fitSide); } },
     };
   }
 

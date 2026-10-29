@@ -194,11 +194,9 @@ span.vdb-arrow{color:var(--vdb-line)}
 @media (min-width:1180px){
   .vdb-has-side .vdb-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(24rem,.95fr);gap:0 2.25rem;align-items:start}
   .vdb-has-side .vdb-main{min-width:0}
-  .vdb-has-side .vdb-side{position:sticky;top:var(--vdb-side-top,76px);display:flex;flex-direction:column;min-width:0;max-height:calc(100vh - var(--vdb-side-top,76px) - 5rem);
+  .vdb-has-side .vdb-side{position:sticky;top:var(--vdb-side-top,76px);display:flex;flex-direction:column;min-width:0;max-height:calc(100vh - var(--vdb-side-top,76px) - 16px);
     border:1px solid var(--vdb-line);border-radius:6px;background:var(--vdb-sheet);overflow:hidden}
   .vdb-has-side .vdb-side:focus{outline:none}
-  /* (5rem, not 1rem, from the foot of the screen: at the end of the page the list's column ends above the screen's foot and the
-     pane, held inside it, would ride up under the masthead) */
   /* the row itself reads at the side: no Preview button, and the work's column is narrower */
   .vdb-has-side .vdb-groups .vdb-pv{display:none}
   .vdb-has-side .vdb-rb{grid-template-columns:minmax(8.5rem,12.5rem) minmax(0,1fr)}
