@@ -198,7 +198,7 @@ span.vdb-arrow{color:var(--vdb-line)}
     border:1px solid var(--vdb-line);border-radius:6px;background:var(--vdb-sheet);overflow:hidden}
   .vdb-has-side .vdb-side:focus{outline:none}
   /* the row itself reads at the side: no Preview button, and the work's column is narrower */
-  .vdb-has-side .vdb-groups .vdb-pv{display:none}
+  .vdb-has-side .vdb-groups .vdb-r>.vdb-rl .vdb-pv{display:none}
   .vdb-has-side .vdb-rb{grid-template-columns:minmax(8.5rem,12.5rem) minmax(0,1fr)}
   .vdb-has-side .vdb-r.is-sel>.vdb-rl{margin:0 -.6rem;padding:0 .6rem;border-radius:6px;background:var(--vdb-wash)}
   .vdb-has-side .vdb-r.is-sel>.vdb-rl .vdb-who{font-weight:600}
