@@ -102,9 +102,14 @@
   function createPages(env) {
     const { base } = env;
     const kept = new Map();
+    /* (2026-11-09, owner: "iterate until scripture can be used as a daily driver for what were doing"; A DAILY READER'S MEMORY in
+     * commentary-pane.js) env.keep: the number of works whose texts are kept, those read last. A Migne volume read whole is 8 MB, and
+     * a reader going from book to book in one tab kept one more at nearly every chapter (37 MB after six). Without it, all are kept. */
     const once = (k, make) => {
       if (!kept.has(k)) { const p = Promise.resolve().then(make); p.catch(() => { if (kept.get(k) === p) kept.delete(k); }); kept.set(k, p); }
-      return kept.get(k);
+      const got = kept.get(k);
+      if (env.keep > 0) { kept.delete(k); kept.set(k, got); while (kept.size > env.keep) kept.delete(kept.keys().next().value); }
+      return got;
     };
 
     const canonCols = (slug) => once(`canon:${slug}`, async () => {

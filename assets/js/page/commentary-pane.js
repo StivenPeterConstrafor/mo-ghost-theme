@@ -126,7 +126,38 @@
     };
   })();
   const BASE = SITE.base;
-  const cache = new Map();
+  /* A DAILY READER'S MEMORY (2026-11-09, owner: "iterate until scripture can be used as a daily driver for what were doing": a reader
+   * goes through many chapters in one tab, on a phone too). Read through chapters by the address in one tab, The Faith Received's
+   * Scripture page kept every chapter it had shown: 16,544 nodes at the first, 74,245 at the seventh, the heap 68 to 283 MB; a phone
+   * went from 91 to 411 MB in twelve chapters, and a headless page that walked further was lost. The pane kept two things of each:
+   *   - every file it read, for the tab's life (107 MB after six chapters): each chapter's file (Romans 8's is 19 MB once read), its
+   *     reception history and hits, and the pages read on it. What was read for the chapter in the address, or for the one before it
+   *     (Back), is kept; the rest is let go, and read again if it is asked for. The files every chapter reads (the map, the overlay)
+   *     are read for each, so they stay. A page with no chapter in its address keeps everything, as before;
+   *   - the pane itself: The Faith Received's page draws itself anew for each chapter, and each build() gave the screen's width query
+   *     (`wide`) one more listener, which held the old pane, and with it the old chapter's text and verse panel. The query now has one
+   *     listener, the current pane's (wide.onchange). Mere Orthodoxy's page builds the pane once.
+   * The library's texts read whole (a Migne volume is 8 MB) are kept by the loader, the works read last (keep, createPages below). */
+  const KEEP_CHAPTERS = 2, KEEP_WORKS = 6;
+  class ChapterCache extends Map {
+    constructor() { super(); this.read = new Map(); this.at = null; this.recent = []; }
+    get(k) { const v = super.get(k); if (v !== undefined) this.mark(k); return v; }
+    set(k, v) { this.mark(k); return super.set(k, v); }
+    // the chapter each entry was last read for; at a chapter, what was read only for chapters before the last two read is let go (Back
+    // to the chapter before keeps both)
+    mark(k) {
+      const w = SITE.where(), at = w ? `${w.book}/${w.ch}` : '';
+      if (at !== this.at) {
+        this.at = at;
+        if (at) {
+          this.recent = [...this.recent.filter((x) => x !== at), at].slice(-KEEP_CHAPTERS);
+          for (const [x, c] of this.read) if (c && !this.recent.includes(c)) { this.read.delete(x); super.delete(x); }
+        }
+      }
+      this.read.set(k, at);
+    }
+  }
+  const cache = new ChapterCache();
   /* IMPORTANCE, NOT A FIXED LIST (2026-10-19, owner: "rerank by importance and relevance like augustine obv, reformers … make sure in
    * scripture reader its easy to get to the key works … not just whole bible like the glossa or poole and sacred critics and lapide
    * but also for chapter comms like Augustine on John or the Psalms"). The list above ranked whole-Bible annotators (and Wesley, Clarke,
@@ -240,7 +271,7 @@
   // ── the commentaries on this chapter ──────────────────────────────────────────────────────────────────────────────────────
   // The loaders (a work's pages, TEI, Migne columns, EEBO books) and the list of works a chapter has are in commentary-pages.js, so
   // scripts/check-commentary-pages.mjs can open every one of them against the live library.
-  const PG = window.FRCommentaryPages.createPages({ base: BASE, mo: SITE.name === 'mo', json,
+  const PG = window.FRCommentaryPages.createPages({ base: BASE, mo: SITE.name === 'mo', json, keep: KEEP_WORKS,
     text(u) { return fetch(u, { credentials: 'omit' }).then((r) => { if (!r.ok) throw new Error(u); return r.text(); }); } });
   // the verse rail (scripture-verse-rail.js) may load after this file; its sets (workKey) are needed to read a chapter's works, so it
   // is waited for, a few seconds at most
@@ -809,7 +840,8 @@
     pane.querySelectorAll('.cp-pages button').forEach((b) => { b.onclick = () => step(+b.dataset.step); });
     // (2026-11-08) a phone turned to a wide screen leaves the sheet where it was dropped: no drag is left on it; a screen narrowed to a
     // phone's measures the sheet's top again (sheetStop)
-    wide.addEventListener('change', () => { pane.classList.remove('cp-dragging'); pane.style.removeProperty('--cp-drag'); if (!wide.matches) sheetStop(S.sheet); setTab(S.tab, true); });
+    // (2026-11-09) the query's one listener, this pane's: one added at each build() kept every old pane (A DAILY READER'S MEMORY)
+    wide.onchange = () => { pane.classList.remove('cp-dragging'); pane.style.removeProperty('--cp-drag'); if (!wide.matches) sheetStop(S.sheet); setTab(S.tab, true); };
     /* ONE LIST (2026-11-08, owner: "run the reccomendations"): the page's own bar button ("Commentaries (107)", scripture-dev.js) opens
      * this pane's list of the chapter's commentaries, the one Change opens, and says how many it holds; the page's second list is left
      * to a page without the pane */
