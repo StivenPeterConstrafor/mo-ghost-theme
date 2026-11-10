@@ -612,6 +612,84 @@
     });
     sheetStop('half');
   }
+  /* THE PANE STAYS IN SIGHT (2026-11-09, owner: "what about the typeset for scrolling mobile and desktop"; asked how the pane should behave
+   * while the text scrolls, "Sticks to the top, own scroll"). On a wide screen the pane is held under the site's header and scrolls on its
+   * own, its views and the line saying where the note is kept at its top (commentary-pane.css): in the page's flow, one turn of the wheel
+   * left the right column empty while Follow the text changed a pane no one could see. A note the pane lands on, following the text or
+   * picked, is brought into the pane's own box, never the window (bring() and listInView() hand their wide-screen case to boxTo()): its
+   * first lines come to just under the kept rows when they start out of sight, and the same note drawn again (the next verse of one
+   * comment, the language turned) is left where the reader has it while any of it shows. The first landing as the page opens still brings
+   * the verse into view (init()). The Faith Received's sticky header is measured for where the box stops (--cp-top on the page's body,
+   * which its Citations view and the Ask button docked in the phone's sheet read too). inSight() starts it for each pane build() makes. */
+  const stuck = () => !!pane && wide.matches && getComputedStyle(pane).position === 'sticky';
+  // the height kept at the box's top over el: the views, and the line saying where the note is for what comes after that line
+  const keptOver = (el) => {
+    const tabs = pane.querySelector(':scope > .cp-tabs'), at = pane.querySelector(':scope > .cp-where');
+    const after = !!at && at.getClientRects().length > 0 && (at.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+    return (tabs ? tabs.offsetHeight : 0) + (after ? at.offsetHeight : 0);
+  };
+  // the part of the box on the screen, from under the kept rows over el (or the site's chrome, where the end of the chapter has carried the
+  // box's top up under it: the box's foot rides on the text's) to the box's foot or the screen's
+  const boxSeen = (el) => {
+    const p = pane.getBoundingClientRect();
+    return { lo: Math.max(p.top + pane.clientTop + keptOver(el), coverTop()), hi: Math.min(p.top + pane.clientTop + pane.clientHeight, innerHeight) };
+  };
+  // el's top to just under the kept rows when it starts out of sight or too low to read (force: always); the box scrolls, never the window
+  function boxTo(el, force) {
+    if (!stuck() || !el || !el.getClientRects().length) return;
+    const { lo, hi } = boxSeen(el), r = el.getBoundingClientRect();
+    if (!force && r.top >= lo - 1 && r.top <= hi - 120) return;
+    const y = Math.max(0, Math.round(pane.scrollTop + r.top - lo - 8));
+    if (Math.abs(y - pane.scrollTop) > 2) pane.scrollTo({ top: y, behavior: motion() });
+  }
+  // The Faith Received: the foot of its sticky header, where the held box stops (on a phone the pane's own measure is the sheet's, sheetStop)
+  const holdTop = () => {
+    document.body.style.setProperty('--cp-top', `${Math.round(coverTop())}px`);
+    if (pane && wide.matches) pane.style.removeProperty('--cp-top');
+  };
+  function inSight() {
+    let seen = '';
+    // the pane's words drawn anew (a landing, the text followed, a pick, the language turned; never Earlier on these pages or Keep
+    // reading, which only take a button away): the note, else the page's first words. At the top of the page, before the pane is held,
+    // it stands in the page under the passage's bar and shows its head and keys first (a pick's note is brought in by bring())
+    const land = () => {
+      if (!stuck() || S.tab !== 'c' || listOpen()) return;
+      const body = pane.querySelector('.cp-body');
+      // (not for the line saying the note is being looked for or opened: the box moves once, to the note)
+      if (!body || body.classList.contains('cp-loading')) return;
+      const note = body.querySelector('#cp-hit') || [...body.children].find((x) => !x.hidden && !x.matches('.cp-expand'));
+      if (!note) return;
+      const sig = `${S.cur ? S.cur.slug : ''}|${note.textContent.trim().slice(0, 160)}`, same = sig === seen;
+      seen = sig;
+      if (pane.getBoundingClientRect().top > parseFloat(getComputedStyle(pane).top) + 2) { if (!same && pane.scrollTop) pane.scrollTo({ top: 0 }); return; }
+      if (same) {
+        const r = note.getBoundingClientRect(), { lo, hi } = boxSeen(note);
+        if (r.bottom > lo + 24 && r.top < hi) return;
+      }
+      boxTo(note);
+    };
+    new MutationObserver((ms) => { if (ms.some((m) => m.addedNodes.length)) requestAnimationFrame(land); }).observe(pane.querySelector('.cp-body'), { childList: true });
+    // the critics' index of a collection (paintCollected) moves the box only
+    pane.addEventListener('click', (e) => {
+      const a = e.target.closest && e.target.closest('[data-cp-jump]'), s = a && stuck() && pane.querySelector(`#cp-c${a.dataset.cpJump}`);
+      if (!s) return;
+      e.preventDefault(); e.stopPropagation(); boxTo(s, true);
+    }, true);
+    // the views' height, where the line saying where is kept under them
+    const tabs = pane.querySelector(':scope > .cp-tabs');
+    if (tabs) {
+      const tabsH = () => { if (tabs.offsetHeight) pane.style.setProperty('--cp-tabs-h', `${tabs.offsetHeight}px`); };
+      if (window.ResizeObserver) new ResizeObserver(tabsH).observe(tabs);
+      tabsH();
+    }
+    if (SITE.name !== 'tfr') return;
+    if (!inSight.head) {
+      inSight.head = document.querySelector(SITE.cover) || true;
+      if (inSight.head !== true && window.ResizeObserver) new ResizeObserver(holdTop).observe(inSight.head);
+      wide.addEventListener('change', holdTop);
+    }
+    holdTop();
+  }
   function build() {
     layout = document.querySelector(SITE.layout);
     if (!layout || layout.querySelector('.cp-pane')) return !!layout;
@@ -739,6 +817,7 @@
     if (lb) { lb.dataset.cpList = '1'; lb.dataset.cpWas = lb.getAttribute('aria-controls') || ''; lb.setAttribute('aria-controls', 'cpList'); lb.setAttribute('aria-expanded', 'false'); }
     S.creedsOpen = store.get('fr_cp_creeds', '0') === '1';
     setTab(S.tab, true);
+    inSight();
     return true;
   }
 
@@ -1448,6 +1527,7 @@
     if (!pane || S.tab !== 'c') return;
     const at = pane.querySelector('.cp-where'), note = pane.querySelector('#cp-hit') || pane.querySelector('.cp-body');
     if (!at || !note || !at.getClientRects().length) return;
+    if (stuck()) { boxTo(note); return; }
     if (onSheet()) { sheetTo(at); return; }
     const r = note.getBoundingClientRect();
     if (r.top >= coverTop() && r.top <= innerHeight - 120) return;
@@ -1461,6 +1541,7 @@
   // (2026-11-08) the sheet's part on the screen is measured, not its whole height: its stops move it partly below the screen
   function listInView() {
     const list = pane && pane.querySelector('.cp-list'); if (!list || list.hidden) return;
+    if (stuck()) { boxTo(list); return; }
     if (onSheet()) { const p = pane.getBoundingClientRect(), shown = Math.min(p.bottom, innerHeight) - p.top; if (list.getBoundingClientRect().top > p.top + shown * 0.55) sheetTo(list); return; }
     const r = list.getBoundingClientRect();
     if (r.top <= innerHeight * 0.6) return;

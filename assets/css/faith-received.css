@@ -20821,6 +20821,30 @@ body.mo-shelf-page #author-order-note { display: none; }
   .tfr-rail-brand,
   .tfr-rail-inner > .tfr-rail-brand { font-size: 12px; letter-spacing: 0.07em; padding: 8px 0; margin-left: 0; }
   .tfr-rail-link { font-size: 12.5px; letter-spacing: 0.06em; padding: 8px 0; }
+  /* THE SECTION YOU ARE IN, IN SIGHT (2026-11-09, owner: "Fit MereO's phone nav"). The row still cut the section a reader stood in at
+     the glass ("SCRI" on the Scripture page): it now opens scrolled so that section is whole on the screen (faith-tfr-rail.js), which
+     can leave the row running on past the left edge too. That edge fades the same way while there is more that way (.is-scrolled),
+     and the right edge's fade goes once the row is at its end (.is-end). Both fades lie over the drawers' turned carets ("READ >"),
+     which a transform lifts over anything unnumbered. */
+  .tfr-rail::before {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 28px;
+    pointer-events: none;
+    background: linear-gradient(to left, transparent, var(--color-page, #f6f3f2) 50%);
+    opacity: 0;
+  }
+  .tfr-rail.is-scrolled::before { opacity: 1; }
+  .tfr-rail::after { z-index: 2; }
+  .tfr-rail.is-end::after { opacity: 0; }
+}
+@media (max-width: 640px) and (prefers-reduced-motion: no-preference) {
+  .tfr-rail::before,
+  .tfr-rail::after { transition: opacity 0.15s ease; }
 }
 
 /* ══ TABLET (Ian, 2026-09-30: "We need to do a full tablet optimization") ══

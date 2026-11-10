@@ -34,13 +34,16 @@ html.cp-site-tfr body.cp-on.cp-src .scripture-verse-summary { background: var(--
 
 /* ── The rail, set like the Citations view (10-19, owner: "design wise, it should be like the citation") ──
    Small label over a large heading, thin-ruled rows, italic work titles over a muted author and century line, the body face
-   throughout (no display face on a working surface), no pill, and no box inside the rail that scrolls: the rail takes the height
-   its content takes and the page scrolls (the phone sheet scrolls as a whole). The values are the Citations view's own
-   (.sd-eyebrow, .sd-panel-ref, .sd-h3, .sd-ov-stat, .sd-ov-comm-row in scripture-dev.css and port/dev-notes.css). */
+   throughout (no display face on a working surface), no pill, and no box inside the rail that scrolls: the rail is one box (on a wide
+   screen it scrolls as a whole under the site's header, 2026-11-09, below; the phone sheet scrolls as a whole). The values are the
+   Citations view's own (.sd-eyebrow, .sd-panel-ref, .sd-h3, .sd-ov-stat, .sd-ov-comm-row in scripture-dev.css and port/dev-notes.css). */
 .cp-pane {
   --cp-accent: var(--sd-accent, var(--cp-ink));
-  /* in the page's flow, like the Citations view beside it (which the reader leaves unsticky, 2026-09-23: "the side panel doesn't need
-     to be sticky"); a rail that sticks and is taller than the window cannot be read to its end without a box that scrolls on its own */
+  /* (2026-11-09, owner, asked how the pane should behave while the text scrolls: "Sticks to the top, own scroll") on a wide screen it is
+     held under the site's header and scrolls on its own, its views and the line saying where the note is kept at its top (THE PANE STAYS
+     IN SIGHT, at the end of this file). It stood in the page's flow before (2026-09-23: "the side panel doesn't need to be sticky"), and
+     after one turn of the wheel the right column was empty while Follow the text changed a pane no one could see. The phone's sheet is
+     fixed (max-width: 899px, below). */
   position: relative;
   color: var(--cp-ink);
   /* the page's hero and chapter heading are centered and that is inherited here: every row in the pane reads left to right */
@@ -165,8 +168,8 @@ a.cp-row-t { text-decoration: none; }
 .cp-pane .cp-lang button:focus-visible { outline-offset: -3px; }
 @media (pointer: coarse) { .cp-lang button { min-height: 44px; } }
 
-/* the directory of every commentary on the chapter (scripture-verse-rail.css), in the rail's flow: the rail has no box that scrolls,
-   so the find box stays where it is rather than sticking to the window under the masthead (10-21) */
+/* the directory of every commentary on the chapter (scripture-verse-rail.css), in the rail's flow: the find box stays where it is rather
+   than sticking to the window under the masthead (10-21); (2026-11-09) in the wide screen's held pane it scrolls with the list */
 .cp-list .vr-dir { margin: 2px 0 10px; }
 .cp-list .vr-dir-find { position: static; padding: 8px 0; }
 /* the rail's paper and ground are one cream here: a work's preview is set on a white sheet with a hairline, so it reads as the work's
@@ -180,7 +183,8 @@ html.cp-site-mo .vr-dir-find input { background: var(--cp-sheet, #fff); }
 /* the way to the reader keeps its separator with it when the line wraps (10-21) */
 .cp-where .cp-go { white-space: nowrap; }
 
-/* the commentary's own words: in the page's flow, so the page scrolls and there is no second scrollbar */
+/* the commentary's own words: no box of their own; the pane scrolls them with the rest (2026-11-09: on a wide screen the pane is the
+   box that scrolls, under its views and the line saying where) */
 .cp-body { font-size: 16px; line-height: 1.62; }
 .cp-body p { margin: 0 0 0.8em; max-width: 68ch; }
 .cp-body .cp-hit, .cp-body .cp-hit-on { background: var(--cp-hit); margin-left: -10px; margin-right: -10px; padding: 6px 10px; }
@@ -384,11 +388,22 @@ html.cp-site-mo body.cp-on .sd-side > .cp-tabs { margin: 0 0 16px; }
   .cp-follow, .cp-pages button { min-height: 40px; }
   .cp-stats { margin-bottom: 6px; }
   /* the Ask button rides above the sheet instead of covering its text; (2026-11-08) above the peek too, and out of the way of the
-     full sheet */
-  body.cp-on #fra-launcher { bottom: calc(50vh + 12px); }
-  body.cp-on.cp-sheet-peek #fra-launcher { bottom: calc(var(--cp-peek) + 12px); }
-  body.cp-on.cp-sheet-full #fra-launcher { visibility: hidden; }
-  body.cp-on.cp-peek #fra-launcher { bottom: 68px; visibility: visible; }
+     full sheet. ASK OFF THE TEXT (2026-11-09, owner: "Move 'Ask' off the text"): held above the sheet, the button still stood over the
+     verses just above it ("Christ Jes[us]", Romans 8:34). It is docked in the sheet's top bar now, at the right of the grip and a size
+     smaller, at each of the sheet's stops: the screen's foot less the stop's height, or under the site's header at the full stop
+     (--cp-top, which commentary-pane.js states on the page's body for The Faith Received). It slides with the sheet, is put away while
+     the sheet is dragged, and opens the same Ask. With the sheet put away for the page's own Citations view (The Faith Received,
+     .cp-src) it is back in its corner. */
+  body.cp-on:not(.cp-src):not(.cp-peek) #fra-launcher { bottom: calc(var(--cp-half) - 30px); right: 10px; height: 28px; min-width: 0;
+    padding: 0 11px; gap: 6px; font-size: 13px; border-radius: 14px; box-shadow: none; }
+  body.cp-on:not(.cp-src):not(.cp-peek) #fra-launcher svg { width: 16px; height: 16px; }
+  body.cp-on.cp-sheet-peek:not(.cp-src):not(.cp-peek) #fra-launcher { bottom: calc(var(--cp-peek) - 30px); }
+  body.cp-on.cp-sheet-full:not(.cp-src):not(.cp-peek) #fra-launcher { bottom: calc(100dvh - var(--sd-top, var(--cp-top, 0px)) - 38px); }
+  body.cp-on:has(.cp-pane.cp-dragging) #fra-launcher { opacity: 0; pointer-events: none; }
+  body.cp-on.cp-peek #fra-launcher { bottom: 68px; }
+}
+@media (max-width: 899px) and (prefers-reduced-motion: no-preference) {
+  body.cp-on #fra-launcher { transition: bottom 0.24s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.12s ease-out; }
 }
 /* the grip belongs to the phone's sheet: beside the text on a wide screen there is nothing to raise */
 @media (min-width: 900px) { .cp-pane > .cp-grip { display: none; } }
@@ -437,9 +452,10 @@ html.cp-site-mo .cp-body p { max-width: none; }
 @container cp-rail (min-width: 1040px) { html.cp-site-mo .cp-body { font-size: 18px; line-height: 1.7; } }
 @container cp-rail (min-width: 1200px) { html.cp-site-mo .cp-body { font-size: 20px; line-height: 1.75; } }
 
-/* ── The Verse Desk (Ian, 2026-10-20) ── The last control in the tab row, a site button (.btn, hollow). On a desktop the row and its
-   clone in the Citations panel scroll away with the rail (Ian, 10-23: the stuck row let the list show above it). The phone's sheet
-   keeps its row pinned (the 899px rules above and below). */
+/* ── The Verse Desk (Ian, 2026-10-20) ── The last control in the tab row, a site button (.btn, hollow). On a desktop the row's clone in
+   the Citations panel scrolls away with that panel (Ian, 10-23: the row held to the window let the list show above it); (2026-11-09) the
+   pane's own row is held at the top edge of the pane's box, where nothing can show above it (THE PANE STAYS IN SIGHT, below). The phone's
+   sheet keeps its row pinned (the 899px rules above and below). */
 html.cp-site-mo .cp-tabs { align-items: center; }
 html.cp-site-mo .cp-pane > .cp-tabs { margin: -18px -20px 16px; padding: 6px 20px 0; background: var(--cp-paper); }
 html.cp-site-mo .cp-tabs .cp-desk { flex: none; min-height: 36px; margin: 0 0 6px 12px; padding: 6px 14px; font-size: 14px; }
@@ -493,7 +509,7 @@ html.cp-site-mo .cp-tabs .cp-desk { flex: none; min-height: 36px; margin: 0 0 6p
   html.cp-site-mo .cp-pane[data-tab="s"] > .cp-tabs { top: 0; margin-top: 4px; }
   html.cp-site-mo body.cp-on { padding-bottom: 55vh; padding-bottom: 55dvh; }
   html.cp-site-mo body.cp-on.cp-peek { padding-bottom: 96px; }
-  html.cp-site-mo body.cp-on #fra-launcher { bottom: calc(55dvh + 12px); }
+  /* (2026-11-09) at the sheet's stops the Ask button is docked in its top bar (above: the stops read --cp-half, 55dvh here) */
   html.cp-site-mo body.cp-on.cp-peek #fra-launcher { bottom: 100px; }
   /* the verse chosen comes to the top of what the sheet leaves of the text, under the site's header */
   html.cp-site-mo body.cp-on .bible-verse { scroll-margin-top: calc(var(--sd-top, 0px) + 16px); }
@@ -593,3 +609,45 @@ html.cp-site-mo .cp-tabs .cp-desk { flex: none; min-height: 36px; margin: 0 0 6p
    pane's foot opens the same form (commentary-pane.js tell()), which still slides up from the foot of the screen. */
 html.cp-site-mo body.cp-on .fr-survey { --fr-survey-bar-h: 0px; }
 html.cp-site-mo body.cp-on .fr-survey-bar { display: none; }
+
+/* ── THE PANE STAYS IN SIGHT (2026-11-09, owner: "what about the typeset for scrolling mobile and desktop"; asked how the pane should
+   behave while the text scrolls, "Sticks to the top, own scroll") ──
+   In the page's flow, one turn of the wheel left the right column empty while Follow the text changed a pane no one could see. On a
+   wide screen the pane is held under the site's sticky chrome, as the Citations view beside it already was, and scrolls on its own: a
+   long note scrolls inside the pane, never the page past it, and its views and the line saying where the note is stay at its top while
+   the note scrolls under them. It stops under Mere Orthodoxy's rail and header (--sd-top, which scripture-dev.css keeps as the header
+   slides away and back; the pane follows at once, as no rule may animate its height, check-commentary-sheet.mjs) and under The Faith
+   Received's header (--cp-top, measured by commentary-pane.js). commentary-pane.js scrolls this box to the note it lands on, never the
+   window (the first landing as the page opens still brings the verse into view). The phone's sheet is unchanged. */
+@media (min-width: 900px) {
+  body.cp-on .cp-pane {
+    position: sticky;
+    top: calc(var(--sd-top, var(--cp-top, 0px)) + 16px);
+    max-height: calc(100vh - var(--sd-top, var(--cp-top, 0px)) - 32px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-gutter: stable;
+  }
+  /* the views, held at the box's top edge, where nothing can scroll above them (Ian, 10-23: a row held to the window let the list show
+     above it): a row held in a box that scrolls stops at the box's padding, so the held rows' tops are less the pane's 18px of it. Mere
+     Orthodoxy's row already reaches the box's edges; The Faith Received's keeps its place in the frame (its Citations view wears the same
+     frame, 2026-11-08) and its paper is carried out over the frame's padding, so a note's tint passing under it does not show beside it */
+  body.cp-on .cp-pane > .cp-tabs { position: sticky; top: -18px; z-index: 3; background: var(--cp-paper); }
+  html.cp-site-tfr body.cp-on .cp-pane > .cp-tabs { box-shadow: -20px 0 0 var(--cp-paper), 20px 0 0 var(--cp-paper); }
+  /* the line saying where the note is, held under them (the views' height, measured: --cp-tabs-h); the air above it is padding, not
+     margin, so it keeps it while it is held */
+  body.cp-on .cp-pane > .cp-where {
+    position: sticky; top: calc(var(--cp-tabs-h, 46px) - 18px); z-index: 2; margin-top: 0; padding-top: 10px;
+    background: var(--cp-paper); box-shadow: -20px 0 0 var(--cp-paper), 20px 0 0 var(--cp-paper);
+  }
+  /* a find box that holds itself at the top of the list holds under the views */
+  body.cp-on .cp-pane .cp-list .vr-find { top: calc(var(--cp-tabs-h, 46px) - 18px); }
+  /* The Faith Received's Citations view, its own sticky panel shown in the pane's place, stops where the pane does, so the views' row does
+     not move between them (2026-11-08, above) */
+  html.cp-site-tfr body.cp-on.cp-src .scripture-verse-summary { top: calc(var(--cp-top, 64px) + 16px); max-height: calc(100vh - var(--cp-top, 64px) - 32px); }
+  /* The Faith Received's Ask button stays in its corner at the screen's foot, where the held pane would end: the pane and that view end
+     above it (the button's 46px, the 24px under it, and 12px of air), so it covers neither */
+  body.cp-on:has(#fra-launcher) .cp-pane,
+  html.cp-site-tfr body.cp-on.cp-src:has(#fra-launcher) .scripture-verse-summary { max-height: calc(100vh - var(--sd-top, var(--cp-top, 0px)) - 98px); }
+}

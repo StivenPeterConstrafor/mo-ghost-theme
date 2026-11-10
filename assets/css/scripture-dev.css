@@ -373,6 +373,13 @@ a.sd-comm-card:hover, a.sd-comm-card:focus-visible { border-color: var(--tfr-btn
 /* The old page's .bible-verse wash, kept; the open verse is marked a
    little more firmly so the reader can see what the sidebar describes. */
 .sd-chapter-content .bible-verse.is-active { background: rgba(238, 125, 81, 0.18); box-shadow: 0 2px 0 var(--color-primary); }
+/* TIGHTER VERSE SPACING (2026-11-09, owner: "Tighter verse spacing"). The chapter is set by the old /bible/ page's rules in screen.css,
+   19px on lines 1.85 apart (18px on 1.8 on a phone), so open that the page read as a list of lines. About 1.6 now, and 1.55 on a phone,
+   whose line is half as long; the size and the measure (some 60 to 65 characters a line in the card) are unchanged. The verse numbers
+   still ride at super without opening their line, the open verse's wash and its underline keep a gap between lines, and the section
+   heads keep their own margins. */
+.sd .bible-chapter-content { line-height: 1.6; }
+@media (max-width: 720px) { .sd .bible-chapter-content { line-height: 1.55; } }
 
 /* ── The verse panel (sidebar on wide screens, inline on narrow) ── */
 .sd-panel {

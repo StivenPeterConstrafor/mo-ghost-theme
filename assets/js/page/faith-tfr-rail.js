@@ -315,4 +315,40 @@
       else a.removeAttribute("aria-current");
     });
   });
+
+  /* THE SECTION YOU ARE IN, ON A PHONE'S SCREEN (2026-11-09, owner: "Fit MereO's phone nav"). On a phone the rail is one row that
+     scrolls sideways (Ian, 2026-10-01: "It should be one line and scrollable"), and the section the reader is in could stand past the
+     screen's edge, cut at its first letters ("SCRI" on the Scripture page). As the page opens, the row is scrolled so that section is
+     whole on the screen, the row starting at an item and the next one showing under the fade at the right; the rest is one swipe away
+     either way, and each edge fades while the row runs on past it (.is-scrolled, .is-end; faith-received.css). No item is added or
+     moved, and once the reader has touched the row it is left where they put it. */
+  if (scroller) {
+    const edges = () => {
+      const max = scroller.scrollWidth - scroller.clientWidth;
+      rail.classList.toggle("is-scrolled", scroller.scrollLeft > 2);
+      rail.classList.toggle("is-end", max <= 2 || scroller.scrollLeft >= max - 2);
+    };
+    let touched = false;
+    ["pointerdown", "wheel", "keydown"].forEach((t) => scroller.addEventListener(t, () => { touched = true; }, { passive: true }));
+    // in the row's own measure: where an element starts, from the row's left edge
+    const at = (el) => scroller.scrollLeft + el.getBoundingClientRect().left - scroller.getBoundingClientRect().left;
+    const showHere = () => {
+      if (touched || !dropped()) return;
+      const cur = rail.querySelector('.tfr-rail-items > li > a[aria-current="page"], .tfr-rail-toggle.is-current');
+      if (!cur) return;
+      // its right edge clear of the right edge's fade (34px wide) by a little
+      const need = at(cur) + cur.getBoundingClientRect().width + 40 - scroller.clientWidth;
+      // the first item from which it is whole on the screen, set clear of the left edge's fade (28px), the item before it under the fade's
+      // solid half; none: as far as it needs
+      const starts = Array.prototype.slice.call(scroller.querySelectorAll(".tfr-rail-items > li")).map((li) => at(li) - 28);
+      const to = need <= 0 ? 0 : starts.find((s) => s >= need);
+      scroller.scrollLeft = Math.max(0, to == null ? need : to);
+      edges();
+    };
+    scroller.addEventListener("scroll", edges, { passive: true });
+    showHere();
+    // the row's type may still be loading: measured again once it has, unless the reader has moved the row
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(showHere);
+    edges();
+  }
 })();
