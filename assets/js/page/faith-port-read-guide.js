@@ -320,7 +320,8 @@
       const ix = pageFolds.length && pageFolds[0].id === "in-index" ? pageFolds[0].el : null;
       if (ix) ix.after(analysis); else guide.appendChild(analysis);
     }
-    guide.appendChild(group("The whole work"));
+    const whole = group("The whole work");
+    guide.appendChild(whole);
     // the whole work: what it is (overview, argument, sections, quotations), then finding things in it (the index), then the
     // library around it (positions by topic and sources cited, from work-research-sources.js, then later readers, last)
     const ORDER = ["overview", "argument", "sections", "quotes", "index"].filter((id) => HUB.GUIDE.includes(id));
@@ -395,6 +396,18 @@
       const after = panel.querySelector(":scope > .nb-work-tail") || $("nbWorkSources");
       if (after && after.parentNode === panel) panel.insertBefore(note, after.nextSibling); else guide.appendChild(note);
     }
+    /* A HEADING WITH NOTHING UNDER IT (2026-11-11, owner: "continue to maqke ui and ux improvmeent"). A work the library has not yet
+     * described (Wolleb's Harmonirendes Systema, read in on 11-10: no overview, index, sources or later readers) showed "The whole
+     * work" over an empty panel. The heading stands only while a section stands under it: one of its own folds, the Topic index or
+     * the sources (work-research-sources.js fills #nbWorkSources when the rail opens), or the later readers. */
+    const wholeHas = () => {
+      for (let n = whole.nextElementSibling; n; n = n.nextElementSibling) if (n.matches("details") && !n.hidden) return true;
+      const src = $("nbWorkSources"), tail = panel.querySelector(":scope > .nb-work-tail");
+      return !!((src && src.querySelector("details")) || (tail && tail.querySelector("details")));
+    };
+    const wholeSync = () => { whole.style.display = wholeHas() ? "" : "none"; };
+    wholeSync();
+    { const src = $("nbWorkSources"); if (src) new MutationObserver(wholeSync).observe(src, { childList: true, subtree: true }); }
     sync(true);
   }
 
