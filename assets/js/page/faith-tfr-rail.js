@@ -173,7 +173,10 @@
      screen's edge, cut at its first letters ("SCRI" on the Scripture page). As the page opens, the row is scrolled so that section is
      whole on the screen, the row starting at an item and the next one showing under the fade at the right; the rest is one swipe away
      either way, and each edge fades while the row runs on past it (.is-scrolled, .is-end; faith-received.css). No item is added or
-     moved, and once the reader has touched the row it is left where they put it. */
+     moved, and once the reader has touched the row it is left where they put it.
+     The row and the phone's measure are named here: the rail's dropdowns (2026-11-11) no longer need either, and this is their one user. */
+  const scroller = rail.querySelector(".tfr-rail-inner");
+  const dropped = () => window.matchMedia("(max-width: 640px)").matches;
   if (scroller) {
     const edges = () => {
       const max = scroller.scrollWidth - scroller.clientWidth;
