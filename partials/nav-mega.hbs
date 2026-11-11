@@ -1,0 +1,328 @@
+{{!--
+    Full-width header menu (Ian, 2026-11-10). The desktop bar's buttons
+    (default.hbs, [data-mm-trigger]) open these panels; under 1262px the
+    bar hands over to the drawer, and assets/js/nav-mega.js rebuilds the
+    drawer's list from these same panels so the two never drift.
+
+    Read and Listen are filled by nav-mega.js the first time the menu is
+    used: essays from the Content API (same filters as the homepage's
+    Must Reads column), episodes from the podcast worker the podcast
+    pages already read. Everything else is static.
+
+    Column dividers, the white plate around pictures and the terracotta
+    rule along the top are the house look. Do not add small heads over
+    hairlines or a carousel with dots; those read as another site's menu.
+--}}
+<div class="mm-backdrop" data-mm-backdrop hidden></div>
+<div class="mm" id="mm" data-mm role="region" aria-label="Menu" hidden>
+  <div class="container">
+
+    <section class="mm-panel" data-mm-panel="read" aria-label="Read">
+      <div class="mm-grid mm-grid--read">
+        <nav aria-label="Essays">
+          <ul class="mm-index" data-mm-index>
+            <li><a href="/archive/" data-mm-set="latest" aria-current="true">Latest</a></li>
+            <li><a href="/archive/" data-mm-set="must">Must reads of the month</a></li>
+            <li class="mm-index-sep" role="presentation"></li>
+            <li><a href="/tag/theology/" data-mm-set="theology">Theology</a></li>
+            <li><a href="/tag/church/" data-mm-set="church">Church</a></li>
+            <li><a href="/tag/culture/" data-mm-set="culture">Culture</a></li>
+            <li><a href="/tag/formation/" data-mm-set="formation">Formation</a></li>
+            <li><a href="/tag/family/" data-mm-set="family">Family</a></li>
+            <li><a href="/tag/technology/" data-mm-set="technology">Technology</a></li>
+            <li><a href="/tag/book-reviews/" data-mm-set="book-reviews">Book Reviews</a></li>
+          </ul>
+        </nav>
+        {{#if @member}}
+        <div>
+          <div class="mm-set-head"><p class="mm-col-title" data-mm-set-title>Latest</p><a class="mm-more" data-mm-set-more href="/archive/">All essays</a></div>
+          <ul class="mm-rows" data-mm-rows></ul>
+        </div>
+        <div data-mm-lead></div>
+        {{else}}
+        {{!-- Signed out: the lead essay heads the middle column and the
+             right column is the Weekly Digest sign-up (same inline signup
+             as the homepage box). --}}
+        <div>
+          <div class="mm-set-head"><p class="mm-col-title" data-mm-set-title>Latest</p><a class="mm-more" data-mm-set-more href="/archive/">All essays</a></div>
+          <div class="mm-lead-inline" data-mm-lead></div>
+          <ul class="mm-rows" data-mm-rows></ul>
+        </div>
+        {{!-- Same card as the homepage Weekly Digest box (index.hbs
+             .today-digest), sized for the column. --}}
+        <div>
+          <div class="today-digest mm-digest-card">
+            <div class="today-digest-copy">
+              <p class="eyebrow"><svg class="eyebrow-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M3.5 6l8.5 7 8.5-7"/></svg>The Weekly Digest</p>
+              <p class="mm-digest-title">Premier thought every Thursday.</p>
+              <p>All of our recent essays and podcasts, delivered to you. Free.</p>
+            </div>
+            <div class="digest-form" data-inline-signup data-newsletter="weekly-digest" data-source="nav-weekly-digest">
+              <div class="digest-field">
+                <label for="nav-digest-first">First Name</label>
+                <input id="nav-digest-first" type="text" autocomplete="given-name" placeholder="First" data-signup-first required />
+              </div>
+              <div class="digest-field">
+                <label for="nav-digest-last">Last Name</label>
+                <input id="nav-digest-last" type="text" autocomplete="family-name" placeholder="Last" data-signup-last required />
+              </div>
+              <div class="digest-field mm-digest-email">
+                <label for="nav-digest-email">Email</label>
+                <input id="nav-digest-email" type="email" autocomplete="email" placeholder="you@example.com" data-signup-email required />
+              </div>
+              <button type="button" class="digest-submit" data-signup-submit>Subscribe</button>
+              <p class="digest-status" data-signup-status></p>
+            </div>
+            <p class="mm-signup-fine">Already subscribed? <button type="button" class="mm-link-btn" data-portal="signin">Sign in</button></p>
+          </div>
+        </div>
+        {{/if}}
+      </div>
+    </section>
+
+    <section class="mm-panel" data-mm-panel="listen" aria-label="Listen">
+      <div class="mm-grid mm-grid--listen">
+        <div>
+          <p class="mm-col-title">Podcasts</p>
+          <div class="mm-shows">
+            <div class="mm-show" data-mm-show="mere-fidelity"><a class="mm-row" href="/podcasts/mere-fidelity/"><div class="mm-plate"><img src="{{asset "images/mere-fidelity.jpg"}}" alt="" loading="lazy" width="62" height="62"></div><div><div class="mm-row-title">Mere Fidelity</div><div class="mm-row-by">Conversations on theology and the church</div></div></a><ul class="mm-eps"></ul></div>
+            <div class="mm-show" data-mm-show="christians-reading-classics"><a class="mm-row" href="/podcasts/christians-reading-classics/"><div class="mm-plate"><img src="{{asset "images/christians-reading-classics.jpg"}}" alt="" loading="lazy" width="62" height="62"></div><div><div class="mm-row-title">Christians Reading Classics</div><div class="mm-row-by">Reading the great books</div></div></a><ul class="mm-eps"></ul></div>
+            <div class="mm-show" data-mm-show="passages-nicaea" data-mm-first><a class="mm-row" href="/podcasts/passages-nicaea/"><div class="mm-plate"><img src="{{asset "images/passages-nicaea.jpg"}}" alt="" loading="lazy" width="62" height="62"></div><div><div class="mm-row-title">Passages: Nicaea</div><div class="mm-row-by">The council and the creed</div></div></a><ul class="mm-eps"></ul></div>
+            <div class="mm-show" data-mm-show="daily-liturgy"><a class="mm-row" href="/daily-liturgy/"><div class="mm-plate"><img src="{{asset "images/nav/daily-liturgy-cover.jpg"}}" alt="" loading="lazy" width="62" height="62"></div><div><div class="mm-row-title">The Daily Liturgy</div><div class="mm-row-by">Morning prayer read aloud each day</div></div></a><ul class="mm-eps"></ul></div>
+          </div>
+        </div>
+        <div class="mm-feature">
+          {{#if @member}}
+            <div class="mm-card">
+              <a href="/daily-liturgy/read/" tabindex="-1" aria-hidden="true"><div class="mm-plate mm-plate--logo mm-dl-framed"><img src="{{asset "images/daily-liturgy-logo.png"}}" alt="The Daily Liturgy" loading="lazy" class="mm-dl-logo"></div></a>
+              <p class="mm-feature-title">The Daily Liturgy</p>
+              <p>A short service of morning prayer read aloud. Listen or read along.</p>
+              <a class="mm-more" href="/daily-liturgy/read/">Today's liturgy</a>
+            </div>
+          {{else}}
+            {{!-- The site's own sign-up (assets/js/inline-signup.js): Ghost
+                 emails a sign-in link that lands on the reader, signed in.
+                 Newsletter:daily-liturgy starts the morning email via mo-kit. --}}
+            <div class="today-digest mm-digest-card">
+              <div class="today-digest-copy">
+                <div class="mm-dl-framed mm-digest-logo-frame"><img class="mm-digest-logo" src="{{asset "images/daily-liturgy-logo.png"}}" alt="The Daily Liturgy" loading="lazy"></div>
+                <p class="mm-digest-title">Morning prayer read aloud.</p>
+                <p>Read today's liturgy free. Sign up and we'll email you a link to it.</p>
+              </div>
+              <div class="digest-form" data-inline-signup data-newsletter="daily-liturgy" data-source="nav-daily-liturgy" data-signup-redirect="/daily-liturgy/read/" data-signup-confirmation="Open it to read today's liturgy.">
+                <div class="digest-field">
+                  <label for="nav-dl-first">First Name</label>
+                  <input id="nav-dl-first" type="text" autocomplete="given-name" placeholder="First" data-signup-first required />
+                </div>
+                <div class="digest-field">
+                  <label for="nav-dl-last">Last Name</label>
+                  <input id="nav-dl-last" type="text" autocomplete="family-name" placeholder="Last" data-signup-last required />
+                </div>
+                <div class="digest-field mm-digest-email">
+                  <label for="nav-dl-email">Email</label>
+                  <input id="nav-dl-email" type="email" autocomplete="email" placeholder="you@example.com" data-signup-email required />
+                </div>
+                <button type="button" class="digest-submit" data-signup-submit>Sign up free</button>
+                <p class="digest-status" data-signup-status></p>
+              </div>
+              <p class="mm-signup-fine">Already subscribed? <button type="button" class="mm-link-btn" data-portal="signin">Sign in</button></p>
+            </div>
+          {{/if}}
+        </div>
+      </div>
+    </section>
+
+    <section class="mm-panel" data-mm-panel="journal" aria-label="Journal">
+      <div class="mm-grid mm-grid--two">
+        <div>
+          <p class="mm-col-title">Get the journal</p>
+          <ul class="mm-links">
+            <li><a href="/membership/">Subscribe with membership</a></li>
+            <li><a href="/institutions/">For churches and schools</a></li>
+            <li><a href="/student/">Student rate</a></li>
+          </ul>
+          {{!-- Same stage and issue as the homepage tracker; site-settings.js
+               fills both from the mo-admin settings. --}}
+          <div class="mm-journal-status">
+            <p class="mm-col-title">Journal status</p>
+            <p class="mm-journal-next">Next issue: <span data-journal-issue>&hellip;</span></p>
+            <ol class="journal-status" aria-label="Journal status">
+              <li class="journal-status-step">
+                  <span class="journal-status-mark" data-journal-stage="Drafting" aria-hidden="true">
+                      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M40 8 Q46 18 36 26 Q24 30 16 34 Q20 22 28 14 Q34 10 40 8 Z"/>
+                          <path d="M38 10 L18 32" stroke-width="1"/>
+                          <path d="M16 34 L12 38"/>
+                          <line x1="12" y1="42" x2="32" y2="42"/>
+                      </svg>
+                  </span>
+                  <span class="journal-status-label">Drafting</span>
+              </li>
+              <li class="journal-status-step">
+                  <span class="journal-status-mark" data-journal-stage="In Production" aria-hidden="true">
+                      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="12" y="8" width="24" height="32" rx="1"/>
+                          <line x1="12" y1="16" x2="36" y2="16"/>
+                          <line x1="12" y1="32" x2="36" y2="32"/>
+                          <line x1="20" y1="24" x2="28" y2="24"/>
+                      </svg>
+                  </span>
+                  <span class="journal-status-label">In Production</span>
+              </li>
+              <li class="journal-status-step">
+                  <span class="journal-status-mark" data-journal-stage="Arriving" aria-hidden="true">
+                      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="8" y="12" width="32" height="24" rx="1"/>
+                          <path d="M8 12 L24 24 L40 12"/>
+                          <circle cx="24" cy="30" r="3.5" fill="currentColor" stroke="none"/>
+                      </svg>
+                  </span>
+                  <span class="journal-status-label">Arriving</span>
+              </li>
+            </ol>
+          </div>
+        </div>
+        <div>
+          <div class="mm-feature mm-card">
+            <a href="/#journal" tabindex="-1" aria-hidden="true"><div class="mm-plate"><img src="{{asset "images/nav/journal-hero.jpg"}}" alt="" loading="lazy"></div></a>
+            <p class="mm-feature-title">Mere Orthodoxy in print</p>
+            <p>Long-form essays on theology, culture and politics. Members receive it in print.</p>
+            {{#unless @member}}<a class="btn btn-solid" href="/membership/">Become a member</a>{{/unless}}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mm-panel" data-mm-panel="tfr" aria-label="The Faith Received">
+      <div class="mm-grid mm-grid--tfr">
+        <div>
+          <p class="mm-col-title">Creeds and confessions</p>
+          <ul class="mm-links mm-links--compact">
+            <li><a href="/the-faith-received/read/?w=apostles-creed">The Apostles’ Creed</a></li>
+            <li><a href="/the-faith-received/read/?w=nicene-creed">The Nicene Creed</a></li>
+            <li><a href="/the-faith-received/read/?w=lc-002-augsburg-confession-1530">The Augsburg Confession</a></li>
+            <li><a href="/the-faith-received/read/?w=rc-057-belgic-confession-1561">The Belgic Confession</a></li>
+            <li><a href="/the-faith-received/read/?w=rc-060-thirty-nine-articles-1562">The Thirty-nine Articles</a></li>
+            <li><a href="/the-faith-received/read/?w=rc-061-heidelberg-catechism-1563">The Heidelberg Catechism</a></li>
+            <li><a href="/the-faith-received/read/?w=rc-105-canons-of-dort-1618">The Canons of Dort</a></li>
+            <li><a href="/the-faith-received/read/?w=rc-111-westminster-confession-of-faith-1646">Westminster Confession of Faith</a></li>
+            <li><a href="/the-faith-received/read/?w=rc-115-westminster-shorter-catechism-1647">Westminster Shorter Catechism</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="mm-col-title">Classic works</p>
+          <ul class="mm-links mm-links--compact">
+            <li><a href="/the-faith-received/read/?w=didache">The Didache<span class="mm-note">The early church</span></a></li>
+            <li><a href="/the-faith-received/read/?w=pg-30">The Letter to Diognetus<span class="mm-note">The early church</span></a></li>
+            <li><a href="/the-faith-received/read/?w=pg-2847">Against Heresies<span class="mm-note">Irenaeus of Lyon</span></a></li>
+            <li><a href="/the-faith-received/read/?w=pg-2880&amp;p=95#b95-5">On the Incarnation<span class="mm-note">Athanasius</span></a></li>
+            <li><a href="/the-faith-received/read/?w=pld-2722">Confessions<span class="mm-note">Augustine of Hippo</span></a></li>
+            <li><a href="/the-faith-received/read/?w=pld-3278">The Consolation of Philosophy<span class="mm-note">Boethius</span></a></li>
+            <li><a href="/the-faith-received/read/?w=aq-st-i-15">Summa theologiae<span class="mm-note">Thomas Aquinas</span></a></li>
+            <li><a href="/the-faith-received/read/?w=imitation-of-christ">The Imitation of Christ<span class="mm-note">Thomas à Kempis</span></a></li>
+            <li><a href="/the-faith-received/read/?w=calvin-institutes-of-the-christian-religion">Institutes of the Christian Religion<span class="mm-note">John Calvin</span></a></li>
+            <li><a href="/the-faith-received/read/?w=polanus-amandus-polanus-syntagma-theologiae-christianae-liber-i-de-the">Syntagma Theologiae Christianae<span class="mm-note">Amandus Polanus</span></a></li>
+            <li><a href="/the-faith-received/read/?w=edwards-resolutions">Resolutions<span class="mm-note">Jonathan Edwards</span></a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="mm-feature mm-card">
+            <a href="/the-faith-received/" tabindex="-1" aria-hidden="true"><div class="mm-plate"><img src="{{asset "images/nav/confessions-plate.jpg"}}" alt="" loading="lazy"></div></a>
+            <p class="mm-feature-title">A library of historical theology</p>
+            <p>19,318 works in Latin, Greek and English. The Fathers, the medieval doctors and the Reformers.</p>
+            <a class="btn" href="/the-faith-received/">Open the library</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mm-panel" data-mm-panel="resources" aria-label="Resources">
+      <div class="mm-grid mm-grid--two">
+        <div>
+          <p class="mm-col-title">Read and download</p>
+          <ul class="mm-links">
+            <li><a href="https://mereorthodoxy.substack.com"><svg class="mm-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="#FF6719" d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>Mere Orthodoxy on Substack</a></li>
+            <li><a href="/ebooks/">Ebooks<span class="mm-note">Essays collected into short books</span></a></li>
+          </ul>
+          <p class="mm-col-title mm-col-title--next">Gather</p>
+          <ul class="mm-links">
+            <li><a href="/events/">Online Forums<span class="mm-note">Live conversations with our writers</span></a></li>
+            <li><a href="/writers-meetings/">Writers Meetings<span class="mm-note">For writers who want to pitch us</span></a></li>
+          </ul>
+          <a class="mm-more mm-rss" href="/rss/" data-mm-drawer>Get RSS feed</a>
+        </div>
+        {{!-- Each cover opens its Bookshop.org page; the line under the
+             covers goes to /books/. data-mm-drawer puts that line in the
+             phone drawer. --}}
+        <div>
+          <div class="mm-feature mm-card">
+            <p class="mm-col-title">The Bookshelf</p>
+            <div class="mm-books">
+              <a class="mm-book" href="https://bookshop.org/p/books/mere-christianity-c-s-lewis/56290254aded4bd1" target="_blank" rel="noopener"><div class="mm-plate"><img src="https://images-us.bookshop.org/ingram/9780060652920.jpg" alt="Mere Christianity" loading="lazy"></div></a>
+              <a class="mm-book" href="https://bookshop.org/p/books/orthodoxy-with-annotations-and-guided-reading-by-trevin-wax-g-k-chesterton/fe9b85f76231f71d" target="_blank" rel="noopener"><div class="mm-plate"><img src="https://images-us.bookshop.org/ingram/9781535995672.jpg" alt="Orthodoxy" loading="lazy"></div></a>
+              <a class="mm-book" href="https://bookshop.org/p/books/in-search-of-the-common-good-christian-fidelity-in-a-fractured-world-jake-meador/649ab65bf5ad9b04" target="_blank" rel="noopener"><div class="mm-plate"><img src="https://images-us.bookshop.org/ingram/9780830845545.jpg" alt="In Search of the Common Good" loading="lazy"></div></a>
+              <a class="mm-book" href="https://bookshop.org/p/books/church-matters-staying-human-together-in-a-dehumanizing-culture-jake-meador/80c05a988e2cff71" target="_blank" rel="noopener"><div class="mm-plate"><img src="https://images-us.bookshop.org/ingram/9781514019344.jpg" alt="Church Matters" loading="lazy"></div></a>
+              <a class="mm-book" href="https://bookshop.org/p/books/christians-reading-classics-an-introduction-to-greco-roman-classics-from-homer-to-boethius-nadya-williams/58edb25d034a27d8" target="_blank" rel="noopener"><div class="mm-plate"><img src="https://images-us.bookshop.org/ingram/9780310171072.jpg" alt="Christians Reading Classics" loading="lazy"></div></a>
+              <a class="mm-book" href="https://bookshop.org/p/books/the-literate-soul-what-four-thousand-years-of-reading-books-teaches-us-about-loving-god-nadya-williams/e1cb257a73e4ccff" target="_blank" rel="noopener"><div class="mm-plate"><img src="https://images-us.bookshop.org/ingram/9781587437076.jpg" alt="The Literate Soul" loading="lazy"></div></a>
+              <a class="mm-book" href="https://bookshop.org/p/books/walking-through-deconstruction-how-to-be-a-companion-in-a-crisis-of-faith-ian-harber/177b50026abf90c2" target="_blank" rel="noopener"><div class="mm-plate"><img src="https://images-us.bookshop.org/ingram/9781514008560.jpg" alt="Walking Through Deconstruction" loading="lazy"></div></a>
+              <a class="mm-book" href="https://bookshop.org/p/books/the-fire-of-glory-a-biblical-and-dogmatic-account-of-god-s-holiness-and-divine-judgment-derek-rishmawy/15ecedd718ac5cc4" target="_blank" rel="noopener"><div class="mm-plate"><img src="https://images-us.bookshop.org/ingram/9781514017647.jpg" alt="The Fire of Glory" loading="lazy"></div></a>
+            </div>
+            <a class="mm-more" href="/books/" data-mm-drawer>Browse the Bookshelf</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mm-panel" data-mm-panel="support" aria-label="Support">
+      <div class="mm-grid mm-grid--two">
+        <div>
+          <p class="mm-col-title">Join</p>
+          <ul class="mm-links">
+            <li><a href="/membership/">Membership<span class="mm-note">For individual readers</span></a></li>
+            <li><a href="/groups/">Group memberships<span class="mm-note">For a staff, cohort or reading group</span></a></li>
+            <li><a href="/student/">Student discount<span class="mm-note">For undergraduate and graduate students</span></a></li>
+            <li><a href="/institutions/">Churches and institutions<span class="mm-note">Seats for your staff or congregation</span></a></li>
+          </ul>
+          <p class="mm-col-title mm-col-title--next">Give</p>
+          <ul class="mm-links">
+            <li><a href="https://secure.anedot.com/institute-for-christianity-and-common-life/donate">Donate</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="mm-feature mm-card">
+            <a href="/membership/" tabindex="-1" aria-hidden="true"><div class="mm-plate"><img src="{{asset "images/nav/membership-hero.jpg"}}" alt="" loading="lazy"></div></a>
+            <p class="mm-feature-title">Become a member</p>
+            <p>Get the print journal and support the work of Mere Orthodoxy.</p>
+            <a class="btn btn-solid" href="/membership/">See membership</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mm-panel" data-mm-panel="about" aria-label="About">
+      <div class="mm-grid mm-grid--two">
+        <div>
+          <p class="mm-col-title">Mere Orthodoxy</p>
+          <ul class="mm-links">
+            <li><a href="/about/">About us</a></li>
+            <li><a href="/contributors/">Contributors</a></li>
+          </ul>
+          <p class="mm-col-title mm-col-title--next">Get in touch</p>
+          <ul class="mm-links">
+            <li><a href="/contact/">Contact</a></li>
+            <li><a href="/writers-meetings/">Write for us</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="mm-feature mm-card">
+            <a href="/about/" tabindex="-1" aria-hidden="true"><div class="mm-plate"><img src="{{asset "images/nav/about-hero.jpg"}}" alt="" loading="lazy"></div></a>
+            <p class="mm-feature-title">Christian renewal for the common good</p>
+            <p>Essays that take theology seriously and engage the culture charitably.</p>
+            <a class="btn" href="/about/">About Mere Orthodoxy</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>

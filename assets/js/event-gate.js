@@ -1,6 +1,5 @@
 /*
- * Event replay gate — post.hbs loads this on every post page; it
- * bails immediately if the post is not tagged #event.
+ * Event replay gate. partials/event-post.hbs loads it on #event posts.
  *
  * For #event posts:
  *   - paid / comped members → no-op; replay plays normally.
@@ -23,14 +22,19 @@
   const article = document.querySelector("article[data-event-post]");
   if (!article) return;
 
-  /* ---- check member status ----------------------------------------- */
-  const status = (document.body.getAttribute("data-member-status") || "anonymous").toLowerCase();
-  if (status === "paid" || status === "comped") return;
-
-  /* ---- find and replace replay iframes ----------------------------- */
-  const content = article.querySelector(".article-content");
+  const content = article.querySelector("[data-event-content], .article-content");
   if (!content) return;
 
+  /* ---- check member status ----------------------------------------- */
+  const status = (document.body.getAttribute("data-member-status") || "anonymous").toLowerCase();
+  if (status === "paid" || status === "comped") {
+    /* The hero's "Watch the replay" button jumps to #replay. */
+    const first = content.querySelector('iframe[src*="youtube"], iframe[src*="youtu.be"], iframe[src*="vimeo"]');
+    if (first) (first.closest(".kg-embed-card, .kg-card") || first).id = "replay";
+    return;
+  }
+
+  /* ---- find and replace replay iframes ----------------------------- */
   for (const iframe of content.querySelectorAll("iframe")) {
     const src = iframe.getAttribute("src") || "";
     if (!/youtube\.com|youtu\.be|vimeo\.com/i.test(src)) continue;
@@ -45,17 +49,13 @@
     div.className = "inline-support event-replay-gate";
     div.setAttribute("data-event-replay-gate", "");
 
-    const eyebrow = document.createElement("p");
-    eyebrow.className = "eyebrow";
-    eyebrow.textContent = "Members Only";
-
     const heading = document.createElement("h3");
     const em = document.createElement("em");
-    em.textContent = "Watch the Replay";
+    em.textContent = "Replay is for Members only";
     heading.appendChild(em);
 
     const body = document.createElement("p");
-    body.textContent = "This recording is available to Mere Orthodoxy members. Join to watch this replay and access every past forum.";
+    body.textContent = "Join Mere Orthodoxy to watch this forum and every past one.";
 
     const ctas = document.createElement("div");
     ctas.className = "inline-support-ctas";
@@ -66,10 +66,21 @@
     btn.textContent = "Become a Member";
     ctas.appendChild(btn);
 
-    div.appendChild(eyebrow);
     div.appendChild(heading);
     div.appendChild(body);
     div.appendChild(ctas);
+
+    if (status === "anonymous") {
+      const signin = document.createElement("p");
+      signin.className = "event-replay-signin";
+      signin.appendChild(document.createTextNode("Already a member? "));
+      const a = document.createElement("a");
+      a.href = "#/portal/signin";
+      a.setAttribute("data-portal", "signin");
+      a.textContent = "Sign in";
+      signin.appendChild(a);
+      div.appendChild(signin);
+    }
 
     return div;
   }
