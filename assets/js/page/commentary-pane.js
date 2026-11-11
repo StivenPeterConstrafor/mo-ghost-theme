@@ -522,10 +522,11 @@
   /* (2026-11-08) pin: a verse or a commentary the reader picked holds the pane until the next pick; hold: the pane's own move of the
    * page (a note brought into sight, an address naming a verse) holds it until the reader scrolls; placed: the verse is the reader's
    * or the text's, not the chapter's first by default, and goes in the address; before: the address as a verse click began; back: an
-   * entry gone back to; quiet: a click of the pane's own on a verse; sheet: the phone's sheet's stop (sheetWas: before the list raised it) */
+   * entry gone back to; quiet: a click of the pane's own on a verse; sheet: the phone's sheet's stop (sheetWas: before the list raised it;
+   * sheetRest: it opened at its peek and waits for the reader's first verse) */
   const S = { list: [], cur: null, verse: null, follow: store.get('fr_cp_follow', '1') === '1', lang: store.get('fr_cp_lang', 'en'),
     shown: null, token: 0, meta: {}, cen: {}, rec: null, pin: false, hold: false, placed: false, before: '', back: false, quiet: false,
-    beforeState: null, sheet: 'half', sheetWas: '', creedsOpen: false, wantList: false, tellObs: null,
+    beforeState: null, sheet: 'half', sheetWas: '', sheetRest: false, creedsOpen: false, wantList: false, tellObs: null,
     tab: firstTab(), dirOpen: new Set(), dirVerse: 0, years: new Map(), heads: new Map(), hymns: [], preach: null, vols: new Map() };
   const A = window.FRCommentaryAnchor;
   let pane, layout, observer;
@@ -625,15 +626,17 @@
       else if (d.v > 0.45) to = STOPS.slice().reverse().find((s) => px[s] < shown - 8) || 'peek';
       pane.classList.remove('cp-dragging');
       pane.style.removeProperty('--cp-drag');
+      S.sheetRest = false;
       sheetStop(to);
     };
     grip.addEventListener('pointerup', end);
     grip.addEventListener('pointercancel', end);
-    grip.addEventListener('click', () => { if (dragged) { dragged = false; return; } sheetStop(NEXT_STOP[S.sheet] || 'full'); });
+    grip.addEventListener('click', () => { if (dragged) { dragged = false; return; } S.sheetRest = false; sheetStop(NEXT_STOP[S.sheet] || 'full'); });
     grip.addEventListener('keydown', (e) => {
       if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
       e.preventDefault();
       const i = STOPS.indexOf(S.sheet);
+      S.sheetRest = false;
       sheetStop(STOPS[Math.max(0, Math.min(STOPS.length - 1, i + (e.key === 'ArrowUp' ? 1 : -1)))]);
     });
     // (the sheet's scroll-padding keeps a focused control in its part on the screen; the peek is raised to half, which has room to read)
@@ -641,7 +644,15 @@
       if (wide.matches || S.sheet !== 'peek' || !e.target.matches || !e.target.matches(':focus-visible')) return;
       if (e.target.getBoundingClientRect().bottom > innerHeight - 4) sheetStop('half');
     });
-    sheetStop('half');
+    /* THE SHEET ON ARRIVAL (2026-11-10, owner: "traverse scripture, ask ... and other things in the site to improve it, primarily the
+     * mereO site"). A reader who opened Mere Orthodoxy's Scripture page on a phone with no verse in the address met the page's picture
+     * with the sheet over the lower half of it: Augustine on Genesis 1:1, and not a line of Scripture on the first screen. With no verse
+     * asked for, the sheet opens at its peek and the text has the screen; the reader's first verse raises it to half, where it opened
+     * before (pickVerse). An address that names a verse opens at half as before. Once the reader has moved the sheet it stays where
+     * they put it (S.sheetRest is dropped by the grip). The Faith Received draws no sheet until a verse is picked, so it is unchanged. */
+    const named = SITE.name !== 'mo' || /[?&]ref=[^&#]*[.:]\d+[.:]\d+/.test(location.search) || !!((SITE.where() || {}).v);
+    S.sheetRest = !named;
+    sheetStop(named ? 'half' : 'peek');
   }
   /* THE PANE STAYS IN SIGHT (2026-11-09, owner: "what about the typeset for scrolling mobile and desktop"; asked how the pane should behave
    * while the text scrolls, "Sticks to the top, own scroll"). On a wide screen the pane is held under the site's header and scrolls on its
@@ -938,6 +949,16 @@
   }
   // a verse the reader picks (in the text, from the keyboard, or the Reception's verses): the pane goes to it and stays (2026-11-08)
   function pickVerse(v) {
+    // the reader's first verse raises a sheet that opened at its peek (THE SHEET ON ARRIVAL); a verse picked low on the screen would lie
+    // under the raised sheet, so it is brought to the reading line, as a verse chosen from the rail is (select)
+    if (S.sheetRest) {
+      S.sheetRest = false;
+      if (onSheet() && S.sheet === 'peek') {
+        sheetStop('half');
+        const el = SITE.verseEl(v);
+        if (el && el.getBoundingClientRect().bottom > innerHeight - stopPx('half') - 8) el.scrollIntoView({ block: 'start', behavior: motion() });
+      }
+    }
     S.pin = true; S.hold = false; S.placed = true;
     show(v, true);
     remember(!S.quiet);
