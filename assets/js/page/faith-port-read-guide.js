@@ -403,11 +403,12 @@
     const wholeHas = () => {
       for (let n = whole.nextElementSibling; n; n = n.nextElementSibling) if (n.matches("details") && !n.hidden) return true;
       const src = $("nbWorkSources"), tail = panel.querySelector(":scope > .nb-work-tail");
-      return !!((src && src.querySelector("details")) || (tail && tail.querySelector("details")));
+      // (a section work-research-sources.js has nothing for stays in the page, hidden)
+      return !!((src && src.querySelector("details:not([hidden])")) || (tail && tail.querySelector("details:not([hidden])")));
     };
     const wholeSync = () => { whole.style.display = wholeHas() ? "" : "none"; };
     wholeSync();
-    { const src = $("nbWorkSources"); if (src) new MutationObserver(wholeSync).observe(src, { childList: true, subtree: true }); }
+    { const src = $("nbWorkSources"); if (src) new MutationObserver(wholeSync).observe(src, { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden"] }); }
     sync(true);
   }
 
