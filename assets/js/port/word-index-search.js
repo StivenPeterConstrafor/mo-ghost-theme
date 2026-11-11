@@ -451,6 +451,12 @@
   }
 
   function mount(host, opts) {
+    /* A TEASER THAT LANDS LATE (2026-11-11, site tour). /search?q=communicatio+idiomatum showed one line, "occur together on the pages
+       of 504 works ... The list below matches titles and headings only", over an empty page. No title has the words, so the page had
+       already turned to this panel; the teaser its first pass had asked for (two requests, slower) then arrived and wrote itself
+       over the panel. The teaser checks a count on the host before it writes: mounting the panel moves that count on, so a teaser
+       asked for earlier finds it is no longer wanted. */
+    if (host) host.__wixSeq = (host.__wixSeq || 0) + 1;
     const ph = phraseOf(opts.query), ws = ph ? ph.ws : words(opts.query);
     host.innerHTML = '';
     if (!ws || !host) return null;
