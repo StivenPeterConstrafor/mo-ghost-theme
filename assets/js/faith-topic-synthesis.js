@@ -168,7 +168,7 @@
 
     const authorStrip = authors.length ? `
       <div class="faith-topic-authors">
-        <p class="faith-topic-authors-label">${authors.length.toLocaleString()} author${authors.length === 1 ? "" : "s"} &middot; ${(data.n_pos || positions.length).toLocaleString()} positions &mdash; heaviest first</p>
+        <p class="faith-topic-authors-label">${authors.length.toLocaleString()} author${authors.length === 1 ? "" : "s"} &middot; ${(data.n_pos || positions.length).toLocaleString()} positions, heaviest first</p>
         <div class="faith-topic-author-rows">${authorRows}</div>
       </div>` : "";
 
