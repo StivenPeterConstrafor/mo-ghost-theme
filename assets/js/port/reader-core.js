@@ -3965,6 +3965,17 @@ function build(){
         s.textContent=pageSay(cur.dataset.page);s.title="page "+cur.dataset.page;return s;};
       const [pl,pe]=pw.children,[cl,ce]=cw.children;
       if(!pl||!pe||!cl||!ce){prev=cur;continue;}
+      // A SENTENCE THE PAGE TURN BROKE READS ON (2026-11-11, owner: "continue to maqke ui and ux improvmeent"). In a stacked run the page
+      // that opens mid-sentence opened as a new paragraph, indented and set off: Wolleb's "that he might be the firstborn among" on
+      // p. 137, then "many brethren." under a gap on p. 138. Where a lane's own words run on (the block before does not close its
+      // sentence, the block that opens the page begins in lower case), the two are marked and set with no gap and no indent between
+      // them (.seamshut, .seamopen). Each lane by its own words: the page's .cont mark is read from one lane, and a translation may
+      // close the sentence where its source does not.
+      for(const [a,b] of [[pl,cl],[pe,ce]]){
+        const A=[...a.children].filter(x=>!x.classList.contains("pganchor")).pop(),B=b.firstElementChild;
+        const at=A?(A.textContent||"").trim():"",bt=B?(B.textContent||"").trim():"";
+        if(A&&B&&at.length>11&&bt.length>11&&!/[.!?…:;)\]"'’”»]\s*$/.test(at)&&/^[a-zà-öø-ÿ]/.test(bt)){A.classList.add("seamshut");B.classList.add("seamopen");}
+      }
       pl.appendChild(mk("an-la"));while(cl.firstChild)pl.appendChild(cl.firstChild);
       pe.appendChild(mk("an-en"));while(ce.firstChild)pe.appendChild(ce.firstChild);
       cw.remove();

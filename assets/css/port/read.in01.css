@@ -1075,6 +1075,13 @@ html:not(.fr-plain) .app.only-en #reading .stkwrap>.stk-en>.en{font-feature-sett
 html.g-mobile .app.only-en #reading .stkwrap>.stk-en>.en{max-width:none}
 .app.only-en #reading .stkwrap>.stk-en>.en p{line-height:1.74;text-wrap:pretty;margin:.3rem 0 .65rem;text-indent:0}
 html:not(.g-mobile) .app.only-en #reading .stkwrap>.stk-en>.en:not(:first-child)>p:first-child{text-indent:1.3em}
+/* A SENTENCE THE PAGE TURN BROKE READS ON (2026-11-11): the block that opens a page mid-sentence follows the one before with no gap
+   and no indent (the reader marks the pair where a lane's own words run on) */
+.app #reading .stkwrap>.stk>.seamshut>p:last-child{margin-bottom:0}
+.app #reading .stkwrap>.stk>.seamopen>p:first-child,html:not(.g-mobile) .app.only-en #reading .stkwrap>.stk-en>.en.seamopen:not(:first-child)>p:first-child{margin-top:0;text-indent:0}
+/* (on a phone the page's pill stands in the text's own stream, a line of its own between the two halves of the sentence: there it
+   leaves the stream at such a turn; the bar still names the page as it passes) */
+@media (max-width:880px){.app #reading .stkwrap>.stk>.seamshut+.pganchor{position:absolute;opacity:0;pointer-events:none}}
 .app.only-en #reading .stkwrap>.stk-en>.en:first-child>p:first-child{margin-top:0}
 html.g-mobile .app.only-en #reading .stkwrap>.stk-en>.en p{line-height:var(--reading-lh);text-align:left;hyphens:auto;-webkit-hyphens:auto}
 @media(min-width:700px){html.fr-justify .app.only-en #reading .stkwrap>.stk-en>.en p{text-align:justify;hyphens:auto;-webkit-hyphens:auto}}
