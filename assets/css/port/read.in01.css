@@ -279,6 +279,10 @@ mark.hlq.cur{background:color-mix(in oklab,var(--accent) 38%,transparent)}
 .hlbar button{border:0;background:none;color:var(--accent);font-size:.95rem;padding:.3rem .45rem;cursor:pointer;border-radius:999px}
 .hlbar button:hover{background:var(--highlight)}
 html.g-mobile .hlbar{bottom:calc(64px + env(safe-area-inset-bottom))}
+/* THE BAR CLEAR OF THE ASK BUTTON (2026-11-11, site tour). On a wide screen the Ask button floats in the same corner (right 20px, bottom
+   24px, 46px tall, drawn above this bar) and covered the bar's count and its three buttons: the matches could not be stepped through
+   or cleared with the mouse. Where that button floats, the bar stands above it. On a phone the button is in the toolbar. */
+html:not(.g-mobile) body:has(#fra-launcher:not(.fra-in-toolbar)) .hlbar{bottom:80px}
 html.g-mobile .ph{flex-wrap:wrap;padding:.5rem clamp(1rem,2.6vw,2.4rem)}
 html.g-mobile .ph h1{font-size:1.04rem}
 /* dark masthead — a deep editorial band framing the light reading column (kept dark in every theme) */

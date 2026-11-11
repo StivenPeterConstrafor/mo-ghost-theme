@@ -649,10 +649,32 @@ function frResumePage(entry){
   // #b<page> reference; the bar then starts at the first match ON that page (after its page-turn anchor when the
   // page begins inside a merged row), waits for the landing to settle, and matches stems so "Bonav." and
   // "Bonaventura" count. Punctuation and short tokens ("St.") never become terms.
-  const terms=[...new Set(q.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu," ").split(/\s+/).filter(w=>w.length>=4))].sort((a,b)=>b.length-a.length).slice(0,3).map(w=>w.length>=7?w.slice(0,w.length-2):w);
+  /* A WORD WHATEVER ITS ACCENTS (2026-11-11, site tour). A link from a concept's or the Lexicon's Greek word carries the word as the
+     index files it, lower case and bare: read?w=quenstedt-theologia-didactico-polemica&hl=ιδιωμα#b70-0. The page prints "ἰδίωμα"
+     and "ἰδιωμάτων", and the reader, comparing the letters as printed, marked nothing and showed no bar. The word asked for and the
+     page are both read without their marks (accents, breathings, the diaeresis; a final sigma as a sigma), in lower case; what is
+     marked is the page's own letters, and a word's ending is marked with it as before ("Bonav." and "Bonaventura"). */
+  const hlFold=s=>String(s).normalize("NFD").replace(/\p{M}+/gu,"").toLowerCase().replace(/ς/g,"σ");
+  const terms=[...new Set(hlFold(q).replace(/[^\p{L}\p{N}\s]/gu," ").split(/\s+/).filter(w=>w.length>=4))].sort((a,b)=>b.length-a.length).slice(0,3).map(w=>w.length>=7?w.slice(0,w.length-2):w);
+  // where the terms stand in a run of text, in the text's own letters: [[from, to], ...]
+  function hlRanges(text){
+    let f="";const at=[];
+    for(let i=0;i<text.length;i++){const g=hlFold(text[i]);for(let k=0;k<g.length;k++){f+=g[k];at.push(i);}}
+    const out=[];
+    for(const w of terms){let from=0,p;
+      while((p=f.indexOf(w,from))>=0){let e=at[p+w.length-1]+1;while(e<text.length&&/[\p{L}\p{M}]/u.test(text[e]))e++;out.push([at[p],e]);from=p+w.length;}}
+    out.sort((x,y)=>x[0]-y[0]||y[1]-x[1]);
+    const joined=[];for(const r of out){const l=joined[joined.length-1];if(l&&r[0]<l[1])l[1]=Math.max(l[1],r[1]);else joined.push(r);}
+    return joined;}
   if(!terms.length)return;
   const ref=frReaderBlockReference(location.hash),refPage=ref?String(ref.page):null;
-  let marks=[],idx=0,bar=null,busy=false,mo=null,landed=false,t1=null,t2=null;
+  /* THE WORD IN THE LANE THAT IS NOT SHOWING (2026-11-11, site tour). A search for a Latin or Greek word lands on the page that has it,
+     and the reader opens in English alone: Quenstedt p. 705 for "ιδιωμα" showed the bar at "5/7" and nothing marked, the seven
+     being in the Latin. `all` is every mark made; `marks` those a reader can see now (a lane that is showing, or a margin note,
+     which reveal() opens), and the bar counts and steps through these alone. Where the first match on the cited page is in a lane
+     that is off, that lane is turned on for this visit (finish; the reader's saved choice of lanes is left as it was). */
+  let marks=[],all=[],laneShown=false,idx=0,bar=null,busy=false,mo=null,landed=false,t1=null,t2=null;
+  const shown=m=>!!(m.getClientRects().length||m.closest(".mnote"));
   // RE-MARK AFTER REBUILDS (owner 2026-09-10 "highlight when you open the source in a new tab"): a big work
   // paints its first shards, the door marks them, then the shard-complete / TEI-hydration rebuild wipes
   // #reading and the marks with it — the bar kept counting detached nodes and nothing was highlighted.
@@ -726,29 +748,32 @@ function frResumePage(entry){
       const walker=document.createTreeWalker(reading,NodeFilter.SHOW_TEXT,null);
       const todo=[];let n;
       while((n=walker.nextNode())&&todo.length<1200){
-        const low=n.textContent.toLowerCase();
+        const low=hlFold(n.textContent);
         if(terms.some(w=>low.includes(w))&&n.parentElement.closest(".row .en,.row .la")&&!n.parentElement.closest("mark,.pganchor,.fmark"))todo.push(n);}
-      todo.forEach(node=>{let html=esc(node.textContent);
-        terms.forEach(w=>{html=html.replace(new RegExp("("+w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"[a-zà-ÿ]*)","gi"),"<mark class=hlq>$1</mark>");});
-        if(html.indexOf("<mark")<0)return;
+      todo.forEach(node=>{const text=node.textContent,rs=hlRanges(text);
+        if(!rs.length)return;
+        let html="",last=0;
+        for(const r of rs){html+=esc(text.slice(last,r[0]))+"<mark class=hlq>"+esc(text.slice(r[0],r[1]))+"</mark>";last=r[1];}
+        html+=esc(text.slice(last));
         const span=document.createElement("span");span.innerHTML=html;node.replaceWith(span);});
       }
       // A run that crosses rows is several <mark>s and one hit: the
       // continuations are marked but not counted, or the bar would say
       // 1/4 for a single passage.
-      marks=[...reading.querySelectorAll("mark.hlq:not(.hlq-cont)")];
+      all=[...reading.querySelectorAll("mark.hlq:not(.hlq-cont)")];marks=all.filter(shown);
     }finally{setTimeout(()=>{busy=false;},0);}
-    return marks.length;}
+    return all.length;}
   // start on the cited page: the first mark at or after its folio (or its page-turn anchor inside the previous row)
-  function startIndex(){
+  function startOf(list){
     if(refPage==null)return 0;
     const start=Array.from(reading.querySelectorAll(".pganchor")).find(a=>String(a.dataset.page)===refPage)||reading.querySelector('.folio[data-page="'+CSS.escape(refPage)+'"]');
     if(!start)return 0;
-    const i=marks.findIndex(m=>start===m||(start.compareDocumentPosition(m)&(Node.DOCUMENT_POSITION_FOLLOWING|Node.DOCUMENT_POSITION_CONTAINED_BY)));
+    const i=list.findIndex(m=>start===m||(start.compareDocumentPosition(m)&(Node.DOCUMENT_POSITION_FOLLOWING|Node.DOCUMENT_POSITION_CONTAINED_BY)));
     return i>=0?i:0;}
   const inNote=m=>!!(m&&m.closest(".mnote"));
   const count=()=>{if(bar)bar.querySelector(".hln").textContent=(marks.length?idx+1:0)+"/"+marks.length+(inNote(marks[idx])?" · margin note":"");};
-  const paint=()=>marks.forEach((m,i)=>m.classList.toggle("cur",i===idx));
+  const startIndex=()=>startOf(marks);
+  const paint=()=>all.forEach(m=>m.classList.toggle("cur",m===marks[idx]));
   // A MATCH IN A MARGIN NOTE (2026-10-06, a reader on Baxter's Catholick Theologie: the search "took me to the main text instead
   // of the marginal note"): reader-margins.js keeps each note in place but hidden behind its margin marker, so scrolling to a
   // mark inside it lands nowhere. Bring the marker into view and open its panel, whose copy of the note carries the mark, as
@@ -761,11 +786,13 @@ function frResumePage(entry){
       if(marker){marker.scrollIntoView({block:"center"});if(marker.getAttribute("aria-expanded")!=="true")marker.click();return;}
       if((tries||0)<20){setTimeout(()=>{if(marks[idx]===m)reveal(m,(tries||0)+1);},250);return;}}
     m.scrollIntoView({block:"center"});}
-  const go=d=>{if(!marks.length)return;idx=(idx+d+marks.length)%marks.length;count();paint();reveal(marks[idx]);};
+  // the marks a reader can see now: a lane may have been turned on or off since they were made
+  const refresh=()=>{const cur=marks[idx];marks=all.filter(shown);const k=marks.indexOf(cur);idx=k>=0?k:Math.min(idx,Math.max(0,marks.length-1));};
+  const go=d=>{refresh();if(!marks.length){count();paint();return;}idx=(idx+d+marks.length)%marks.length;count();paint();reveal(marks[idx]);};
   function clear(){
     if(mo){mo.disconnect();mo=null;}
     reading.querySelectorAll("mark.hlq").forEach(m=>{const s=document.createElement("span");s.textContent=m.textContent;m.replaceWith(s);});
-    marks=[];if(bar){bar.remove();bar=null;}
+    marks=[];all=[];if(bar){bar.remove();bar=null;}
     try{const u=new URL(location.href);u.searchParams.delete("hl");history.replaceState(history.state,"",u.pathname+u.search+u.hash);}catch(_){}}
   function ensureBar(){
     if(bar)return;
@@ -783,8 +810,8 @@ function frResumePage(entry){
     if(mo||!("MutationObserver" in window))return;
     mo=new MutationObserver(()=>{if(busy)return;clearTimeout(t1);t1=setTimeout(()=>{
       if(!bar){if(mark())finish();return;}          // rows arrived after an empty first pass (streamed TEI hydration)
-      const alive=marks.filter(m=>m.isConnected).length;
-      if(alive&&alive===marks.length)return;            // nothing was rebuilt
+      const alive=all.filter(m=>m.isConnected).length;
+      if(alive&&alive===all.length)return;            // nothing was rebuilt
       const wasCur=marks[idx]&&marks[idx].isConnected?marks[idx]:null;
       if(!mark()){count();return;}
       idx=wasCur?Math.max(0,marks.indexOf(wasCur)):startIndex();count();paint();
@@ -796,6 +823,16 @@ function frResumePage(entry){
     if(!mark()){watch();if(!t2){let tries=0;t2=setInterval(()=>{if(bar||++tries>40){clearInterval(t2);t2=null;return;}if(mark()){clearInterval(t2);t2=null;finish();}},500);}return;}
     finish();}
   function finish(){
+    // the first match on the cited page, seen or not: in a lane that is off, that lane is turned on (once; the saved lanes are not rewritten)
+    const first=all[startOf(all)];
+    if(first&&!shown(first)&&!laneShown){
+      const lane=first.closest(".la")?"la":first.closest(".en")?"en":"";
+      if(lane&&window.LN&&!window.LN[lane]&&typeof applyLanes==="function"){
+        laneShown=true;const was=window.__frLanesFromURL;window.__frLanesFromURL=true;window.LN[lane]=true;
+        try{applyLanes();}catch(_){}finally{window.__frLanesFromURL=was;}
+        marks=all.filter(shown);}}
+    // nothing a reader can see (an English-only work whose source lane is kept off): no bar; the reading is watched for rows still to come
+    if(!marks.length){watch();return;}
     idx=startIndex();ensureBar();count();paint();
     if(!landed){landed=true;if(!refPage||!window.__frUserScrolled)setTimeout(()=>go(0),80);}
     watch();}
