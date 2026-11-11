@@ -375,6 +375,9 @@ html.cp-site-mo body.cp-on .sd-side > .cp-tabs { margin: 0 0 16px; }
   .cp-pane > .cp-grip:focus-visible { outline: 2px solid var(--cp-accent); outline-offset: -4px; }
   .cp-tabs { position: sticky; top: 32px; z-index: 1; margin: 0 -14px 6px; padding: 0 14px; background: var(--cp-paper); }
   .cp-tabs button { min-height: 40px; padding: 4px 6px; }
+  /* (2026-11-11, site tour; The Faith Received on a phone) four equal tabs gave "Commentary" 91px of the 94 it needs at 390px, and it
+     ran into "Reception". Each tab takes its label's width and they share what is left. Mere Orthodoxy sets its own row below. */
+  html:not(.cp-site-mo) .cp-tabs button { flex: 1 1 auto; }
   .cp-top, html.cp-site-mo .cp-top { display: none; }
   /* the sheet keeps only Close from the head, in a row of its own while a verse is chosen */
   html.cp-site-mo .cp-pane .cp-top:has(.cp-close:not([hidden])) { display: flex; justify-content: flex-end; margin: 0 0 6px; }
