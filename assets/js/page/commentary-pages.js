@@ -290,6 +290,7 @@
         if (e.spm != null) c.spm = e.spm; // where the entry's first chapter opens, as a count of the book's printed page marks
         // (10-31) the reader's page id for a chapter whose anchor is a repeated printed number (map `ar`, 100000*k+n)
         if (e.ar) c.ar = Object.assign(c.ar || {}, e.ar);
+        if (e.nm) c.nm = 1; // (2026-11-09) the owner, of a work whose marks are not yet trusted (map `nm`): "Unmark it until fixed"
         if (e.an && e.an[ch] != null) { c.open = e.an[ch]; if (e.an[String(+ch + 1)] != null) c.close = e.an[String(+ch + 1)]; }
       }
       for (const [slug, w] of Object.entries((ov && ov.works) || {})) if (w.sigla) sigla[slug] = w.sigla;

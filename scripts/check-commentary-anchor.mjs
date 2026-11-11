@@ -578,6 +578,27 @@ Luke 9:18-20
   const rg = A.createResolver(async (_s, n) => [hg[n] || [], []]);
   const g16 = await rg.resolve({ slug: 'cal-harm', notes: {}, open: 161, close: 170, pv: {}, rows: { 16: [{ w: 'cal-harm', how: 'explicit', p: 161, g: "Calvin's comment on Matthew 16:16" }] } }, 16, { name: 'Matthew', ch: '16' });
   ok(!(d4.how === 'note' && d4.p === 207) && g16.how === 'note' && g16.p === 161, `Calvin's note on Deuteronomy 9:4 is no note on 6:4, and the Harmony's notes after its three references are found (got ${JSON.stringify([d4, g16])})`);
+  // (2026-11-09, pane3b; screen1's Bible-wide run) and a reference counts only for its own book: his "Leviticus 19:16, 17", a page before
+  // "Deuteronomy 19:16-21", heads his note on Leviticus 19:17, no note on Deuteronomy 19:17
+  const lv = { 100: paras('Leviticus 19\nLeviticus 19:16, 17\n16. Thou shalt not go up and down as a tale-bearer among thy people.\n16. Non incedes obtrectator in populis tuis.\n17. Thou shalt in any wise rebuke thy neighbor, and not suffer sin upon him.\n17. Corripiendo corripies proximum tuum, neque excitabis super eum crimen.\n16. Thou shalt not go up and down. The principle of the second clause is the same as that of the foregoing verse.\n17. Thou shalt in any wise rebuke thy neighbor. Because many, under the pretext of conscientiousness, are not careful to admonish.'),
+    101: paras('Deuteronomy 19\nDeuteronomy 19:16-21\n16. If a false witness rise up against any man, to testify against him that which is wrong;\n16. Quum steterit testis mendax contra aliquem, ut testificetur contra eum verbum perversum:\n17. Then both the men, between whom the controversy is, shall stand before the Lord;\n17. Tunc stabunt duo illi homines quibus est lis, coram Jehova;\n16. If a false witness rise up against any man. Because the fear of God does not so prevail in all men, as that they abstain.') };
+  const rl = A.createResolver(async (_s, n) => [lv[n] || [], []]);
+  const dt17 = await rl.resolve({ slug: 'cal-law3', notes: {}, open: 100, close: 101, pv: {}, rows: { 17: [{ w: 'cal-law3', how: 'explicit', p: 101, g: "Calvin's comment on Deuteronomy 19:17" }] } }, 17, { name: 'Deuteronomy', ch: '19' });
+  const lv17 = await A.createResolver(async (_s, n) => [lv[n] || [], []]).resolve({ slug: 'cal-law3b', notes: {}, open: 100, close: 101, pv: {}, rows: { 17: [{ w: 'cal-law3b', how: 'explicit', p: 100, g: "Calvin's comment on Leviticus 19:17" }] } }, 17, { name: 'Leviticus', ch: '19' });
+  ok(!(dt17 && dt17.how === 'note' && dt17.p === 100) && lv17 && lv17.how === 'note' && lv17.p === 100,
+    `a reference counts only for its own book: Calvin's note on Leviticus 19:17 is no note on Deuteronomy 19:17 (got ${JSON.stringify(dt17)}), and stays his note on Leviticus 19:17 (got ${JSON.stringify(lv17)})`);
+  // a note on the verse follows the heading of the passage that holds it, where that heading is on the pages: his "8. And thou shalt say
+  // unto them" (Leviticus 17:8) at the head of p. 147 is no note on Deuteronomy 17:8, whose "Deuteronomy 17:8-11" stands below it
+  const p147 = ['8. And thou shalt say unto them. The law is now extended to strangers, not those who were heathens, but who had embraced the law.',
+    '[204] "The open field," A. V.', 'Deuteronomy 17', 'Deuteronomy 17:8-11', '8. If there arise a matter too hard for thee in judgment, between blood and blood,',
+    '8. Si quid latuerit te in judicio inter sanguinem et sanguinem,', '9. And thou shalt come unto the priests the Levites, and unto the judge',
+    '9. Et venies ad sacerdotes, Levitas, et ad judicem qui fuerit in diebus illis,', '8 If there arise a matter too hard for thee. The principal office of the priests is here described under the sentence.'];
+  const lv17p = ['Leviticus 17', 'Leviticus 17:8, 9', '8. And thou shalt say unto them, Whatsoever man there be of the house of Israel, or of the strangers which sojourn among you, that offereth a burnt offering or sacrifice,',
+    '8. Dices praeterea illis, Quicunque e domo Israel, aut de peregrinis qui peregrinantur in medio vestri, obtulerit holocaustum aut sacrificium,',
+    '9. And bringeth it not unto the door of the tabernacle of the congregation, to offer it unto the LORD;', '9. Et ad ostium tabernaculi conventionis non adduxerit illud Jehovae:',
+    '8. And thou shalt say unto them. The law is now extended to strangers, not those who were heathens, but who had embraced the law.'];
+  ok(A.findNote(p147, 8, false, 17) !== 0 && A.findNote(lv17p, 8, false, 17) === 6,
+    `a note follows the heading of its passage: Calvin's note on Leviticus 17:8 above "Deuteronomy 17:8-11" is no note on Deuteronomy 17:8 (got ${A.findNote(p147, 8, false, 17)}); under its own "Leviticus 17:8, 9" it is found (got ${A.findNote(lv17p, 8, false, 17)})`);
   // the map gives Jerome's Zechariah 13 on the column of his Zechariah 12 (col. 1508): the library's rows on chapter 12, rising with its
   // verses to col. 1515, are taken, and his "(Vers. 10.)" is found at col. 1514
   const jz = { 1508: paras('(Vers. 1.) The burden of the word of the Lord upon Israel. Thus saith the Lord, which stretcheth forth the heavens.'),
@@ -767,6 +788,19 @@ Paraphrase 20. And instruct them to live accordingly, and to continue in it.`),
   // a heading that takes the verse itself puts it in the next section: the next note, as before
   const d = cal('Hebrews Chapter 12:8-11\n'), k8 = await d.resolver.resolve(d.work, 8, W12);
   ok(k8 && k8.how !== 'nearest', `a heading of 12:8-11 puts 12:8 in the next section (got ${JSON.stringify(k8)})`);
+  // (2026-11-09) the next note within the earlier note's section, on a verse its heading does not take: Calvin prints Joel 2:14 under his
+  // "Joel 2:12-13", with no heading of its own; 2:13 is in his comment on 12-13, not at his note on 2:14
+  const joel = (head) => ({
+    25: paras(`Lecture Forty-second\n${head}\n${two(12, 'Therefore also now, saith the Lord, turn ye even to me with all your heart, and with fasting, and with weeping, and with mourning.', 'Atque etiam nunc dicit Jehova, convertimini ad me in toto corde vestro, et in jejunio, et in fletu, et in planctu.')}\n${two(13, 'And rend your heart, and not your garments, and turn unto the Lord your God: for he is gracious and merciful.', 'Et scindite cor vestrum, et non vestimenta vestra, et convertimini ad Jehovam Deum vestrum, quia clemens et misericors.')}\nThe Prophet, having proclaimed the dreadful judgment which we have noticed, now shows that he did not denounce it in vain.${MORE}`),
+    26: paras(`He then subjoins, Rend your heart, and not your garments, and turn to Jehovah your God; for the outward rite is nothing.${MORE}`),
+    28: paras(`${two(14, 'Who knoweth if he will return and repent, and leave a blessing behind him; even a meat offering.', 'Quis novit an revertatur et poeniteat eum, et relinquat post se benedictionem, oblationem.')}\nThe Prophet seems at first sight to leave men here perplexed and doubtful; and yet in the last verse he had promised pardon.${MORE}`),
+    31: paras(`Joel 2:15-17\n${two(15, 'Blow the trumpet in Zion, sanctify a fast, call a solemn assembly.', 'Clangite tuba in Sion, sanctificate jejunium, vocate conventum.')}\nHe repeats what he had said before of the fast and of the assembly of the people.${MORE}`),
+  });
+  const J2 = { name: 'Joel', ch: '2' }, jw = (x) => ({ slug: `calvin-joel-${x}`, notes: { 12: 25, 13: 25, 14: 28, 15: 31 }, open: 25, close: 40, pv: {}, rows: {} });
+  const j13 = await A.createResolver(async (_s, n) => [joel('Joel 2:12-13')[n] || [], []]).resolve(jw('a'), 13, J2);
+  ok(j13 && j13.how === 'nearest' && j13.v === 12 && j13.p === 25 && j13.owned, `Calvin on Joel 2:13 opens at his comment on 12-13, p. 25, under "Joel 2:12-13", not at his note on 2:14 within it (got ${JSON.stringify(j13)})`);
+  const j13b = await A.createResolver(async (_s, n) => [joel('Joel 2:12')[n] || [], []]).resolve(jw('b'), 13, J2);
+  ok(j13b && j13b.how === 'later' && j13b.v === 14, `a heading of 2:12 alone says nothing of 2:13: the next note, as before (got ${JSON.stringify(j13b)})`);
 }
 {
   // no next note past the chapter's last verse: Origen on Genesis 23:18-20 offered "his note on 23:22", which is 43:22's (data7); the
@@ -836,8 +870,9 @@ ok(/Editors\\u2019 textual notes \(variants of the early printings\)/.test(js) &
 ok(hbs.indexOf('commentary-anchor.js') > 0 && hbs.indexOf('commentary-anchor.js') < hbs.indexOf('commentary-pane.js'), 'the template loads the anchor before the pane');
 // (2026-11-08) the pane gives the anchor the words of the verse whose note it marks and of the verse chosen, and its older reading never
 // puts back a heading the anchor refused as quoting another verse
-ok(/A\.findNote\(part, printed, !!t\.indexed, wr\.ch, null, \[verseText\(t\.v\), verseText\(S\.verse\)\]\)/.test(js) && /h < 0 && t\.indexed && !\(A && k === A\.REFUSED\)/.test(js)
-  && /A\.findNote\(part, printed, !!t\.indexed, w\.ch, null, \[verseText\(t\.v\), verseText\(v\)\]\)/.test(js) && /k < 0 && !\(A && k === A\.REFUSED\)/.test(js),
+// (2026-11-09) the words given once, as `texts`, to findNote and to the label's retry
+ok(/const texts = \[verseText\(t\.v\), verseText\(verse\)\];\s*const k0 = A \? A\.findNote\(part, printed, !!t\.indexed, w\.ch, null, texts\)/.test(js) && /h < 0 && t\.indexed && !\(A && k0 === A\.REFUSED\)/.test(js)
+  && /texts = \[verseText\(t\.v\), verseText\(v\)\];\s*let k = A \? A\.findNote\(part, printed, !!t\.indexed, w\.ch, null, texts\)/.test(js) && /k < 0 && !\(A && k === A\.REFUSED\)/.test(js),
   "the pane passes the verses' words to findNote, in the Commentary view and the preview, and keeps a refused heading refused");
 // one Close for all three tabs (2026-10-19, owner): the pane's asks the reader's script, which owns the verse; the list's toggle is not "Close"
 const sdjs = readFileSync(path.join(root, 'assets/js/page/scripture-dev.js'), 'utf8');
@@ -845,6 +880,188 @@ ok(/class="sd-close cp-close"[^>]*>Close</.test(js) && /new Event\('sd:close-ver
 ok(/addEventListener\("sd:close-verse", closeVerse\)/.test(sdjs) && /\.sd-close"\)\.addEventListener\("click", closeVerse\)/.test(sdjs), 'the Citations Close and the pane Close run one function');
 ok(/pick\.textContent = open \? 'Hide list' : 'Change'/.test(js), "the commentary list's toggle says Hide list, so Close means one thing");
 ok(/min-height: 44px/.test(sd.slice(sd.indexOf('.sd-close {'), sd.indexOf('.sd-close {') + 400)), 'Close has a 44px touch target');
+
+// ── 2026-11-09, iteration 2 of the daily driver (owner: "iterate until scripture can be used as a daily driver for what were doing") ──
+{
+  // the Bible's chapter in brackets after the work's own (Procopius on the Books of Kings, PG 87); a bracketed page or column is none
+  ok(A.chapterHead('CHAP. VII [VIII].', false) === 8 && A.chapterHead('CHAP. VI. [VII.]', false) === 7 && A.chapterHead('CHAP. VIII [X].', false) === 10,
+    `a chapter's heading names the bracketed chapter ("CHAP. VII [VIII]." is 8; got ${A.chapterHead('CHAP. VII [VIII].', false)})`);
+  ok(A.chapterHead('CHAPTER 2. [103]', false) === 2 && A.chapterHead('PSALM 146 [284]', true) === 0, 'a bracketed page or column after a chapter is no chapter');
+  // Piscator's "SCHOLIA ON CH. VI.", "ANALYSIS CH. II."; Calov's "3. CHAPTER XVIII." after a stray number; a "ch." in a citation is none
+  ok(A.chapterHead('SCHOLIA ON CH. VI.', false) === 6 && A.chapterHead('ANALYSIS CH. II.', false) === 2 && A.chapterHead('3. CHAPTER XVIII. The burdens of the Priests and Levites, and their stipends.', false) === 18
+    && A.chapterHead('cf. ch. 5', false) === 0 && A.chapterHead('14. Chapter twelve of Matthew says', false) === 0, 'a chapter heading by "CH." and after a stray number; not a citation');
+  const pro = paras(`ever? If these things are to be accepted concerning Christ: And, if his iniquity shall come, "I will chasten him with the rod of men"
+VERSE 19. And these things seemed small in your sight, my Lord.
+CHAP. VII [VIII].
+VERSE 2. He measured with a line, etc. So great was the multitude of captives.
+VERSE 14. In all Idumaea he placed garrisons. Now that was fulfilled which Isaac foretold to Jacob.`);
+  ok(A.findNote(pro, 14, true, 7) < 0, 'Procopius\'s "VERSE 14." under "CHAP. VII [VIII]." is no note on 2 Samuel 7:14');
+
+  // a verse printed in both tongues is never a note (the Calvin Translation Society: Philippians 2:3, Amos 7:11, Jonah 2:3)
+  const phil = paras(`Philippians 2:1-4
+1. If there be therefore any consolation in Christ, if any comfort of love, if any fellowship of the Spirit.
+1. Si qua igitur consolatio in Christo, si quod solatium dilectionis, si qua communicatio Spiritus.
+2. Fulfil ye my joy, that ye be likeminded, having the same love, being of one accord, of one mind.
+2. Implete gaudium meum ut idem sentiatis, eandem habentes caritatem, unanimes, unum sentientes.
+3 Let nothing be done through strife or vainglory; but in lowliness of mind let each esteem other better than themselves.
+3. Nihil per contentionem, aut inanem gloriam, sed per humilitatem alii alios existiment se ipsis excellentiores.
+4. Look not every man on his own things, but every man also on the things of others.
+4. Non considerans quisque quod suum est, sed quisque quod est aliorum.
+1 If there is therefore any consolation. There is an extraordinary tenderness in this exhortation, in which he entreats the Philippians.`);
+  ok(A.twin(phil, 6) && A.twin(phil, 5) && A.findNote(phil, 3, true, 2) !== 6, `Calvin's Latin "3. Nihil per contentionem", beside his English "3 Let nothing be done", is not his note on Philippians 2:3 (got ${A.findNote(phil, 3, true, 2)})`);
+  const amos = paras(`11. For thus Amos saith, Jeroboam shall die by the sword, and Israel shall surely be led away captive out of their own land.
+11. Quia sic dicit Amos, Gladio morientur Jeroboam; et Israel migrando migrabit e terra sua.`);
+  ok(A.twin(amos, 0) && A.twin(amos, 1), 'the names the two share do not hide the pair ("Amos", "Jeroboam", "Israel" in both)');
+  const jon3 = paras(`3. For thou hadst cast me into the deep, in the midst of the seas; and the floods compassed me about: all thy billows and thy waves passed over me.
+3. Atqui projeceras me in profundum, in cor marium, et fluvius circumdedit me; omnes conflictus tui (sed hac voce intelligit undas quae inter se confligunt; scimus enim esse varias collisiones, ideo vertunt aliqui, contritiones tui, nam schr significat proprie confligere et frangere; perinde est igitur ac si diceret) fluctus tui super me transierunt.
+3. In this verse are set forth his difficulties: for Jonah, for the sake of amplifying, refers to his condition. It was a great thing that he cried to God from the bowels of the fish; but it was far more difficult for him to raise up his mind in prayer, when he knew or thought God to be angry with him: for had he been thrown into extreme evils, he might yet call upon God.`);
+  ok(A.twin(jon3, 1) && !A.twin(jon3, 2), 'a Latin verse with the translator\'s long gloss in parentheses is still the English verse\'s twin; the note after it is not');
+  const mal = paras(`4. Et gratia erit Iehovae oblatio Iehudah et Ierusalem, sicut a diebus antiquis.
+This verse shows, that though he had just spoken of the sons of Levi, he yet had regard to the whole people.
+5. And I will come near to you to judgment; and I will be a swift witness against the sorcerers, and against the adulterers.
+5. Et appropinquabo ad vos in judicium, et ero testis velox contra praestigiatores, et adulteros.
+Here the Prophet retorts the complaints which the Jews had previously made. There is here then a counter-movement, as they say.`);
+  const lect = paras(`12. And the word of the Lord came unto me, saying, Arise, go to Nineveh.
+12. Et fuit sermo Iehovae ad me, dicendo, Surge, vade in Nineve.
+Lecture Fortieth`);
+  const blk = paras(`Micah 5:1-2
+1. Now gather thyself in troops, O daughter of troops: he hath laid siege against us: they shall smite the judge of Israel.
+1. Nunc colligas te filia congregationis; obsidionem posuit contra nos; virga percutient in maxillam judicem Israel.
+2. But thou, Bethlehem Ephratah, though thou be little among the thousands of Judah, yet out of thee shall he come forth.
+2. Et tu Beth-lehem Ephrata, parva ad essendum inter millia Jehudah; ex te mihi egredietur qui sit dominator in Israel.
+To encourage the faithful to patience, the Prophet again reminds them that hard and severe time was nigh; for he had before spoken of the restoration.`);
+  ok(A.findNote(blk, 1, true, 5) === 5 && A.findNote(blk, 2, true, 5) === -1, 'the comment after several verses printed in both tongues is the note on the first of them, and no other');
+  ok(A.findNote(mal, 5, true, 3) === 4 && A.findNote(lect, 12, true, 1) === -1, `the comment after a verse printed in both tongues, where it opens unnumbered, is the note (Calvin on Malachi 3:5; got ${A.findNote(mal, 5, true, 3)}); a lecture's heading is none`);
+
+  // a section's reference heading scopes what follows (Calvin's Harmony of the Law: his note on Exodus 23:13 is no note on Deuteronomy 6:13)
+  const harm = paras(`Deuteronomy 6:13
+13. ... shalt swear by his name.
+13. Per nomen ejus jurabis.
+Leviticus 19:12. And ye shall not swear by my name falsely. Although Moses is treating of the duties of the Second Table, he here condemns perjury.
+Exodus 23:13
+13. ... and make no mention of the name of other gods, neither let it be heard out of thy mouth.
+13. Nomen deorum alienorum non memorabitis, non audietur in ore tuo.
+13. Make no mention of the name of other gods. There is no sort of doubt but that this declaration should be connected with the Third Commandment.`);
+  ok(A.findNote(harm, 13, true, 6) < 0, `Calvin's "13. Make no mention of the name of other gods", under "Exodus 23:13", is not his note on Deuteronomy 6:13 (got ${A.findNote(harm, 13, true, 6)})`);
+  ok(A.findNote(harm, 13, true, 23) === 7, 'and it is his note on Exodus 23:13');
+  // another count of a chapter's verses (the English Jonah 2:1-10 are the Hebrew's, the Latin's and the Greek's 2:2-11)
+  const jer = paras(`(Chap. II.--Ver. 1.) And the Lord prepared a great fish: to swallow up Jonas. LXX: And the Lord commanded a great whale, and it devoured Jonas.
+(Ver. 2.) And Jonas was in the belly of the fish three days and three nights. LXX: And Jonas was in the belly of the whale three days and three nights.
+And Jonas prayed to the Lord his God out of the belly of the fish: and he said: LXX similarly, only with the order changed.
+(Ver. 3.) I cried out of my tribulation to the Lord, and he heard me.`);
+  const j21 = 'Then Jonah prayed to the LORD his God from the belly of the fish,';
+  const jonah2 = (x) => ({ 1: j21, 2: 'saying, “I called out to the LORD, out of my distress, and he answered me; out of the belly of Sheol I cried, and you heard my voice.' }[x] || '');
+  const k0 = A.findNote(jer, 1, false, 2, null, [j21]);
+  ok(k0 === 0 && A.otherCount(jer, k0, 1, 'jonah', 2, jonah2) === 2, `Jerome's note on the English Jonah 2:1 is "And Jonas prayed to the Lord his God", in his note headed "(Ver. 2.)" (got ${A.otherCount(jer, k0, 1, 'jonah', 2, jonah2)})`);
+  const cal = paras(`1. Then Jonah prayed unto the LORD his God out of the fish's belly. When Jonah says that he prayed from the bowels of the fish, he shows first with what constancy of faith he was endued.
+2. And said, I cried by reason of mine affliction unto the LORD, and he heard me; out of the belly of hell cried I.`);
+  ok(A.otherCount(cal, 0, 1, 'jonah', 2, jonah2) === 0 && A.otherCount(jer, 0, 1, 'genesis', 2, jonah2) === 0, 'a work that counts as the English keeps its heading; a chapter whose count is one keeps it too');
+  // neighbouring verses that open alike: Clarke counts Micah 5 as the English, and his "Verse 7. The remnant of Jacob" is no note on 5:8
+  const mic = (x) => ({ 7: 'Then the remnant of Jacob shall be in the midst of many peoples like dew from the LORD, like showers on the grass,', 8: 'And the remnant of Jacob shall be among the nations, in the midst of many peoples, like a lion among the beasts of the forest,' }[x] || '');
+  const clarke = paras(`Verse 7. The remnant of Jacob] From the reign of Darius Hystaspes the Jews had greatly multiplied.
+Verse 8. As a lion] In this and the following verse the victories of the Maccabees are foretold.`);
+  ok(A.otherCount(clarke, 1, 8, 'micah', 5, mic) === 1, `Clarke's "Verse 8. As a lion" stays his note on Micah 5:8, though his note on 5:7 opens with words 5:8 shares (got ${A.otherCount(clarke, 1, 8, 'micah', 5, mic)})`);
+  // a paragraph inside the other count's note needs three of the verse's words; a heading that opens on two of them keeps its place
+  const song7 = (x) => ({ 4: 'Your neck is like an ivory tower. Your eyes are pools in Heshbon, by the gate of Bath-rabbim. Your nose is like a tower of Lebanon, which looks toward Damascus.',
+    9: 'and your mouth like the best wine. It goes down smoothly for my beloved, gliding over lips and teeth.', 10: 'I am my beloved’s, and his desire is for me.' }[x] || '');
+  const poole = paras(`9. *The roof of thy mouth, &c.* חִכֵּךְ] *And thy palate* (supply, *from the preceding verse, let it be, I pray, Merc.*) *as the best wine*, Merc.
+10. *I am my beloved’s*]
+Or, *I am of my beloved*, P. Ti. The Bride, who had long kept silence, here speaks . Filled with the wine of grace and consolation from the Bridegroom, she testifies her certainty.`);
+  const neck = paras(`Verse 4. Your neck is like an ivory tower.
+Verses 4, 5. Your nose is like the tower of Lebanon, which looks toward Damascus.`);
+  const gen32 = (x) => ({ 22: 'And he rose up that night, and took his two wives, and his two handmaids, and his eleven children, and passed over the ford of the Jabbok.',
+    23: 'And he took them, and sent them over the stream, and sent over that which he had.' }[x] || '');
+  const wa = paras(`Ver. 22. He rose up that night.] Before it was Day; in the last Watch of the Night.
+Ver. 23. And he took them, and sent them over, etc.] Having tried the Ford, he returned; and caused them all to pass over the Jabbok.`);
+  const cyr = paras(`VERSE 1. And the Lord commanded a great whale, and it swallowed Jonah. And Jonah was in the belly of the whale three days and three nights.
+VERS. 2, 3. And Jonah prayed unto the Lord his God out of the belly of the sea monster, and said: I cried in my tribulation unto the Lord.`);
+  const hos12 = (x) => ({ 11: 'Is Gilead iniquity? they are altogether false; in Gilgal they sacrifice bullocks; yea, their altars are as heaps in the furrows of the field.',
+    12: 'And Jacob fled into the field of Aram, and Israel served for a wife, and for a wife he kept sheep.',
+    13: 'And by a prophet Jehovah brought Israel up out of Egypt, and by a prophet was he preserved.' }[x] || '');
+  const lut = paras(`V. 12.
+If Gilead is an idol, etc. We must become accustomed to prophetic affections and tropes.
+V. 13.
+Again, he opposes the example of the father to these impious sons. For he served, he kept, namely, the flock or the covenant.`);
+  ok(A.otherCount(lut, 0, 12, 'hosea', 12, hos12) === 3, `a heading that is its number only has its words in the paragraph after it (Luther's "V. 13." over "he served, he kept" is the English Hosea 12:12; got ${A.otherCount(lut, 0, 12, 'hosea', 12, hos12)})`);
+  ok(A.otherCount(wa, 0, 22, 'genesis', 32, gen32) === 0 && A.otherCount(cyr, 0, 1, 'jonah', 2, jonah2) === 1,
+    `a heading whose own quotation is the verse's keeps its place (Patrick's "Ver. 22. He rose up that night." on Genesis 32:22, got ${A.otherCount(wa, 0, 22, 'genesis', 32, gen32)}); Cyril's "VERSE 1. ... a great whale" gives way on the English Jonah 2:1 (got ${A.otherCount(cyr, 0, 1, 'jonah', 2, jonah2)})`);
+  ok(A.otherCount(poole, 0, 9, 'song-of-solomon', 7, song7) === 0 && A.otherCount(neck, 0, 4, 'song-of-solomon', 7, song7) === 0,
+    `Poole's "9. The roof of thy mouth" stays his note on the Song 7:9 (got ${A.otherCount(poole, 0, 9, 'song-of-solomon', 7, song7)}); "Verse 4. Your neck is like an ivory tower" on 7:4 (got ${A.otherCount(neck, 0, 4, 'song-of-solomon', 7, song7)})`);
+
+  // the resolver: a psalm's title headed as verse 1 (Augustine on Psalm 32), a note numbered past the chapter's end that quotes the verse
+  // (Damascene on 2 Corinthians 5:21), and a tractate's own sections at the library's page (Augustine on John 3:5)
+  const ps32 = { 256: paras(`ENARRATION ON PSALM XXXI.
+1. [vers. 1.] To David himself, for understanding, by which it is understood that a man is liberated not by the merits of his works, but by the grace of God, while confessing his sins.
+2. [vers. 2.] Blessed are they whose iniquities are forgiven, and whose sins are covered: and whose sins have been consigned to oblivion.
+3. [vers. 3.] Because I was silent, my bones have grown old.`) };
+  const v32 = { 1: 'Blessed is the one whose transgression is forgiven, whose sin is covered.', 2: 'Blessed is the man against whom the LORD counts no iniquity, and in whose spirit there is no deceit.', 3: 'For when I kept silent, my bones wasted away through my groaning all day long.' };
+  const R32 = A.createResolver(async (_s, n) => [ps32[n] || [], []], { verseText: (v) => v32[v] || '' });
+  const aug = { slug: 'aug', notes: {}, rows: {}, open: 256, close: 275, pv: {} };
+  const a1 = await R32.resolve(aug, 1, { name: 'Psalms', ch: '32' }), a3 = await R32.resolve(aug, 3, { name: 'Psalms', ch: '32' });
+  ok(a1 && a1.how === 'note' && a1.pv === 2 && a3 && a3.how === 'note' && !a3.pv, `Augustine's note on Psalm 32:1 is his "2. [vers. 2.]", his title's "1. [vers. 1.]" is not; 32:3 keeps his "[vers. 3.]" (got ${JSON.stringify(a1)}, ${JSON.stringify(a3)})`);
+  const dam = { 734: paras(`Verse 11. Knowing therefore the terror of the Lord, we persuade men.
+Verse 14. For the love of Christ constraineth us.
+Verse 17. Therefore if any man be in Christ, he is a new creature.
+Verse 19. That God was in Christ, reconciling the world unto himself.
+Verse 20. "For Christ therefore we are ambassadors, as though God did beseech you by us."
+Verse 22. "Him that knew no sin, he made sin for us." He did not say, He made him a sinner.`) };
+  const v5 = Object.fromEntries(Array.from({ length: 21 }, (_, i) => [i + 1, `verse ${i + 1}`]));
+  Object.assign(v5, { 20: 'Therefore, we are ambassadors for Christ, God making his appeal through us. We implore you on behalf of Christ, be reconciled to God.', 21: 'For our sake he made him to be sin who knew no sin, so that in him we might become the righteousness of God.' });
+  const d21 = await A.createResolver(async (_s, n) => [dam[n] || [], []], { verseText: (v) => v5[v] || '' }).resolve({ slug: 'dam', notes: {}, rows: {}, open: 734, close: 735, pv: {} }, 21, { name: '2 Corinthians', ch: '5' });
+  ok(d21 && d21.how === 'note' && d21.p === 734 && d21.pv === 22, `Damascene's "Verse 22. Him that knew no sin" is his note on 2 Corinthians 5:21, numbered past the chapter's end (got ${JSON.stringify(d21)})`);
+  const chr = { 1044: paras(`Verse 11. For he that said, Do not commit adultery, said also, Do not kill.
+Verse 14. What doth it profit, my brethren, though a man say he hath faith.
+Verse 17. Even so faith, if it hath not works, is dead, being alone.
+Verse 19. Thou believest that there is one God; thou doest well.
+Verse 21. Was not Abraham our father justified by works.
+Verse 23. And the scripture was fulfilled.
+Verse 27. "Faith without works is dead." For as the body without the spirit is dead, so faith without works is dead.`) };
+  const jv = Object.fromEntries(Array.from({ length: 26 }, (_, i) => [i + 1, `verse ${i + 1}`]));
+  Object.assign(jv, { 23: 'and the scripture was fulfilled which saith, And Abraham believed God, and it was reckoned unto him for righteousness', 24: 'Ye see that by works a man is justified, and not only by faith.',
+    25: 'And in like manner was not also Rahab the harlot justified by works, in that she received the messengers?', 26: 'For as the body apart from the spirit is dead, even so faith apart from works is dead.' });
+  const RJ = A.createResolver(async (_s, n) => [chr[n] || [], []], { verseText: (v) => jv[v] || '' }), cj = { slug: 'chr', notes: {}, rows: {}, open: 1044, close: 1045, pv: {} };
+  const j24 = await RJ.resolve(cj, 24, { name: 'James', ch: '2' }), j26 = await RJ.resolve(cj, 26, { name: 'James', ch: '2' });
+  ok(!(j24 && j24.pv === 27) && j26 && j26.pv === 27, `Chrysostom's "VERSE 27. Faith without works is dead" is his note on James 2:26, not on 2:24 (got ${JSON.stringify([j24, j26])})`);
+  const tr = { 1474: paras(`13. We bless the Lord our God, who has gathered us for spiritual joy.
+TRACTATE XI. From that which is written, Now when he was at Jerusalem at the Pasch; up to that, Unless a man be born again of water and the Spirit. Chap. II, V. 23-25, and chap. III, V. 1-5.
+1. The Lord has opportunely provided for us this day the order of this reading.
+2. Behold you have heard that when the Lord Jesus Christ was at Jerusalem at the Pasch, many believed in his name.`), 1475: paras(`3. There was a man of the Pharisees, named Nicodemus, a ruler of the Jews: this man came to Jesus by night.
+4. Since, therefore, Nicodemus was of that number, he came to the Lord: but he came by night.
+5. Therefore attend, my brethren, to what this man who came to Jesus by night answers.`) };
+  const t5 = await A.createResolver(async (_s, n) => [tr[n] || [], []]).resolve({ slug: 'trac', notes: { 5: 1474 }, rows: {}, open: 1474, close: 1484, pv: {} }, 5, { name: 'John', ch: '3' });
+  ok(t5 && t5.how === 'range' && t5.a === 1 && t5.b === 5 && t5.p === 1474, `Augustine on John 3:5 opens his Tractate XI on 3:1-5, nothing marked, not his section "5." (got ${JSON.stringify(t5)})`);
+  // a paragraph whose first words are another verse's own, and none of this one's, is not its note (a work that numbers its sections)
+  const rom1 = (x) => ({ 4: 'who was declared to be the Son of God with power, according to the spirit of holiness, by the resurrection from the dead; even Jesus Christ our Lord,',
+    5: 'through whom we received grace and apostleship, unto obedience of faith among all the nations, for his name’s sake;', 6: 'among whom are ye also, called to be Jesus Christ’s:',
+    7: 'to all that are in Rome, beloved of God, called to be saints: Grace to you and peace from God our Father and the Lord Jesus Christ.' }[x] || '');
+  ok(A.onOther('6. Through whom we have received, he says, grace and apostleship. Grace with all the faithful, but apostleship not with all.', 6, rom1)
+    && A.onOther('7. "Through whom we have received grace and apostleship for obedience to the faith in all nations for his name."', 7, rom1),
+    'Augustine\'s section "6. Through whom we have received … grace and apostleship" (Romans 1:5) is no note on 1:6; Origen\'s "7." on 1:5 none on 1:7');
+  ok(!A.onOther('5. Through whom we have received, etc. -- Having completed his definition of the gospel', 5, rom1)
+    && !A.onOther('(Vers. 6.) Among whom are you also the called of Jesus Christ. This is, while we are', 6, rom1)
+    && !A.onOther('6. Through whom we have received, he says, grace and apostleship.', 6, () => '')
+    && !A.onOther('6. Per quem accepimus gratiam et apostolatum ad obediendum fidei in omnibus gentibus', 6, rom1)
+    && !A.onOther('Verses 5-7. Through whom we have received grace and apostleship unto obedience of faith among all nations', 6, rom1)
+    && !A.onOther('Having said that they received grace and apostleship for obedience to the faith, he adds the Romans', 6, rom1),
+    "a note that quotes its verse keeps its mark; without the verses' words, or in Latin, nothing is refused; nor a heading of verses, nor prose");
+  const isa6 = (x) => ({ 7: 'And he touched my mouth with it, and said, Lo, this hath touched thy lips; and thine iniquity is taken away, and thy sin forgiven.',
+    12: 'and Jehovah have removed men far away, and the forsaken places be many in the midst of the land.' }[x] || '');
+  const amos7 = (x) => ({ 3: 'Jehovah repented concerning this: It shall not be, saith Jehovah.', 6: 'Jehovah repented concerning this: This also shall not be, saith the Lord Jehovah.',
+    11: 'For thus Amos saith, Jeroboam shall die by the sword, and Israel shall surely be led away captive out of his land.' }[x] || '');
+  ok(A.onOther('12. Verse 7. AND THY INIQUITY SHALL BE TAKEN AWAY, AND THY SIN SHALL BE PURGED.', 12, isa6)
+    && !A.onOther('6. This shall not be] It will not be permitted him to carry away all Israel. I will not utterly cut off the Israelite people', 6, amos7),
+    'a section\'s number over a heading of another verse is no note on the verse ("12. Verse 7.", Calov on Isaiah 6); a lemma of small words is not judged ("6. This shall not be]", Poole on Amos 7:6)');
+  const gen1 = (x) => ({ 1: 'In the beginning God created the heavens and the earth.', 2: 'And the earth was waste and void; and darkness was upon the face of the deep: and the Spirit of God moved upon the face of the waters.',
+    3: 'And God said, Let there be light: and there was light.' }[x] || '');
+  const luke2 = (x) => ({ 13: 'And suddenly there was with the angel a multitude of the heavenly host praising God, and saying,', 14: 'Glory to God in the highest, And on earth peace among men in whom he is well pleased.' }[x] || '');
+  ok(!A.onOther('3. And God said Moses now, for the first time, introduces God in the act of speaking, as if he had created the mass of heaven and earth without speaking. Yet', 3, gen1),
+    'a note that opens on the verse\'s own first words quotes it, though the stop after its lemma be lost (Calvin\'s "3. And God said Moses now ..." on Genesis 1:3)');
+  ok(A.onOther('3. And the spirit of God moved over the waters. But the Spirit of God was already moving over our dark and fluid heart', 3, gen1)
+    && !A.onOther('28. (Vers. 13, 14). As regards the persuasion of a credible testimony, it is added: And suddenly there was with the angel a multitude', 14, luke2)
+    && !A.onOther('2. [vers. 2.] Blessed are they whose iniquities are forgiven, and whose sins are covered', 1, () => '', [2])
+    && A.onOther('2. [vers. 2.] Blessed are they whose iniquities are forgiven, and whose sins are covered', 1, () => ''),
+    'Isidore\'s "3. And the spirit of God moved over the waters" is no note on Genesis 1:3; Bonaventure\'s "28. (Vers. 13, 14)." is his note on Luke 2:14');
+}
 
 // ── 2026-11-08, the daily driver: the pane's side of it ───────────────────────────────────────────────────────────────────────────
 {
@@ -857,8 +1074,10 @@ ok(/min-height: 44px/.test(sd.slice(sd.indexOf('.sd-close {'), sd.indexOf('.sd-c
   const wrong = Object.entries(names).filter(([a, x]) => short(a) !== x).map(([a, x]) => `${a}: ${short(a)}, not ${x}`);
   ok(!wrong.length, `a key's label drops a title and keeps the name (${wrong.join('; ') || 'all as expected'})`);
   // the first commentary is the most important key that has the verse; the reader's own pick and an address's cp= come first
-  ok(/const ON_VERSE = new Set\(\['note', 'range', 'between', 'page'\]\);/.test(js) && /let c = mine \|\| null;\s*if \(!c && keys\.length > 1\)/.test(js)
-    && /c = await firstOnVerse\(keys, S\.verse, w,/.test(js), 'the first commentary is the first key, by rank, with its own place on the verse, after the reader\'s pick');
+  // (2026-11-09) in two passes: its note on the verse (or a run of verses holding it, or its critics on it), then a place between its
+  // notes or a page filed as discussing it
+  ok(/const OWN = new Set\(\['note', 'range'\]\), NEAR = new Set\(\['between', 'page'\]\);/.test(js) && /let c = mine \|\| null;\s*if \(!c && keys\.length > 1\)/.test(js)
+    && /c = await firstOnVerse\(keys, S\.verse, w,/.test(js), 'the first commentary is the first key, by rank, with its own note on the verse (else its place between notes or a page), after the reader\'s pick');
   ok(/if \(S\.seeking && !S\.cur\) return;/.test(js), 'nothing is drawn while the first commentary is looked for');
   // the earlier note whose section holds the verse is not traded for the chapter's opening
   ok(/\|\| t\.owned\) return t;/.test(js), "chapterFirst keeps the anchor's earlier note whose section holds the verse");
@@ -866,6 +1085,302 @@ ok(/min-height: 44px/.test(sd.slice(sd.indexOf('.sd-close {'), sd.indexOf('.sd-c
   ok(/const shownAt = CANON\.test\(sh\.slug\) && pages\[0\] && pages\[0\]\.n != null \? pages\[0\]\.n : sh\.p;\s*setWhere\(shownAt, false\);/.test(js), 'a Migne column is said and linked as the column read');
   // the empty state names the work in its status line
   ok(/No page of \$\{esc\(name0\)\} is known for/.test(js), 'the empty state has a status line naming the work');
+}
+
+// ── 2026-11-09: the pane's side of iteration 2 ────────────────────────────────────────────────────────────────────────────────────
+{
+  // the first commentary in two passes: the first key with its note on the verse, else the first with its place between notes or a
+  // page; the search stops at the first note, and looking on past a key with only such a place is bounded by time
+  const src = js.slice(js.indexOf('  async function firstOnVerse('), js.indexOf('  // while it is looked for, nothing that would change'));
+  const pass = js.match(/const PASS_ONE = (\d+)[,;]/), keysN = js.match(/PASS_ONE_KEYS = (\d+);/);
+  // (2026-11-10, pane3c) st: the pane's S, where firstOnVerse leaves the key it opens unmarked (S.plain)
+  const make = (cls, wait, st) => new Function('onVerse', 'volumeFor', 'S', `const PASS_ONE = ${pass ? pass[1] : 1000}, PASS_ONE_KEYS = ${keysN ? keysN[1] : 9}; ${src}; return firstOnVerse;`)(
+    (c) => new Promise((res) => { setTimeout(() => res(cls[c.slug]), (wait && wait[c.slug]) || 5); }), (c) => ({ notes: {}, slug: c.slug }), st || {});
+  const keys = ['a', 'b', 'c', 'd'].map((slug) => ({ slug })), yes = () => true;
+  const f1 = await make({ a: 2, b: 0, c: 1, d: 1 })(keys, 3, {}, yes);
+  const f2 = await make({ a: 2, b: 0, c: 0, d: 0 })(keys, 3, {}, yes);
+  const f3 = await make({ a: 2, b: 0, c: 1, d: 0 }, { c: (pass ? +pass[1] : 1000) + 400 })(keys, 3, {}, yes);
+  const f4 = await make({ a: 1, b: 1, c: 1, d: 1 }, { b: 5000 })(keys, 3, {}, yes);
+  const f5 = await make({ a: 2, b: 0, c: 1, d: 1 })(keys, 3, {}, yes, true);
+  ok(f1 && f1.slug === 'c' && f2 && f2.slug === 'a' && f3 && f3.slug === 'a' && f4 && f4.slug === 'a' && f5 && f5.slug === 'a',
+    `the first commentary: a lower key's note before a higher key's place between notes (${f1 && f1.slug}), else that place (${f2 && f2.slug}); bounded by time (${f3 && f3.slug}); a note first in rank waits on none below (${f4 && f4.slug}); where the verses are counted otherwise, the first key with any place (${f5 && f5.slug})`);
+  ok(/c = await firstOnVerse\(keys, S\.verse, w, \(\) => tok === S\.initTok && !S\.cur, !!\(A && A\.otherNumbers && A\.otherNumbers\(w\.book, w\.ch, Number\(S\.verse\)\)\.length\)\);/.test(js),
+    'the first commentary is told when the chapter\'s verses are counted otherwise there');
+  // (2026-11-09, the owner: "Look at most 3 places down") a note wins only from the first three keys; past them the first key with a
+  // place opens, and none below a place in hand is waited for
+  const keys5 = ['a', 'b', 'c', 'd', 'e'].map((slug) => ({ slug }));
+  const t0 = Date.now(), f6 = await make({ a: 2, b: 0, c: 0, d: 1 }, { d: 5000 })(keys, 3, {}, yes), t6 = Date.now() - t0;
+  const f7 = await make({ a: 0, b: 0, c: 0, d: 1 })(keys, 3, {}, yes);
+  const f8 = await make({ a: 0, b: 0, c: 0, d: 2, e: 1 })(keys5, 3, {}, yes);
+  ok(keysN && +keysN[1] === 3 && f6 && f6.slug === 'a' && t6 < 2000 && f7 && f7.slug === 'd' && f8 && f8.slug === 'd',
+    `at most three places down: the fourth key's note does not win over the first key's place (${f6 && f6.slug}, ${t6} ms, not waited for); with no place in the first three, the first key with one, its note (${f7 && f7.slug}) or its place (${f8 && f8.slug})`);
+  /* (2026-11-10, pane3c; the owner's rule in full: "A marked note may win only from the top 3 keys; otherwise the top key opens its right
+   * page unmarked") the key opened for a place of the second kind is left in S.plain, with its chapter and verse, and paint marks nothing
+   * there; a note of the first three, a note past them and the first key where the verses are counted otherwise open marked as before;
+   * the reader's own pick of a work marks as the keys do, and a new chapter starts with none */
+  const plainOf = async (cls, ks, shifted) => { const st = {}; const c = await make(cls, null, st)(ks, 3, { book: 'judges', ch: 8 }, yes, shifted); return `${c && c.slug}:${st.plain ? `${st.plain.slug}@${st.plain.key}:${st.plain.v}` : '-'}`; };
+  const p1 = await plainOf({ a: 2, b: 0, c: 0, d: 0 }, keys), p2 = await plainOf({ a: 2, b: 0, c: 1, d: 1 }, keys), p3 = await plainOf({ a: 2, b: 0, c: 1, d: 1 }, keys, true);
+  const p4 = await plainOf({ a: 0, b: 0, c: 0, d: 1 }, keys), p5 = await plainOf({ a: 0, b: 0, c: 0, d: 2, e: 1 }, keys5), p6 = await plainOf({ a: 0, b: 2, c: 0, d: 1 }, keys);
+  ok(p1 === 'a:a@judges/8:3' && p2 === 'c:-' && p3 === 'a:-' && p4 === 'd:-' && p5 === 'd:d@judges/8:3' && p6 === 'b:b@judges/8:3',
+    `the key opened for a place of the second kind opens unmarked (${p1}; past the first three ${p5}; the second key ${p6}); a note of the first three (${p2}), a note past them (${p4}) and the first key where the verses are counted otherwise (${p3}) are marked as before`);
+  ok(/const plain = !!\(S\.plain && S\.plain\.slug === sh\.slug && S\.plain\.v === Number\(S\.verse\) && S\.plain\.key === `\$\{sh\.book\}\/\$\{sh\.ch\}`\);\s*const nm = plain \|\| /.test(js)
+    && /if \(mine\) S\.plain = null;/.test(js) && /S\.dirSeeded = false; S\.plain = null;/.test(js),
+    'paint marks nothing for the key the pane opened unmarked, on its verse; a pick of the reader\'s and a new chapter let it go');
+  /* (2026-11-10, pane3c) THE NOTES OF THE PASSAGE BEFORE: the Harmony prints "Deuteronomy 8:7-10" and "Deuteronomy 11:10-12" with their
+   * texts, then his notes on 8:7 and 8:10; "10. When thou hast eaten and art full" is no note on Deuteronomy 11:10. A note that opens as
+   * the reference's own printed verse is the reference's again; where the reference's own note comes first, nothing changes */
+  {
+    const head = ['Deuteronomy 11:10-12', '10. For the land, whither thou goest in to possess it, is not as the land of Egypt, from whence ye came out, where thou sowedst thy seed.',
+      '10. Terra enim quam tu ingrederis ut possideas eam, non est sicut terra Aegypti, ex qua egressi estis, in qua seminabas semen tuum.',
+      '11. But the land, whither ye go to possess it, is a land of hills and valleys, and drinketh water of the rain of heaven.',
+      '11. At terra ad quam vos transibitis ut possideatis eam, terra montium et vallium est: de pluvia coeli bibit aquas.'];
+    const before = ['7. For the Lord thy God. We may shortly sum up the words and the matter. He almost sets before their eyes a habitation in the land of Canaan, that they may be the more ready to obey.',
+      '10. When thou hast eaten and art full. In these words he admonishes them that they would be too senseless, unless they were led by so great an abundance to give thanks to God.'];
+    const own = '11. But the land. He here compares it with Egypt, and commends it on the ground that it drinks in the rain of heaven, and so depends on the blessing of God alone, whereas the Egyptians water their fields by their own labor from the river, as men water a garden of herbs with the foot.';
+    const h1 = [...head, ...before], h2 = [...head, ...before, own], h3 = [...head, own, '12. A land which the Lord thy God careth for. He adds that the eyes of God are always upon it.'];
+    ok(A.findNote(h1, 10, true, 11) < 0 && A.findNote(h2, 10, true, 11) < 0 && A.findNote(h2, 11, true, 11) === 7 && A.findNote(h3, 11, true, 11) === 5 && A.findNote(h3, 12, true, 11) === 6,
+      `the notes after a reference's text that open with a number below its first verse are the passage before's (his note on Deuteronomy 8:10 for 11:10: ${A.findNote(h1, 10, true, 11)}); one that opens as the reference's printed verse is its own again (${A.findNote(h2, 11, true, 11)}); the reference's own notes are found as before (${A.findNote(h3, 11, true, 11)}, ${A.findNote(h3, 12, true, 11)})`);
+    ok(A.printedText(head, 10) && A.printedText(head, 11) && !A.printedText(h3, 12) && !A.printedText(before, 10), 'a verse printed in both tongues is the text, a numbered note is not (printedText)');
+    // (only the paragraph next after the text, and only a number below the reference's first verse: Calvin's commentaries run on from
+    // "Hosea 9:6" and his comment to the next verse with no heading of its own)
+    const hos = ['Hosea 9:6', '6. For, lo, they are gone because of destruction: Egypt shall gather them up, Memphis shall bury them: the pleasant places for their silver, nettles shall possess them.',
+      '6. Quia ecce abierunt a vastatione: Aegyptus colliget eos, Memphis sepeliet eos: desiderabile argenti eorum urtica possidebit, et non est spina in tabernaculis eorum.',
+      'The Prophet confirms here what is contained in the last verse, that is, that the Israelites would at length be deprived of all their hope, and that Egypt would be their grave.',
+      '7. The days of visitation are come. The Prophet, by saying that the days of visitation had come, intended to shake off from hypocrites that supine torpor in which they slept, and of which we have often spoken before.'];
+    ok(A.findNote(hos, 7, true, 9) === 4 && A.findNote([...head, own.replace(/^11\./, '13.'), before[0]], 13, true, 11) === 5,
+      'a numbered paragraph after the comment, or a number past the reference\'s verses, is read as before');
+  }
+  /* (2026-11-11, pane3c) A FOOTNOTE'S NUMBER INSIDE A LEMMA: "17. For [39] the righteousness of God, etc." was cut at "For" and could
+   * not lead with Romans 1:17. The lemma is read both ways: on past the number, and cut at it, as where the number ends the lemma and
+   * the comment runs on ("18. And Abram removed his tent [355] Here Moses relates"); a lemma of another verse leads with neither */
+  {
+    const rom = (n) => ({ 16: 'For I am not ashamed of the gospel: for it is the power of God unto salvation to every one that believeth; to the Jew first, and also to the Greek.',
+      17: 'For therein is revealed a righteousness of God from faith unto faith: as it is written, But the righteous shall live by faith.',
+      18: 'For the wrath of God is revealed from heaven against all ungodliness and unrighteousness of men, who hinder the truth in unrighteousness;' })[n] || '';
+    const gen = (n) => ({ 17: 'Arise, walk through the land in the length of it and in the breadth of it; for unto thee will I give it.',
+      18: 'And Abram moved his tent, and came and dwelt by the oaks of Mamre, which are in Hebron, and built there an altar unto Jehovah.' })[n] || '';
+    const r17 = '17. For [39] the righteousness of God, etc. This is an explanation and a confirmation of the preceding clause, that the gospel is the power of God unto salvation.';
+    const g18 = '18. And Abram removed his tent [355] Here Moses relates that the holy man, animated by the renewed promise of God, traverses the land with great courage.';
+    ok(A.leads(r17, 17, rom) && A.quotes(r17, 17, rom) && A.leads(g18, 18, gen) && !A.leads('17. For [39] the wrath of God, etc. He reasons now by stating things of a contrary nature.', 17, rom) && !A.leads(r17, 18, rom),
+      `a lemma with a footnote's number in it leads with its verse, read on past the number (${A.leads(r17, 17, rom)}) or cut at it (${A.leads(g18, 18, gen)}); another verse's lemma does not (${A.leads(r17, 18, rom)})`);
+  }
+  /* (2026-11-10, pane3c) a place between its notes is a place in hand only where the pages bear it out: each side is looked for as paint
+   * would mark it, and the place does not stand where a side is only the printed text or where one side's note is there and the other's
+   * is not; and a next or closest note the pages do not show is said to be the comment on its verse, on this page */
+  ok(/async function betweenStands\(vol, t, w\) \{/.test(js) && /const side = \(n\) => \{ const m = noteMark\(pages, lane, \{ p: t\.p, how: 'note', v: n, indexed: true \}, w, n, vol\); return m\.h >= 0 \? 1 : A\.printedText\(m\.all, n\) \? -1 : 0; \};/.test(js)
+    && /return before >= 0 && after >= 0 && before === after;/.test(js) && /if \(t\.how === 'between'\) return \(await betweenStands\(vol, t, w\)\) \? 2 : 3;\s*return NEAR\.has\(t\.how\) \? 2 : 0;/.test(js),
+    'a place between its notes that the pages do not bear out is no place in hand for the first commentary');
+  // (3: such a place) the next key with a place that stands opens instead, a note of the first three or a place past it; with none, it
+  // opens as it did, unmarked
+  const w1 = await plainOf({ a: 0, b: 3, c: 0, d: 1 }, keys), w2 = await plainOf({ a: 3, b: 0, c: 2, d: 1 }, keys), w3 = await plainOf({ a: 0, b: 3, c: 0, d: 0 }, keys), w4 = await plainOf({ a: 3, b: 1, c: 0, d: 0 }, keys);
+  const w5 = await plainOf({ a: 0, b: 3, c: 0, d: 1 }, keys, true);
+  ok(w1 === 'd:-' && w2 === 'c:c@judges/8:3' && w3 === 'b:b@judges/8:3' && w4 === 'b:-' && w5 === 'b:-',
+    `a place the pages do not bear out gives way to the next key with a place that stands (its note ${w1}, ${w4}; its place ${w2}); with none, it opens as it did (${w3}); so it does where the verses are counted otherwise (${w5})`);
+  ok(/if \(h < 0 && \(t\.how === 'later' \|\| t\.how === 'nearest'\)\) \{ say = `No separate note on \$\{sh\.ch\}:\$\{S\.verse\}\. Its comment on \$\{ref\(t\.v\)\}, the \$\{t\.how === 'later' \? 'next after' : 'closest before'\} it, is on this page`;/.test(js),
+    'a next or closest note the pages do not show under its number is said to be the comment on its verse, on this page');
+  // a place between its notes says only what is known
+  ok(/No separate note on \$\{sh\.ch\}:\$\{S\.verse\}\. Its notes on \$\{sh\.ch\}:\$\{t\.a\} and \$\{sh\.ch\}:\$\{t\.b\} are on/.test(js) && !/is on this page, between its notes on \$\{/.test(js),
+    'a place between its notes says there is no separate note and where its notes either side are');
+  // a lone label in a run of margin labels gives way to the numbered note whose first words are the verse's; the status names the mark's page
+  ok(/if \(h >= 0 && !foot && labelRun\(all, h, pageOf\)\) \{\s*const k2 = A \? A\.findNote\(part, printed, !!t\.indexed, w\.ch, new Set\(part\.filter\(\(s\) => LABEL\.test\(s\)\)\), texts\)/.test(js)
+    && /A\.quotes && A\.quotes\(part\[k2\], t\.v, verseText\)/.test(js), 'a label in a run of margin labels gives way to the numbered note that quotes the verse');
+  ok(/if \(h >= 0\) setWhere\(pages\[pageOf\[h\]\]\.n, false\);/.test(js), "the status line names the page the mark is on");
+  // a bare margin number with another after it heads nothing (Cajetan's Deuteronomy 6, p. 490); one over the note's words heads it
+  const lab = new Function(`${js.slice(js.indexOf('  const LABEL = '), js.indexOf("  // a verse's note opens its paragraph"))}; return labelRun;`)();
+  const caj = ['Ver.', '"And you shall write them on the threshold, and on the doors of your house."', '8.', '15.', '6.', '7.', 'I.', '9.', 'It is a common custom of Scripture'];
+  const one = (n) => Array.from({ length: n }, () => 295);
+  ok(lab(caj, 2) && lab(caj, 5) && !lab(['Ver.', '22.', 'Saying: I will pass through your land'], 1) && !lab(['12. And the people', 'Vers. 13.'], 0) && lab(['VERS. 1.', 'Verf.2.'], 0)
+    && lab(['Ver. 20.', 'Ver. 21.', 'Ver. 22.', 'Thus far the deserters to David.'], 2, [295, 295, 295, 296]) && !lab(['Rectius alii.', 'Vers. 10.', 'HELD THE PRINCIPALITY AMONG ALL THESE KINGDOMS)'], 1, one(3))
+    && !lab(['V. 2', 'But they err plainly.', 'V. 4', 'V. 6', 'Answer me here, Jew, and whoever you are'], 3, one(5)),
+    "a margin number standing alone among others is no note's head, nor the last of them at a page's foot; inside a page, over the note's words, it is one");
+  // a paragraph whose first words are another verse's is not marked, in the Commentary view and the preview
+  ok(/if \(h >= 0 && A && A\.onOther && A\.onOther\(all\[h\], t\.v, verseText, \[printed,/.test(js) && /if \(hit >= 0 && A && A\.onOther && A\.onOther\(all\[hit\], t\.v, verseText, \[printed,/.test(js),
+    "a paragraph whose first words are another verse's is not marked as the note");
+  // the older reading on a page the library indexed keeps to the chapter's and the passage's headings, and never takes a printed verse
+  ok(/const mine = A && A\.inScope \? A\.inScope\(part, w\.ch\) : \(\) => true; const j = part\.findIndex\(\(s, i\) => noteRx\(printed\)\.test\(s\) && mine\(i\) && !\(A && A\.twin && A\.twin\(part, i\)\)\);/.test(js),
+    "the indexed page's older reading keeps to the chapter's and passage's headings and skips a verse printed in both tongues");
+  // the note's own number where the anchor gives one (a note numbered past the chapter's end, a psalm's title headed as verse 1)
+  ok(/const printed = t\.pv \|\| \(c && c\.pv && c\.pv\[t\.v\]\) \|\| t\.v;/.test(js) && /const m = noteMark\(pages, lane, t, wr, S\.verse, S\.cur\);/.test(js) && /const printed = t\.pv \|\| \(c\.pv && c\.pv\[t\.v\]\) \|\| t\.v;/.test(js),
+    'the pane marks a note by its own number where the anchor gives it (pv), in the Commentary view and the preview');
+}
+
+// ── 2026-11-09, pane3b: the coordinator's read of the node gate ──────────────────────────────────────────────────────────────────────
+{
+  const of = (o) => (n) => o[n] || '';
+  // a numbered note under a run of margin labels is the verse's only where its lemma quotes the verse: not Lapide's Numbers 29:7 for 30:7
+  const num30 = of({ 4: 'and her father heareth her vow, and her bond wherewith she hath bound her soul, and her father holdeth his peace at her; then all her vows shall stand, and every bond wherewith she hath bound her soul shall stand.',
+    5: 'But if her father disallow her in the day that he heareth, none of her vows, or of her bonds wherewith she hath bound her soul, shall stand: and Jehovah will forgive her, because her father disallowed her.',
+    6: 'And if she be married to a husband, while her vows are upon her, or the rash utterance of her lips, wherewith she hath bound her soul,',
+    7: 'and her husband hear it, and hold his peace at her in the day that he heareth it; then her vows shall stand, and her bonds wherewith she hath bound her soul shall stand.',
+    8: 'But if her husband disallow her in the day that he heareth it, then he shall make void her vow which is upon her, and the rash utterance of her lips, wherewith she hath bound her soul: and Jehovah will forgive her.' });
+  const zeph2 = of({ 7: 'And the coast shall be for the remnant of the house of Judah; they shall feed their flocks thereupon; in the houses of Ashkelon shall they lie down in the evening.',
+    8: 'I have heard the reproach of Moab, and the revilings of the children of Ammon, wherewith they have reproached my people, and magnified themselves against their border.',
+    9: 'Therefore as I live, saith Jehovah of hosts, the God of Israel, Surely Moab shall be as Sodom, and the children of Ammon as Gomorrah.',
+    10: 'This shall they have for their pride, because they have reproached and magnified themselves against the people of Jehovah of hosts.' });
+  const john2 = of({ 3: 'And hereby we know that we know him, if we keep his commandments.', 4: 'He that saith, I know him, and keepeth not his commandments, is a liar, and the truth is not in him;',
+    5: 'but whoso keepeth his word, in him verily hath the love of God been perfected. Hereby we know that we are in him:' });
+  ok(!A.quotes('7. THE TENTH DAY ALSO OF THIS SEVENTH MONTH SHALL BE HOLY TO YOU. — For that was the feast of Expiation', 7, num30)
+    && A.quotes('8. I HAVE HEARD THE REPROACH OF MOAB (whose metropolis is Areopolis, that is, the city of Ar)', 8, zeph2)
+    && A.quotes('4. HE WHO SAYS HE KNOWS HIM (true and saving knowledge, that is, practical, which leads to love)', 4, john2),
+  'a numbered note under margin labels is the verse\'s where its lemma quotes it: not Lapide\'s "7. THE TENTH DAY" (Numbers 29:7) for 30:7; his "8. I HAVE HEARD THE REPROACH OF MOAB" and "4. HE WHO SAYS HE KNOWS HIM" are');
+  // a heading whose lemma is a neighbour verse's does not choose the first commentary: Cajetan's labels a line off his text
+  const chr23 = of({ 24: 'These were the sons of Levi after their fathers’ houses, even the heads of the fathers’ houses of those of them that were counted, who did the work for the service of the house of Jehovah, from twenty years old and upward.',
+    25: 'For David said, Jehovah, the God of Israel, hath given rest unto his people; and he dwelleth in Jerusalem for ever:',
+    26: 'and also the Levites shall no more have need to carry the tabernacle and all the vessels of it for the service thereof.',
+    27: 'For by the last words of David the sons of Levi were numbered, from twenty years old and upward.',
+    28: 'For their office was to wait on the sons of Aaron for the service of the house of Jehovah, in the courts, and in the chambers, and in the purifying of all holy things;',
+    29: 'for the showbread also, and for the fine flour for a meal-offering, whether of unleavened wafers, or of that which is baked in the pan;' });
+  const deut4 = of({ 16: 'lest ye corrupt yourselves, and make you a graven image in the form of any figure, the likeness of male or female,',
+    17: 'the likeness of any beast that is on the earth, the likeness of any winged bird that flieth in the heavens,',
+    18: 'the likeness of anything that creepeth on the ground, the likeness of any fish that is in the water under the earth;',
+    19: 'and lest thou lift up thine eyes unto heaven, and when thou seest the sun and the moon and the stars, even all the host of heaven, thou be drawn away and worship them,',
+    20: 'But Jehovah hath taken you, and brought you forth out of the iron furnace, out of Egypt, to be unto him a people of inheritance, as at this day.' });
+  ok(A.misfit('Ver. 26. According to the latest commands also of David, subjoined to the earlier ones', 26, chr23)
+    && A.misfit('Ver. 27. And they were under the hand of the sons of Aaron.] In Hebrew: for their station', 27, chr23)
+    && A.misfit('Verse 18. And lest perhaps with your eyes lifted up to the heavens you see the sun and the moon', 18, deut4)
+    && !A.misfit('Ver. 28. For their office was to wait on the sons of Aaron] In the service of the house', 28, chr23)
+    && !A.misfit('Ver. 26. And the Levites shall no more carry the tabernacle] Being now set in its place', 26, chr23)
+    && !A.misfit('(Vers. 26, 27.) According to the latest commands also of David', 27, chr23) && !A.misfit('(Vers. 26 seqq.) According to the latest commands also of David', 26, chr23),
+  'a heading whose lemma has more of a neighbour verse\'s words than of its own (Cajetan\'s labels a line off his text) is a misfit; one that quotes its verse, or names several verses, is not');
+  // a numbered question that names its verse is that verse's (Willet's "12. Quest. v. 9." is on 1 Samuel 21:9)
+  const sam21 = of({ 9: 'And the priest said, The sword of Goliath the Philistine, whom thou slewest in the vale of Elah, behold, it is here wrapped in a cloth behind the ephod.',
+    12: 'And David laid up these words in his heart, and was sore afraid of Achish the king of Gath.', 13: 'And he changed his behavior before them, and feigned himself mad in their hands.' });
+  ok(A.onOther('12. Quest. v. 9. Whether David sinned in taking Goliaths sword. 1. Some thinke that David offended', 12, sam21)
+    && !A.onOther('13. Quest. v. 13. Of Davids chaunging of his behaviour before Achish, whether he offended in so dissembling.', 13, sam21),
+  'Willet\'s numbered question names its verse: "12. Quest. v. 9." is no note on 21:12, "13. Quest. v. 13." is his on 21:13');
+  // the other count by weighed words: names that run through the chapter do not outweigh a word of one verse
+  const sam = ['Then came David to Nob to Ahimelech the priest: and Ahimelech came to meet David trembling, and said unto him, Why art thou alone?',
+    'And David said unto Ahimelech the priest, The king hath commanded me a business, and hath said unto me, Let no man know anything of the business.',
+    'Now therefore what is under thy hand? give me five loaves of bread in my hand, or whatsoever there is present.',
+    'And the priest answered David, and said, There is no common bread under my hand, but there is holy bread.',
+    'And David answered the priest, and said unto him, Of a truth women have been kept from us about these three days.',
+    'So the priest gave him holy bread; for there was no bread there but the showbread, that was taken from before Jehovah.',
+    'Now a certain man of the servants of Saul was there that day, detained before Jehovah; and his name was Doeg the Edomite.',
+    'And David said unto Ahimelech, And is there not here under thy hand spear or sword? for I have neither brought my sword nor my weapons with me.',
+    'And the priest said, The sword of Goliath the Philistine, whom thou slewest in the vale of Elah, behold, it is here wrapped in a cloth behind the ephod.',
+    'And David arose, and fled that day for fear of Saul, and went to Achish the king of Gath.',
+    'And the servants of Achish said unto him, Is not this David the king of the land? did they not sing one to another of him in dances?',
+    'And David laid up these words in his heart, and was sore afraid of Achish the king of Gath.',
+    'And he changed his behavior before them, and feigned himself mad in their hands, and scrabbled on the doors of the gate.',
+    'Then said Achish unto his servants, Lo, ye see the man is mad; wherefore then have ye brought him to me?',
+    'Do I lack madmen, that ye have brought this fellow to play the madman in my presence?'];
+  const willet = ['12. Quest. v. 9. Whether David sinned in taking Goliaths sword. 1. Some thinke that David offended in taking that sword',
+    '13. Quest. v. 13. Of Davids chaunging of his behaviour before Achish, whether he offended in so dissembling. 1. The word here used tagham'];
+  ok(A.otherCount(willet, 0, 12, 'i-samuel', 21, (n) => sam[n - 1] || '') === 0,
+    `the other count's heading is not taken on names the chapter is full of: Willet's "13. Quest. v. 13." stays off 1 Samuel 21:12 (got ${A.otherCount(willet, 0, 12, 'i-samuel', 21, (n) => sam[n - 1] || '')})`);
+  // nor a paragraph of the other count's note whose own lemma is another verse's (Migne's "THIS IS THE GIFT OF GOD", the English
+  // Ecclesiastes 5:19, inside his "VERSE 17.", the English 5:18)
+  const ecc5 = (n) => ({ 17: 'All his days also he eateth in darkness, and he is sore vexed and hath sickness and wrath.',
+    18: 'Behold, that which I have seen to be good and to be comely is for one to eat and to drink, and to enjoy good in all his labor, wherein he laboreth under the sun, all the days of his life which God hath given him: for this is his portion.',
+    19: 'Every man also to whom God hath given riches and wealth, and hath given him power to eat thereof, and to take his portion, and to rejoice in his labor; this is the gift of God.',
+    20: 'For he shall not much remember the days of his life; because God answereth him in the joy of his heart.' }[n] || '');
+  const migEcc = ['VERSE 16. — ALL HIS DAYS, etc., that is, in sadness and anxiety of mind because of the acquisition of temporal things.',
+    'VERSE 17. — THIS THEREFORE (1). Here from what precedes there is introduced a corollary, namely that a delightful life, although it is not man\'s good',
+    'THIS IS THE GIFT OF GOD. In the sense that every good is given by God, temporal goods also, although they are the least among God\'s goods. Health of the body, and the life',
+    'VERSE 19. — FOR HE WILL NOT BE REMEMBERED INDEED (3), that is, he will be remembered much.'];
+  ok(A.otherCount(migEcc, -1, 18, 'ecclesiastes', 5, ecc5) !== 2,
+    `the other count's note does not give way to its paragraph whose lemma is the next verse's (Migne's "THIS IS THE GIFT OF GOD" stays off Ecclesiastes 5:18; got ${A.otherCount(migEcc, -1, 18, 'ecclesiastes', 5, ecc5)})`);
+  // the pane: the label run's note by quotes; the first commentary skips a misfit; the other count only where a source lane stands beside the English
+  ok(/if \(t\.misfit\) return 2;/.test(js) && (js.match(/A\.quotes && A\.quotes\(part\[k2\], t\.v, verseText\)/g) || []).length === 2
+    && (js.match(/const others = \(x\) => \(A && A\.otherNumbers && pages\.some\(\(p\) => p\.la\) \? A\.otherNumbers\(/g) || []).length === 2
+    && (js.match(/others\(printed\)\.length\) \{/g) || []).length === 2,
+  'the pane takes the label run\'s note by its lemma, takes a misfit key as a place near the verse for the first commentary, and reads the other count only in a work with a source lane');
+}
+
+// ── 2026-11-09, pane3b: a work the map marks `nm` (the owner: "Unmark it until fixed") ──────────────────────────────────────────────
+{
+  // the Commentary view: no paragraph is the mark, a note or label found is said to be on its page; the preview the same; the first
+  // commentary takes its note as a page (pass 2)
+  // (2026-11-10, pane3c) and so is the key the pane opened unmarked (plain)
+  ok(/const nm = plain \|\| !!\(\(S\.list \|\| \[\]\)\.find\(\(x\) => x\.slug === sh\.slug\) \|\| S\.cur \|\| \{\}\)\.nm;/.test(js)
+    && /if \(h >= 0 && nm\) \{ nmAt = pages\[pageOf\[h\]\]\.n; h = -1; setWhere\(nmAt, false\); \}/.test(js)
+    && /if \(m\.h >= 0 && !nm\) \{ h = m\.h; found = true;/.test(js)
+    && /if \(u\.hit >= 0 && nm\) \{ nmAt = pages\[pageOf\[u\.hit\]\]\.n; if \(u\.head > 0\) top = u\.head; say = `Its comment on \$\{ref\(S\.verse\)\} is on this page`; setWhere\(nmAt, false\); \}/.test(js)
+    && /if \(h < 0 && t\.how === 'note'\) \{ say = `Its comment on \$\{ref\(t\.v\)\} is on this page`; setWhere\(nmAt != null \? nmAt : shownAt, false\); \}/.test(js),
+  'a work marked nm is painted with no mark, its note or label said to be "Its comment on ... is on this page", at the page it was found on');
+  ok(/if \(hit >= 0 && c\.nm\) \{ nmAt = onPage\[hit\]; hit = -1; \}/.test(js) && /if \(u\.hit >= 0 && c\.nm\) \{ nmAt = onPage\[u\.hit\];/.test(js)
+    && /nmAt != null && \(t\.how === 'head' \|\| t\.how === 'book'\) \? `Its comment on \$\{name\} \$\{w\.ch\}:\$\{v\} is on \$\{at\}`/.test(js),
+  'the preview (the verse rail and the phone sheet) marks nothing in a work marked nm');
+  ok(/if \(vol\.nm && \(OWN\.has\(t\.how\) \|\| \(t\.how === 'collected' && !t\.nearest\)\)\) return 2;/.test(js),
+  "the first commentary takes a work marked nm's note as a page filed as discussing the verse (pass 2)");
+}
+
+// ── 2026-11-09, pane3b: the first pass takes a note that quotes the verse (the word judge over the whole Bible) ─────────────────────
+{
+  ok(/if \(OWN\.has\(t\.how\)\) return \(await ownNote\(vol, t, v, w\)\) \? 1 : 2;/.test(js)
+    && /if \(m\.h < 0 \|\| m\.via === 'fallback' \|\| QUESTION\.test\(m\.all\[m\.h\]\)\) return false;/.test(js)
+    && /return !!\(A\.leads \|\| A\.quotes\)\(LABEL\.test\(s\) && m\.h \+ 1 < m\.all\.length \? m\.all\[m\.h \+ 1\] : s, v, verseText\);/.test(js)
+    && /const HARMONY = \/harmony-of-the-\(\?:law\|evangelists\)\/;/.test(js),
+  'the first pass takes a key only where the mark paint draws quotes the verse; never an indexed fallback, a numbered question, an nm work or Calvin\'s Harmonies');
+  const num30b = (n) => ({ 4: 'and her father heareth her vow, and her bond wherewith she hath bound her soul, and her father holdeth his peace at her',
+    5: 'But if her father disallow her in the day that he heareth, none of her vows shall stand', 7: 'and her husband hear it, and hold his peace at her in the day that he heareth it; then her vows shall stand' }[n] || '');
+  const deut34 = (n) => ({ 2: 'and all Naphtali, and the land of Ephraim and Manasseh, and all the land of Judah, unto the hinder sea,', 3: 'and the South, and the Plain of the valley of Jericho the city of palm-trees, unto Zoar.' }[n] || '');
+  const ex26 = (n) => ({ 1: 'Moreover thou shalt make the tabernacle with ten curtains; of fine twined linen, and blue, and purple, and scarlet.', 7: 'And thou shalt make curtains of goats\u2019 hair for a tent over the tabernacle: eleven curtains shalt thou make.' }[n] || '');
+  ok(!A.leads('7. THE TENTH DAY ALSO OF THIS SEVENTH MONTH SHALL BE HOLY TO YOU. For that was the feast', 7, num30b) && !A.leads('Unto the utmost sea.', 3, deut34)
+    && A.leads('CVIII. [Ib. XXVI, 1.] He orders the tabernacle to be made of ten curtains', 1, ex26),
+  'the first pass takes a note that leads with its verse: not Lapide\'s Numbers 29:7 on 30:7 ("holy" is no "hold"), not Cajetan\'s 34:2 under "Verse 3."; Augustine\'s on Exodus 26:1, yes');
+  const Q = new RegExp(js.match(/const QUESTION = \/(.+)\/i;/)[1], 'i');
+  ok(Q.test('6. Quest. v. 5. Of the company of Prophets whome Saul should meete') && Q.test('19. Quest. v. 14. Of Davids daunsing.') && !Q.test('6. And when he came to the hill'),
+  'a numbered question that names its verse is told apart from a numbered note');
+  // the comment after a passage printed in both tongues is the note of the passage's first verse only (Calvin, Jeremiah 35:12-15), and
+  // not where the paragraph after it turns to the verse (his Hosea 11:12, a new lecture closing the last); kept on Micah 5:4, Joel 2:30
+  const jer35 = ['Jeremiah 35:12-15', '12. Then came the word of the LORD unto Jeremiah, saying,', '12. Et fuit sermo Jehovae ad Jeremiam, dicendo,',
+    '13. Thus saith the LORD of hosts, the God of Israel; Go and tell the men of Judah and the inhabitants of Jerusalem, Will ye not receive instruction?',
+    '13. Sic dicit Jehova exercituum, Deus Israel, Vade et dic viro Jehudah et incolis Jerusalem, Annon recipietis disciplinam?',
+    '14. The words of Jonadab the son of Rechab, that he commanded his sons not to drink wine, are performed;',
+    '14, Stabiliti sunt sermones Jonadab filii Rechab, quos mandavit filiis suis, ne biberent vinum;',
+    '15. I have sent also unto you all my servants the prophets, rising up early and sending them,', '15. Et misi ad vos omnes servos meos Prophetas, mane surgendo et mittendo,',
+    'Here Jeremiah applies the example which he had related; for subjoined is God\'s complaint'];
+  const hos11p = ['Hosea 11:12', '12. Ephraim compasseth me about with lies, and the house of Israel with deceit: but Judah yet ruleth with God,',
+    '12. Circumdedit me mendacio Ephraim, et fraude domus Israel: Judah autem adhuc dominatur cum Deo,',
+    'I shall not stay now to recite the opinions of others; nor does it seem necessary. I might have indeed referred in the last verse to the roaring of God',
+    'I come now to the last verse, in which the Lord complains, that he had been compassed with lies'];
+  const mic5 = ['Micah 5:4', '4. And he shall stand and feed in the strength of the LORD, in the majesty of the name of the LORD his God;',
+    '4. Et stabit et pascet in virtute Jehovae, in magnificentia nominis Jehovae Dei sui;', 'There is no doubt but that the Prophet continues here to speak of Christ',
+    'He shall stand, he says, and feed in the power of Jehovah'];
+  const joel2 = ['Joel 2:30-31', '30. And I will shew wonders in the heavens and in the earth, blood, and fire, and pillars of smoke.',
+    '30. Et ponam prodigia in coelis et terra, sanguinem et ignem et columnas nubis.', '31. The sun shall be turned into darkness, and the moon into blood,',
+    '31. Sol vertetur in tenebras et luna in sanguinem,', 'The Prophet seems here to contradict himself'];
+  const nah2 = ['Grant, Almighty God, that as we are prone to every kind of sin', '2. He that dasheth in pieces is come up before thy face: keep the munition,',
+    '2. Ascendit dispergens coram facie tua; custodi munitionem,', 'The waster spoken of here by the Prophet, some consider him to have been Sennacherib'];
+  // (a heading whose book is numbered is no printed line: his "1 Peter 3:5-6", the comment after it his on 3:5)
+  const pet3 = ['[36] The best construction is to regard "adorning," or ornament, as understood', '1 Peter 3:5-6',
+    '5. For after this manner in the old time the holy women also, who trusted in God, adorned themselves,', '5. Sic enim aliquando et sanctae mulieres quae sperabant in Deum, ornabant seipsas,',
+    '6. Even as Sara obeyed Abraham, calling him lord: whose daughters ye are,', '6. Quemadmodum et Sara obediebat Abrahae, dominum ipsum appellans,',
+    'He sets before them the example of pious women, who sought for spiritual adorning'];
+  // (and his "One thing, escaped me in the third verse", after his printed Jonah 3:5, before "I now return to the text"; not his "Since
+  // interpreters do not agree about the sense of these words" before "I now return to the substance of the teaching", Daniel 4:27)
+  const jon3 = ['He entered then the city a day\'s journey, and cried and said, etc.', '5. So the people of Nineveh believed God, and proclaimed a fast,',
+    '5. Et crediderunt viri Ninevae Deo, et indixerunt jejunium,', 'One thing, escaped me in the third verse: Jonah said that Nineveh was a city great to God.',
+    'I now return to the text: Jonah says, that the citizens of Nineveh believed God'];
+  const dan4 = ['Daniel 4:27', '27. Wherefore, O king, let my counsel be acceptable unto thee, and break off thy sins by righteousness,',
+    '27. Quamobrem, rex, consilium meum placeat tibi, et peccata tua justitia redime,', 'Since interpreters do not agree about the sense of these words',
+    'I now return to the substance of the teaching. May my counsel please thee! says he.'];
+  ok(!A.afterPassage(jer35, 9, 15, 35) && A.afterPassage(jer35, 9, 12, 35) && !A.afterPassage(hos11p, 3, 12, 11) && A.afterPassage(mic5, 3, 4, 5)
+    && A.afterPassage(joel2, 5, 30, 2) && !A.afterPassage(joel2, 5, 31, 2) && A.afterPassage(nah2, 3, 1, 2) && A.afterPassage(pet3, 6, 5, 3) && !A.afterPassage(pet3, 6, 6, 3)
+    && !A.afterPassage(jon3, 3, 5, 3) && A.afterPassage(dan4, 3, 27, 4),
+  'the comment after a printed passage: its first verse\'s (Jeremiah 35:12, not 35:15 past "14, Stabiliti"; Joel 2:30, not 2:31; 1 Peter 3:5 under "1 Peter 3:5-6"), not a lecture\'s close of the verses before it (Hosea 11:12, Jonah 3:5); Micah 5:4, Daniel 4:27 and, with no heading, Calvin\'s "2." on the English Nahum 2:1 kept');
+  ok(/A\.afterPassage && !\(c && HARMONY\.test\(c\.slug\)\) && !A\.afterPassage\(all, h, printed, w\.ch\)\) h = -1;/.test(js)
+    && /A\.afterPassage && !HARMONY\.test\(slug\) && !A\.afterPassage\(all, hit, printed, w\.ch\)\) hit = -1;/.test(js) && !/A\.earlier/.test(js),
+  'the pane and its preview do not mark the comment after a printed passage on a verse that is not its first, Calvin\'s Harmonies aside');
+  // Aquinas's Job by the Vulgate's numbers: the range line by the other count, where its words quote the verse
+  ok(JSON.stringify(A.otherNumbers('job', 40, 6)) === '[1]' && JSON.stringify(A.otherNumbers('job', 16, 21)) === '[22]'
+    && /for \(const x of A\.otherNumbers\(w\.book, w\.ch, Number\(verse\)\)\) \{ const j = line\(x\); if \(j >= 0 && leads\(j\)\) \{ h = j; break; \} \}/.test(js),
+  'Aquinas on Job: the English 40:6 is his 40:1, 16:21 his 16:22, and the lecture line is looked for by that number too');
+}
+
+{
+  // (2026-11-09, pane3b) a reference with two verses by a comma heads a passage (Calvin's Harmony of the Law, "Deuteronomy 27:9, 10")
+  ok(JSON.stringify(A.refHead('Deuteronomy 27:9, 10')) === '[[9,10]]' && JSON.stringify(A.refHead('Hebrews Chapter 12:9-11')) === '[[9,11]]',
+    `a reference heading with two verses by a comma is read as their run (got ${JSON.stringify(A.refHead('Deuteronomy 27:9, 10'))})`);
+}
+
+{
+  // (2026-11-09, pane3b) a lecture's line of the verse's number: kept with two of the verse's words, refused with fewer where another verse has more
+  const jn3 = (n) => ({ 15: 'that whosoever believeth may in him have eternal life.', 16: 'For God so loved the world, that he gave his only begotten Son, that whosoever believeth on him should not perish, but have eternal life.' }[n] || '');
+  const mt5b = (n) => ({ 4: 'Blessed are they that mourn: for they shall be comforted.', 5: 'Blessed are the meek: for they shall inherit the earth.' }[n] || '');
+  ok(A.lineFits('3:15 so that whoever believes in him may not perish but have eternal life', 15, jn3) && !A.lineFits('5:5 Blessed are they who mourn: for they will be comforted. [n. 422]', 5, mt5b),
+    'a lecture line with two of its verse\'s words is its note (Aquinas on John 3:15); one with fewer, where another verse has more, is not (his Vulgate\'s Matthew 5:5)');
 }
 
 if (failed) { console.error(`\n${failed} check(s) failed`); process.exit(1); }

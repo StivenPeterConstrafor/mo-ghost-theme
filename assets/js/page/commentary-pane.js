@@ -429,8 +429,16 @@
    * marked "VERS. 1." and showed "Verf.2.", "Verf.3." under it: the scan's margin labels gathered at the foot of p. 400, his text on
    * 7:1 above them). A verse's label standing alone, with another label or nothing after it, is marked as no note; the page is said to
    * hold the comment (13 of 2,012 marked landings of the cb7ff1e64 run, Cajetan's and Lapide's "Vers. 5." over "Vers. 6.") */
-  const LABEL = /^\W*(?:V|Ver|Vers|Verse|VERS|VERSE|Verf|Vs)\.?\s*[\dIVXL]{1,7}(?:\s*[-,]\s*\d{1,3})?\.?\W*$/i;
-  const labelRun = (all, k) => LABEL.test(all[k] || '') && (k + 1 >= all.length || LABEL.test(all[k + 1] || ''));
+  /* (2026-11-09, owner: "iterate until scripture can be used as a daily driver for what were doing") a margin number standing alone is
+   * one too, where another stands after it: Cajetan's Deuteronomy 6 gathers "8.", "15.", "6.", "7.", "I.", "9." at the foot of p. 490,
+   * his notes on 6:7 and 6:8 above them under a bare "Ver.", and "7." and "8." were marked as those notes. His "Ver." over "22." over
+   * "Saying: I will pass through your land" (Numbers 21:22) is a note's head, and stays one. The last of such a run heads nothing either
+   * where it ends its page (`pageOf`, each paragraph's page): Cajetan's "Ver. 15." to "Ver. 22." stand at the foot of p. 295, his notes
+   * on 1 Chronicles 12:15-22 above them, and "Ver. 22." was marked over the first lines of the next page. Inside a page it heads what
+   * follows: Luther's "V. 4", "V. 6" in his lectures on Isaiah 9, his "V. 6" over his comment on 9:6 */
+  const LABEL = /^\W*(?:(?:V|Ver|Vers|Verse|VERS|VERSE|Verf|Vs)\.?\s*[\dIVXL]{1,7}(?:\s*[-,]\s*\d{1,3})?|\d{1,3}|[IVXL]{1,7})\.?\W*$/i;
+  const labelRun = (all, k, pageOf) => LABEL.test(all[k] || '') && (k + 1 >= all.length || LABEL.test(all[k + 1] || '')
+    || (k > 0 && LABEL.test(all[k - 1] || '') && !!pageOf && pageOf[k + 1] !== pageOf[k]));
   // a verse's note opens its paragraph: "12. PROPTEREA…", "Vers. 12.", "V. 12", "Verse 12."
   const noteRx = (v) => new RegExp(`^(?:ver(?:s(?:e|us)?)?\\.?\\s*|v\\.\\s*)?\\(?${v}\\b\\s*[.:,)\\]]`, 'i');
 
@@ -1530,6 +1538,8 @@
     const c = slug ? S.list.find((x) => x.slug === slug) : S.list[0];
     if (slug && !c) return false;
     S.cur = c || null;
+    // (2026-11-10, pane3c) a work the reader picks is marked as the keys mark it, the one the pane opened unmarked too (S.plain)
+    if (mine) S.plain = null;
     if (S.cur && mine) store.set('fr_cp_pick', S.cur.a);
     nameCur();
     fillList();
@@ -1698,7 +1708,7 @@
     for (let d = 1; d <= 2 && b == null; d += 1) if (at(v + d) != null) b = v + d;
     if (a == null || b == null) return null;
     const pa = at(a), pb = at(b);
-    return pb >= pa && pb - pa <= (stride(c.slug) || 1) ? { p: pa, how: 'between', v, a, b } : null;
+    return pb >= pa && pb - pa <= (stride(c.slug) || 1) ? { p: pa, how: 'between', v, a, b, pb } : null;
   }
   /* A WORK THE MAP DOES NOT PLACE IN THE CHAPTER (2026-11-08, daily-driver QA: two key chips, Stock on Malachi 3:1 and Lightfoot on Mark
    * 10:45, drew "This commentary has nothing on the verse to show." with no status line; round3's harness read the empty line as still
@@ -1773,15 +1783,25 @@
    * after 400 pages. On that page the verse's own note is then looked for, under the heading, by its heading word ("Vers. 1."). */
   const romans = (n) => { const r = ROMAN(n), old = r.replace(/IV/g, 'IIII').replace(/IX/g, 'VIIII'); return old === r ? [r] : [r, old]; };
   const HEAD_WORD = (book) => (book === 'psalms' ? 'psal(?:m(?:e|us|i)?)?' : '(?:chap(?:ter|itre)?|cap(?:ut|itulum)?|kap(?:itel)?)');
-  const headRx = (ch, book) => new RegExp(`^(?:#{1,6}\\s+)?${HEAD_WORD(book)}\\.?\\s+(?:${[String(Number(ch)), ...romans(ch)].join('|')})\\.?\\s*$`, 'i');
-  const anyHead = (book) => new RegExp(`^(?:#{1,6}\\s+)?${HEAD_WORD(book)}\\.?\\s+([IVXLC]+|\\d+)\\.?\\s*$`, 'i');
-  const headNum = (s, book) => {
-    const m = anyHead(book).exec(s); if (!m) return 0;
-    if (/^\d+$/.test(m[1])) return Number(m[1]);
-    const val = { I: 1, V: 5, X: 10, L: 50, C: 100 }, u = m[1].toUpperCase();
+  /* (2026-11-09, as at the anchor's chapterHead) the Bible's chapter after the work's own, in brackets: Procopius's "CHAP. VI. [VII.]" is
+   * 2 Samuel 7 and his "CHAP. VII [VIII]." is chapter 8, which ends it; a bracketed number far from the work's own is no chapter */
+  const anyHead = (book) => new RegExp(`^(?:#{1,6}\\s+)?${HEAD_WORD(book)}\\.?\\s+([IVXLC]+|\\d+)\\.?(?:\\s*\\[\\s*([IVXLC]+|\\d+)\\.?\\s*\\]\\.?)?\\s*$`, 'i');
+  const numeral = (x) => {
+    if (/^\d+$/.test(x)) return Number(x);
+    const val = { I: 1, V: 5, X: 10, L: 50, C: 100 }, u = String(x).toUpperCase();
     let n = 0; for (let i = 0; i < u.length; i += 1) n += val[u[i]] < (val[u[i + 1]] || 0) ? -val[u[i]] : val[u[i]];
     return n;
   };
+  // (a bracketed page or column, "PSALM 146 [284]", is read as no heading, as before)
+  const headNum = (s, book) => {
+    const m = anyHead(book).exec(s); if (!m) return 0;
+    const own = numeral(m[1]);
+    if (!m[2]) return own;
+    const bible = numeral(m[2]);
+    return bible > 0 && Math.abs(bible - own) <= 3 ? bible : 0;
+  };
+  // the chapter's own heading ("PSAL. LI.", "CHAP. XI.", IIII for four; "CHAP. VI. [VII.]" for chapter 7)
+  const headRx = (ch, book) => ({ test: (s) => headNum(s, book) === Number(ch) });
   function headPage(c, book, ch) {
     const k = `${c.slug}|${book}|${ch}`;
     if (S.heads.has(k)) return Promise.resolve(S.heads.get(k));
@@ -1892,24 +1912,46 @@
     const hasEn = pages.some((p) => p.en), lane = S.lang === 'la' || !hasEn ? 'la' : 'en';
     const all = [], onPage = [];
     pages.forEach((p) => paragraphs(p[lane] || p.la || p.en).forEach((s) => { all.push(s); onPage.push(p.n); }));
-    const printed = (c.pv && c.pv[t.v]) || t.v;
-    let from = 0, hit = -1, found = false;
+    const printed = t.pv || (c.pv && c.pv[t.v]) || t.v;
+    // (2026-11-09, pane3b, as at paint) the other count only in a work printed from a source in another tongue
+    const others = (x) => (A && A.otherNumbers && pages.some((p) => p.la) ? A.otherNumbers(w.book, w.ch, Number(x)) : []);
+    let from = 0, hit = -1, found = false, nmAt = null;
     if (t.how === 'note' || t.how === 'later' || t.how === 'nearest' || t.how === 'page') {
       // only the chapter's own run of paragraphs, as the Commentary view reads it (10-22)
-      const run = chapterRun(all, w), part = all.slice(run.lo, run.hi);
-      let k = A ? A.findNote(part, printed, !!t.indexed, w.ch, null, [verseText(t.v), verseText(v)]) : -1;
-      // (2026-11-08) never a heading the anchor refused as quoting another verse ("VERS. 6.-- « Because of truth »", Lombard on Psalm 45:6)
-      if (k < 0 && !(A && k === A.REFUSED)) k = part.findIndex((s) => noteRx(printed).test(s));
+      const run = chapterRun(all, w), part = all.slice(run.lo, run.hi), texts = [verseText(t.v), verseText(v)];
+      let k = A ? A.findNote(part, printed, !!t.indexed, w.ch, null, texts) : -1;
+      // (2026-11-08) never a heading the anchor refused as quoting another verse ("VERS. 6.-- « Because of truth »", Lombard on Psalm 45:6),
+      // (2026-11-09, as at paint) nor a verse printed in both tongues
+      if (k < 0 && !(A && k === A.REFUSED)) { const mine = A && A.inScope ? A.inScope(part, w.ch) : () => true; k = part.findIndex((s, i) => noteRx(printed).test(s) && mine(i) && !(A && A.twin && A.twin(part, i))); }
+      // (2026-11-09, as at paint) where another count of the chapter's verses runs, the paragraph whose first words are the verse's
+      if (A && A.otherCount && Number(printed) === Number(t.v) && others(printed).length) { const k3 = A.otherCount(part, k, printed, w.book, w.ch, verseText); if (k3 >= 0) k = k3; }
       hit = k >= 0 ? run.lo + k : -1;
-      if (hit >= 0 && labelRun(all, hit)) hit = -1;
+      // (2026-11-09, as at paint) a lone label in a run of margin labels gives way to the verse's numbered note on the same pages
+      // (2026-11-09, pane3b, as at noteMark) the last label of its page over a next page that opens on the verse's words heads it
+      const foot = hit >= 0 && hit + 1 < all.length && onPage[hit + 1] !== onPage[hit] && A && A.quotes && A.quotes(all[hit + 1], t.v, verseText);
+      if (hit >= 0 && !foot && labelRun(all, hit, onPage)) {
+        const k2 = A ? A.findNote(part, printed, !!t.indexed, w.ch, new Set(part.filter((s) => LABEL.test(s))), texts) : -1;
+        hit = k2 >= 0 && A.quotes && A.quotes(part[k2], t.v, verseText) ? run.lo + k2 : -1;
+      }
+      // (2026-11-09, as at paint) nor a paragraph whose first words are another verse's
+      if (hit >= 0 && A && A.onOther && A.onOther(all[hit], t.v, verseText, [printed, ...others(t.v)])) hit = -1;
+      // (2026-11-09, pane3b, as at noteMark) nor the comment after a printed passage on a verse that is not the passage's first
+      if (hit > 0 && !/^\W{0,2}\d/.test(all[hit]) && A && A.twin && A.twin(all, hit - 1) && A.afterPassage && !HARMONY.test(slug) && !A.afterPassage(all, hit, printed, w.ch)) hit = -1;
+      // (2026-11-09, pane3b; the owner, of Calov's Illustrated Old Testament, vol. 1: "Unmark it until fixed") a work the map marks `nm`
+      // lands as before and marks nothing; the status names the page its note was found on
+      if (hit >= 0 && c.nm) { nmAt = onPage[hit]; hit = -1; }
       if (hit >= 0) from = hit;
+    } else if (t.how === 'range') {
+      // (2026-11-09) a lecture, homily or tractate on a run of verses holding this one: from its heading where it stands on the pages
+      const k = A ? all.findIndex((s) => { const r = A.rangeOf(s, w.ch); return !!r && r.a <= printed && printed <= r.b; }) : -1;
+      if (k >= 0) from = k;
     } else if (t.how === 'chapter') {
       // where the chapter's own heading stands on the page ("CHAPTER I.", "CAP. 1"), else the page's first words
       const rx = new RegExp(`^(?:#{1,6}\\s+)?(?:chapter|chap\\.|caput|cap\\.|psalm|psalmus)\\s+(?:${+w.ch}|${ROMAN(w.ch)})\\b`, 'i');
       const h = all.findIndex((s) => rx.test(s)); if (h >= 0) from = h;
     } else if (t.how === 'head' || t.how === 'book') {
       const u = underHead(all, w, (c.pv && c.pv[v]) || v);
-      if (u.hit >= 0) { hit = u.hit; from = hit; found = true; } else if (u.head >= 0) from = u.head;
+      if (u.hit >= 0 && c.nm) { nmAt = onPage[u.hit]; if (u.head >= 0) from = u.head; } else if (u.hit >= 0) { hit = u.hit; from = hit; found = true; } else if (u.head >= 0) from = u.head;
     } else if (t.how === 'sermon' || t.how === 'sermon-ch') {
       const k = headingAt(all, t.x); if (k >= 0) from = k;
     }
@@ -1920,9 +1962,15 @@
       out.push(`<p${head ? ' class="vr-pv-h"' : i === hit ? ' class="vr-pv-hit"' : ''}>${esc(cut(txt, Math.max(160, 900 - len)))}</p>`);
       len += txt.length;
     }
-    const at = pgOf(slug, found ? onPage[hit] : p0);
+    // (2026-11-09, as at paint) the page the mark is on
+    const at = pgOf(slug, hit >= 0 ? onPage[hit] : nmAt != null ? nmAt : p0);
     const say = found ? `Its note on ${name} ${w.ch}:${v}, ${at}`
+      // (2026-11-09, pane3b) a note or label of a work marked `nm`, found and not marked
+      : nmAt != null && (t.how === 'head' || t.how === 'book') ? `Its comment on ${name} ${w.ch}:${v} is on ${at}`
       : t.how === 'note' ? (hit >= 0 ? `Its note on ${name} ${w.ch}:${t.v}, ${at}` : `Its comment on ${name} ${w.ch}:${t.v} is on ${at}`)
+      // (2026-11-09, as at paint) a run of verses holding it, and a place between its notes on the verses either side, said as they are
+      : t.how === 'range' ? `Its comment on ${name} ${w.ch}:${t.a}${t.b === Infinity || t.b == null ? 'ff.' : t.b > t.a ? `\u2013${t.b}` : ''}, ${at}`
+      : t.how === 'between' ? `No separate note on ${w.ch}:${v}. Its notes on ${w.ch}:${t.a} and ${w.ch}:${t.b} are on ${at}`
       : t.how === 'page' ? `Its comment on ${name} ${w.ch}:${t.v} is on ${at}`
       : t.how === 'later' ? `No separate note on ${w.ch}:${v}. Its next note is on ${w.ch}:${t.v}, ${at}`
       : t.how === 'nearest' ? `No separate note on ${w.ch}:${v}. Its closest earlier note is on ${w.ch}:${t.v}, ${at}`
@@ -2069,6 +2117,86 @@
     if (SITE.name !== 'tfr') return;
     const b = pane.querySelector('.cp-lang [data-lang="la"]'); if (b) b.textContent = src || 'Latin';
   };
+  /* THE MARK (2026-11-09, pane3b): what paint marks on a landing's pages, found without drawing it, so that the first commentary reads the
+   * same mark (firstOnVerse, through ownNote). pages: the landing's pages; lane; t: the landing; w: {book, ch}; verse: the verse chosen;
+   * c: the work (its own numbers, pv). Returns the pages' paragraphs as one run (all, pageOf), the number looked for (printed), the mark
+   * (h, -1 for none) and how it was found (via: 'note' by its heading or number, 'fallback' by the indexed page's older reading, 'other'
+   * by the other count, 'label' by a run of margin labels, 'range' by a lecture's own line), a lecture's heading (k), and under a
+   * chapter's heading, underHead's find (u). */
+  function noteMark(pages, lane, t, w, verse, c) {
+    // (2026-11-09) a note the work numbers past the chapter's end carries its own number (t.pv: Damascene's "Verse 22." on 2 Corinthians 5:21)
+    const printed = t.pv || (c && c.pv && c.pv[t.v]) || t.v;
+    // the pages as one run of paragraphs, so a note that crosses the page break is one note
+    const all = [], pageOf = [];
+    pages.forEach((p, i) => { paragraphs(p[lane] || p.la || p.en).forEach((s) => { all.push(s); pageOf.push(i); }); });
+    /* (2026-11-09, pane3b; the coordinator's read of the node gate) the other count of the chapter's verses (the anchor's SHIFTS) is read
+     * only in a work printed from a source in another tongue, a Latin or Greek lane beside the English: a work written in English counts
+     * as the English Bible, and Willet's "13. Quest. v. 13. Of Davids chaunging of his behaviour" (1 Samuel 21:13) was marked on 21:12 */
+    const others = (x) => (A && A.otherNumbers && pages.some((p) => p.la) ? A.otherNumbers(w.book, w.ch, Number(x)) : []);
+    if (!['collected', 'browse', 'cites', 'cites-v', 'treats', 'sermon', 'sermon-ch'].includes(t.how)) {
+      cutInlineHead(all, pageOf, w.ch, w.book); cutAtMark(all, pageOf, w.ch, printed);
+      // (2026-11-09) and the verse's mark in the other count, where one runs (Luther's "2, 3 I called to the LORD" for the English Jonah 2:2)
+      if (Number(printed) === Number(t.v)) for (const x of others(printed)) cutAtMark(all, pageOf, w.ch, x);
+    }
+    let h = -1, via = '', k = -1, u = null;
+    if (t.how === 'note' || t.how === 'later' || t.how === 'nearest' || t.how === 'page') {
+      // (10-22) only the chapter's own run of paragraphs is read: Poole's note on Psalm 52:2 was marked as his note on 51:2
+      const run = chapterRun(all, w), part = all.slice(run.lo, run.hi);
+      // (2026-11-08) with the words of the verse whose note is looked for (t.v: the next or the closest note's own verse where it is that),
+      // and of the verse chosen, a heading that quotes another verse is not taken for its note
+      const texts = [verseText(t.v), verseText(verse)];
+      const k0 = A ? A.findNote(part, printed, !!t.indexed, w.ch, null, texts) : -1;
+      h = k0 >= 0 ? run.lo + k0 : -1; if (h >= 0) via = 'note';
+      // a page the library indexed as holding the note keeps the older reading if the stricter one finds none, but never puts back a
+      // heading the anchor refused, (2026-11-09) nor a verse the commentary prints in both tongues (the anchor's twin: Calvin's "3. Nihil
+      // per contentionem" beside his English "3 Let nothing be done", Philippians 2:3), nor a paragraph under another chapter's or another
+      // passage's heading (inScope: his "13. Make no mention of the name of other gods", under "Exodus 23:13", for Deuteronomy 6:13)
+      if (h < 0 && t.indexed && !(A && k0 === A.REFUSED)) { const mine = A && A.inScope ? A.inScope(part, w.ch) : () => true; const j = part.findIndex((s, i) => noteRx(printed).test(s) && mine(i) && !(A && A.twin && A.twin(part, i))); h = j >= 0 ? run.lo + j : -1; if (h >= 0) via = 'fallback'; }
+      // (2026-11-09) where the Hebrew, and the Latin and Greek after it, count the chapter's verses otherwise (the anchor's SHIFTS), the
+      // paragraph whose first words are the verse's, in either count: Jerome on Jonah 2:1, "And Jonas prayed to the Lord his God out of the
+      // belly of the fish" in his note headed "(Ver. 2.)", not his "(Chap. II.--Ver. 1.) And the Lord prepared a great fish"
+      if (A && A.otherCount && Number(printed) === Number(t.v) && others(printed).length) { const q0 = h >= 0 ? h - run.lo : -1, k3 = A.otherCount(part, q0, printed, w.book, w.ch, verseText); if (k3 >= 0 && k3 !== q0) { h = run.lo + k3; via = 'other'; } }
+      /* (2026-11-09, owner: "iterate until scripture can be used as a daily driver for what were doing") a lone label in a run of margin
+       * labels heads nothing; the verse's numbered note on the same pages is its note where its first words are the verse's. Lapide's margin
+       * labels "Vers. 5.", "Vers. 23.", "Vers. 24." stand at the foot of p. 191, his "23. HE SACRIFICED TO THE GODS OF DAMASCUS" above them,
+       * the note on 2 Chronicles 28:23; so on Zephaniah 2:8 and 1 John 2:4. Calov's "5. MY SIN IS ALWAYS BEFORE ME" under his margin labels
+       * on Psalm 51 is the English 51:3, and is not taken for 51:5. (2026-11-09, pane3b) The last label of its page heads the next page's
+       * first paragraph where that quotes the verse: Cajetan's "Ver. 9." at the foot of p. 408 over his note on 1 John 5:9 */
+      const foot = h >= 0 && h + 1 < all.length && pageOf[h + 1] !== pageOf[h] && A && A.quotes && A.quotes(all[h + 1], t.v, verseText);
+      if (h >= 0 && !foot && labelRun(all, h, pageOf)) {
+        const k2 = A ? A.findNote(part, printed, !!t.indexed, w.ch, new Set(part.filter((s) => LABEL.test(s))), texts) : -1;
+        // (2026-11-09, pane3b) where its lemma quotes the verse (the anchor's quotes), not two words of its opening (Lapide's "7. THE TENTH
+        // DAY ALSO OF THIS SEVENTH MONTH", Numbers 29:7, on 30:7)
+        h = k2 >= 0 && A.quotes && A.quotes(part[k2], t.v, verseText) ? run.lo + k2 : -1; if (h >= 0) via = 'label';
+      }
+      // (2026-11-09) nor a paragraph whose first words are another verse's own and none of this one's (the anchor's onOther): Augustine's
+      // section "6. Through whom we have received, he says, grace and apostleship" is on Romans 1:5, where the library files his 1:6
+      if (h >= 0 && A && A.onOther && A.onOther(all[h], t.v, verseText, [printed, ...others(t.v)])) h = -1;
+      /* (2026-11-09, pane3b; the word judge) the comment after a passage printed in both tongues (the anchor's twin) is the note of the
+       * passage's first verse only (the anchor's afterPassage): on Jeremiah 35:15, the last verse of Calvin's "Jeremiah 35:12-15", it is his
+       * comment on 35:13; after his printed Hosea 11:12 a new lecture first closes his comment on 11:10-11. The page opens there, nothing
+       * marked. (Not a note of his own number: his "22 But if to live in the flesh" on Philippians 1:22 is his note. Nor in his Harmonies,
+       * whose passages print verses of two books.) */
+      if (h > 0 && !/^\W{0,2}\d/.test(all[h]) && A && A.twin && A.twin(all, h - 1) && A.afterPassage && !(c && HARMONY.test(c.slug)) && !A.afterPassage(all, h, printed, w.ch)) h = -1;
+    } else if (t.how === 'range') {
+      // the view starts at the heading that names the verses (Augustine's "TRACTATE I. … Chap. I, V. 1-5."); its sections are not verses.
+      // The verse's own words where the lecture prints them under its chapter and number ("1:1 In the beginning was the Word", Aquinas)
+      // are its note, marked
+      k = A ? all.findIndex((s) => { const r = A.rangeOf(s, w.ch); return !!r && r.a <= printed && printed <= r.b; }) : -1;
+      /* (2026-11-09, pane3b) not where the line's words are another verse's (the anchor's lineFits): Aquinas's "5:5 Blessed are they who
+       * mourn" is the English Matthew 5:4, his Vulgate putting the meek first; and his Job prints the Vulgate's numbers, so the line is
+       * looked for by the other count too (the English Job 40:6 is his "40:1 Then the Lord answered Job out of the whirlwind"), where it
+       * leads with the verse */
+      const line = (n) => { const lx = new RegExp(`^(?:#{1,6}\\s+)?${Number(w.ch)}\\s*[:,]\\s*${n}(?!\\d)`); return all.findIndex((s, i) => i > k && lx.test(s)); };
+      const j0 = line(printed), leads = (j) => (A && A.leads ? A.leads(all[j], verse, verseText) : !(A && A.misfit && A.misfit(all[j], verse, verseText, true)));
+      h = j0 >= 0 && (A && A.lineFits ? A.lineFits(all[j0], verse, verseText, w.book, w.ch, printed) : leads(j0)) ? j0 : -1;
+      if (h < 0 && A && A.otherNumbers) for (const x of A.otherNumbers(w.book, w.ch, Number(verse))) { const j = line(x); if (j >= 0 && leads(j)) { h = j; break; } }
+      if (h >= 0) via = 'range';
+    } else if (t.how === 'head' || t.how === 'book') {
+      u = underHead(all, w, (c && c.pv && c.pv[verse]) || verse);
+    }
+    return { all, pageOf, printed, h, via, k, u };
+  }
   function paint() {
     // (2026-11-08) nothing is drawn while the first commentary is looked for (firstOnVerse): a redraw of the page then (init(), the same
     // chapter) drew "No commentary on this chapter yet." over the search, Genesis 12:3
@@ -2089,7 +2217,11 @@
     let say = t.how === 'note' ? `Its note on ${ref(t.v)}`
       // (2026-11-08) a lecture, homily or tractate on a run of verses holding this one; a place between its notes on the verses either side
       : t.how === 'range' ? `Its comment on ${bookName} ${sh.ch}:${t.a}${t.b === Infinity || t.b == null ? 'ff.' : t.b > t.a ? `\u2013${t.b}` : ''}`
-      : t.how === 'between' ? `Its comment on ${ref(S.verse)} falls between its notes on ${sh.ch}:${t.a} and ${sh.ch}:${t.b}`
+      /* (2026-11-09, owner: "iterate until scripture can be used as a daily driver for what were doing") a place between its notes says
+       * only what is known: the library has its notes on the verses either side there, and none on this one. "Its comment on Joshua 11:15
+       * is on this page, between its notes on 11:14 and 11:17" was said of Calov, who has no comment on 11:15 at all (nor Procopius on 2
+       * Kings 3:14, nor Cajetan on Ruth 1:12). The landing is the same (the owner's: Chrysostom on Romans 3:23 opens at col. 443) */
+      : t.how === 'between' ? `No separate note on ${sh.ch}:${S.verse}. Its notes on ${sh.ch}:${t.a} and ${sh.ch}:${t.b} are on ${t.pb != null && Number(t.pb) - Number(t.p) >= stride(sh.slug) ? 'these pages' : 'this page'}`
       : t.how === 'page' ? `Its comment on ${ref(t.v)} is on this page`
       : t.how === 'later' ? `No separate note on ${sh.ch}:${S.verse}. Its next note is on ${ref(t.v)}`
       : t.how === 'nearest' ? `No separate note on ${sh.ch}:${S.verse}. Its closest earlier note is on ${ref(t.v)}`
@@ -2121,36 +2253,31 @@
     const hasEn = pages.some((p) => p.en), lane = S.lang === 'la' || !hasEn ? 'la' : 'en';
     pane.querySelector('.cp-lang').hidden = !(hasEn && pages.some((p) => p.la));
     srcLabel(sh.src);
-    const printed = (S.cur && S.cur.pv && S.cur.pv[t.v]) || t.v;
-    // the pages as one run of paragraphs, so a note that crosses the page break is one note
-    const all = [], pageOf = [];
-    pages.forEach((p, i) => { paragraphs(p[lane] || p.la || p.en).forEach((s) => { all.push(s); pageOf.push(i); }); });
-    if (!['collected', 'browse', 'cites', 'cites-v', 'treats', 'sermon', 'sermon-ch'].includes(t.how)) { cutInlineHead(all, pageOf, wr.ch, wr.book); cutAtMark(all, pageOf, wr.ch, printed); }
+    // the pages as one run of paragraphs, and the mark in them (noteMark: paint and the first commentary find it alike)
+    const m = noteMark(pages, lane, t, wr, S.verse, S.cur);
+    const { all, pageOf, printed } = m;
     const headAt = (k) => setWhere(pages[pageOf[k]].n, false, all[k].replace(/^#{1,6}\s+/, ''));
     let h = -1, top = 0, found = false;
+    // (2026-11-09, pane3b; the owner, of Calov's Illustrated Old Testament, vol. 1: "Unmark it until fixed") a work the map marks `nm`
+    // lands as before and marks nothing: no paragraph is the mark, the view starts at the page's top (or the chapter's or the lecture's
+    // heading), and a note or label it found is said to be on its page (nmAt), as "Its comment on 1 Kings 3:28 is on this page"
+    // (2026-11-10, pane3c; the owner: "otherwise the top key opens its right page unmarked") so does the key the pane opened by itself
+    // for a place of the second kind (S.plain, firstOnVerse), on the verse it was opened for
+    const plain = !!(S.plain && S.plain.slug === sh.slug && S.plain.v === Number(S.verse) && S.plain.key === `${sh.book}/${sh.ch}`);
+    const nm = plain || !!((S.list || []).find((x) => x.slug === sh.slug) || S.cur || {}).nm;
+    let nmAt = null;
     if (t.how === 'note' || t.how === 'later' || t.how === 'nearest' || t.how === 'page') {
-      // (10-22) only the chapter's own run of paragraphs is read: Poole's note on Psalm 52:2 was marked as his note on 51:2
-      const run = chapterRun(all, wr), part = all.slice(run.lo, run.hi);
-      // (2026-11-08) with the words of the verse whose note is looked for (t.v: the next or the closest note's own verse where it is that),
-      // and of the verse chosen, a heading that quotes another verse is not taken for its note
-      const k = A ? A.findNote(part, printed, !!t.indexed, wr.ch, null, [verseText(t.v), verseText(S.verse)]) : -1;
-      h = k >= 0 ? run.lo + k : -1;
-      // a page the library indexed as holding the note keeps the older reading if the stricter one finds none, but never puts back a
-      // heading the anchor refused
-      if (h < 0 && t.indexed && !(A && k === A.REFUSED)) { const j = part.findIndex((s) => noteRx(printed).test(s)); h = j >= 0 ? run.lo + j : -1; }
-      if (h >= 0 && labelRun(all, h)) h = -1;
+      h = m.h;
+      if (h >= 0 && nm) { nmAt = pages[pageOf[h]].n; h = -1; setWhere(nmAt, false); }
+      // (2026-11-09) the status line names the page the mark is on: Calvin's note on Hebrews 12:7, found at p. 185, is marked on p. 186
+      if (h >= 0) setWhere(pages[pageOf[h]].n, false);
     } else if (t.how === 'range') {
-      // the view starts at the heading that names the verses (Augustine's "TRACTATE I. … Chap. I, V. 1-5."); its sections are not verses.
-      // The verse's own words where the lecture prints them under its chapter and number ("1:1 In the beginning was the Word", Aquinas)
-      // are its note, marked
-      const k = A ? all.findIndex((s) => { const r = A.rangeOf(s, wr.ch); return !!r && r.a <= printed && printed <= r.b; }) : -1;
-      const lx = new RegExp(`^(?:#{1,6}\\s+)?${Number(wr.ch)}\\s*[:,]\\s*${printed}(?!\\d)`);
-      const j = all.findIndex((s, i) => i > k && lx.test(s));
-      if (j >= 0) { h = j; found = true; setWhere(pages[pageOf[j]].n, true); } else if (k > 0) { top = k; headAt(k); }
+      if (m.h >= 0 && !nm) { h = m.h; found = true; setWhere(pages[pageOf[h]].n, true); } else if (m.k > 0) { top = m.k; headAt(m.k); }
     } else if (t.how === 'head' || t.how === 'book') {
       // under the chapter's heading, the verse's own note by its heading word ("Vers. 1."), else the heading itself (10-22)
-      const u = underHead(all, wr, (S.cur && S.cur.pv && S.cur.pv[S.verse]) || S.verse);
-      if (u.hit >= 0) { h = u.hit; found = true; setWhere(pages[pageOf[h]].n, true); } else if (u.head > 0) { top = u.head; headAt(top); }
+      const { u } = m;
+      if (u.hit >= 0 && nm) { nmAt = pages[pageOf[u.hit]].n; if (u.head > 0) top = u.head; say = `Its comment on ${ref(S.verse)} is on this page`; setWhere(nmAt, false); }
+      else if (u.hit >= 0) { h = u.hit; found = true; setWhere(pages[pageOf[h]].n, true); } else if (u.head > 0) { top = u.head; headAt(top); }
     } else if (t.how === 'chapter') {
       // (10-31) the chapter's page: the view starts at its printed heading where that stands below the page's top (Cocceius on
       // Hebrews 12, p. 576, under the last sections of chapter XI), and the link lands on it
@@ -2162,7 +2289,11 @@
     }
     // (2026-11-08, survey: 820 of 2,674 landings said "Its note on" with nothing marked) a page the library files as holding the note,
     // read without finding where the note begins, is said to hold the comment, no more
-    if (h < 0 && t.how === 'note') { say = `Its comment on ${ref(t.v)} is on this page`; setWhere(shownAt, false); }
+    if (h < 0 && t.how === 'note') { say = `Its comment on ${ref(t.v)} is on this page`; setWhere(nmAt != null ? nmAt : shownAt, false); }
+    // (2026-11-10, pane3c) so is the next or the closest earlier note, where the pages do not show it under its number: Calvin's Harmony
+    // on Deuteronomy 11:13, whose page of 11:10-12 has his comment on the passage and no note numbered 10 of it ("Its closest earlier
+    // note is on Deuteronomy 11:10" was said, with nothing marked)
+    if (h < 0 && (t.how === 'later' || t.how === 'nearest')) { say = `No separate note on ${sh.ch}:${S.verse}. Its comment on ${ref(t.v)}, the ${t.how === 'later' ? 'next after' : 'closest before'} it, is on this page`; setWhere(nmAt != null ? nmAt : shownAt, false); }
     const from = h > 0 ? h : top;
     // the editors' textual notes of a scholarly edition (variant readings, line numbers) are set apart, and do not count toward what is shown
     const app = A ? A.apparatusIndexes(all) : new Set();
@@ -2387,24 +2518,134 @@
    * index, then its pages, the chapter's opening before an inner page), a few at a time in their order, and the search stops at the first.
    * A key whose note on the verse the library indexes is looked at alone, as it nearly always has it, so the usual verse reads no more than
    * before; what is read stays read for the pane and the keys. The reader's own pick (fr_cp_pick) and an address's cp= come first. */
-  const ON_VERSE = new Set(['note', 'range', 'between', 'page']);
+  /* TWO PASSES (2026-11-09, owner: "iterate until scripture can be used as a daily driver for what were doing"; iteration 1's scorecard:
+   * the first commentary in the wrong place on 9 of 150 verses). A place between a key's notes on the verses either side, or a page the
+   * library files as discussing it, was taken as soon as it came in the rank order, though a key ranked below had the verse's own note:
+   * Calvin's Harmony on Numbers 21:9, "between its notes on 21:8 and 21:10" on a page of his printed text, over Cajetan's "Ver. 9. [And
+   * Moses made a bronze serpent]"; Cajetan on Ruth 1:12, who has no note on it, over Bernard's "Verse 12. Turne againe, my daughters". Now
+   * the first key in rank order whose place is its note on the verse (or a run of verses holding it, or its critics on it) opens; only where
+   * none of the nine has one, the first whose place is between its notes or a page filed as discussing it. The search stops at the first
+   * note in rank order, as before: a key ranked below one with its note is never waited for. Looking on past a key that has only such a
+   * place is bounded by time, not only by the nine: once one is in hand, the later keys are given PASS_ONE ms more, and the pane opens it if
+   * none of them has the verse's note by then. Nothing is drawn while the pane looks, so a longer search is a longer "Looking for" line
+   * rather than a later change of commentary; the bound keeps that line as short as before on a slow connection. */
+  /* AT MOST THREE PLACES DOWN (2026-11-09, the owner, asked which order the first commentary should follow, after screen1 found it
+   * going to a lower-ranked key on 39% of verses: "Look at most 3 places down"; "A marked note may win only from the top 3 keys; otherwise
+   * the top key opens its right page unmarked"). The first pass looks at the first PASS_ONE_KEYS keys in rank order only. Past them a
+   * key's own note is a place like any other: where none of the three has its note on the verse, the first key in rank order, among the
+   * nine, with a place opens, and a key ranked below one with a place is never waited for. (2026-11-10, pane3c) A place the pages
+   * read do not bear out is no place in hand (betweenStands): two of the cases the two passes were written for, Calvin's Harmony on
+   * Numbers 21:9 (its page of printed text; Cajetan's note is the fourth key's) and Cajetan on Ruth 1:12 (Bernard's is the sixth's),
+   * had opened as before them, and give way to those notes again. */
+  /* OPENED UNMARKED (2026-11-10, pane3c; the owner's rule in full, 2026-11-09: "A marked note may win only from the top 3 keys; otherwise
+   * the top key opens its right page unmarked"). The key opened for a place of the second kind was drawn as any key is, with whatever
+   * paint marks there: on every chapter outside the Psalms (6,229 verses), 907 first commentaries opened so carried a mark the first pass
+   * had not taken, 68 of them another verse's by the word judges (16 new: Jerome's "(Vers. 6.) And in the midst thereof the likeness of
+   * four animals", Ezekiel 1:5, on 1:6; Calvin's Harmony printing Mark's "1. And when the Sabbath was past" on Matthew 28:1; Ambrosiaster's
+   * "(Vers. 19.) But to those who are being saved", 1 Corinthians 1:18, on 1:19). Now such a key opens at its place with nothing marked,
+   * as a work the map marks `nm` does, and its note is said to be on its page (S.plain: the chapter, the volume, the verse; read by
+   * paint). A note of the first three, a note past them and, where the verses are counted otherwise, the first key with a place are
+   * marked as before. The reader's own pick of a work, that one too, marks as the keys do; so does the verse after it. */
+  const OWN = new Set(['note', 'range']), NEAR = new Set(['between', 'page']);
+  const PASS_ONE = 1000, PASS_ONE_KEYS = 3;
+  // 1: its note on the verse, a run of verses holding it, its critics on it; 2: a place between its notes or a page filed as discussing it
+  /* THE FIRST PASS TAKES A NOTE THAT QUOTES THE VERSE (2026-11-09, pane3b; the word judge over the whole Bible: 29 of the 47 new wrong
+   * marks were first commentaries the first pass chose). A key's place counts as its own note on the verse only where the mark paint draws
+   * there (noteMark) leads with the verse (the anchor's leads: for a bare label, the paragraph after it), no other verse of the chapter more.
+   * Never a mark found only by the indexed page's older reading, a numbered question or section that names its verse (Willet's "6. Quest.
+   * v. 5."), a work the map marks `nm`, or Calvin's Harmonies, whose passages run across the books: those count as a page (pass 2).
+   * Cajetan's margin labels a line off his text ("Verse 3." over Deuteronomy 34:2), a chapter's last notes on the next chapter's page,
+   * another book's page among a work's rows (pg-3227's 1 Samuel 3:7 for Deuteronomy 3:7) are no longer chosen over a key ranked above */
+  const HARMONY = /harmony-of-the-(?:law|evangelists)/;
+  const QUESTION = /^\W{0,3}\d{1,3}\.?\s*(?:Quest(?:ion)?|Qu|Sect(?:ion)?)\.?\s/i;
+  // a landing's pages as show() reads them
+  async function pagesAt(vol, t, w) {
+    await eeboCursor(vol, w.ch);
+    const canon = CANON.test(vol.slug);
+    const a = await page(vol.slug, Number(t.p));
+    const b = await page(vol.slug, Number(canon && a && a.p ? a.p.n : t.p) + stride(vol.slug)).catch(() => null);
+    return [a && a.p, b && b.p].filter(Boolean);
+  }
+  async function ownNote(vol, t, v, w) {
+    if (!A || !(A.leads || A.quotes) || vol.nm || t.misfit || HARMONY.test(vol.slug)) return false;
+    let pages = [];
+    try { pages = await pagesAt(vol, t, w); } catch (_) { return false; }
+    if (!pages.length) return false;
+    const hasEn = pages.some((p) => p.en), lane = S.lang === 'la' || !hasEn ? 'la' : 'en';
+    const m = noteMark(pages, lane, t, w, v, vol);
+    if (m.h < 0 || m.via === 'fallback' || QUESTION.test(m.all[m.h])) return false;
+    const s = m.all[m.h];
+    return !!(A.leads || A.quotes)(LABEL.test(s) && m.h + 1 < m.all.length ? m.all[m.h + 1] : s, v, verseText);
+  }
+  /* A PLACE IN HAND THAT THE PAGES BEAR OUT (2026-11-10, pane3c; the three places on the 150 verses: two first commentaries opened where
+   * the work has nothing on the verse). A place between a key's notes on the verses either side rests on the library's rows, and counts
+   * as a place in hand only where the pages read do not gainsay it. Calvin's Harmony on Numbers 21:9 opened p. 85, where "8." and "10."
+   * are the passage's printed text, his notes pages on; Cajetan on Ruth 1:12 opened p. 75, which has his "Vers. 11." and no note on
+   * 1:13. Each side is looked for as paint would mark it (noteMark, as a note the library files there): the place does not stand where
+   * a side is only the verse printed in both tongues (the anchor's printedText), or where one side's note stands under its number and
+   * the other's does not. Where neither can be told (Chrysostom's homilies carry no verse numbers) it stands as before. The next key
+   * with a place that stands opens instead of one that does not; where no key has one, it opens as it did. A key the reader presses
+   * opens where it did. */
+  async function betweenStands(vol, t, w) {
+    if (!A || !A.printedText) return true;
+    let pages = [];
+    try { pages = await pagesAt(vol, t, w); } catch (_) { return true; }
+    if (!pages.length) return true;
+    const hasEn = pages.some((p) => p.en), lane = S.lang === 'la' || !hasEn ? 'la' : 'en';
+    // 1: its note stands there under its number; -1: only the verse, printed in both tongues; 0: nothing under its number
+    const side = (n) => { const m = noteMark(pages, lane, { p: t.p, how: 'note', v: n, indexed: true }, w, n, vol); return m.h >= 0 ? 1 : A.printedText(m.all, n) ? -1 : 0; };
+    const before = side(t.a), after = side(t.b);
+    return before >= 0 && after >= 0 && before === after;
+  }
   async function onVerse(c, v, w) {
     const vol = volumeFor(c, v);
     let t = quickTargetOf(vol, v);
     if (!t) { try { t = await resolveNear(vol, v, w); } catch (_) { t = null; } }
     t = chapterFirst(vol, t, v);
-    return !!t && (ON_VERSE.has(t.how) || (t.how === 'collected' && !t.nearest));
+    if (!t) return 0;
+    // (2026-11-09, pane3b) a note found by its heading's number whose lemma is a neighbour verse's (the anchor's misfit: Cajetan's margin
+    // labels a line off his text, "Ver. 26. According to the latest commands also of David", 1 Chronicles 23:27, on 23:26) is no note
+    // of the verse for the first pass: it opens only where it would have before the two passes, as the first key with a place
+    if (t.misfit) return 2;
+    // (2026-11-09, pane3b) a work the map marks `nm` marks nothing: its note is a page filed as discussing the verse (pass 2)
+    if (vol.nm && (OWN.has(t.how) || (t.how === 'collected' && !t.nearest))) return 2;
+    if (t.how === 'collected' && !t.nearest) return 1;
+    if (OWN.has(t.how)) return (await ownNote(vol, t, v, w)) ? 1 : 2;
+    // (2026-11-10, pane3c) a place between its notes that the pages do not bear out is no place in hand (betweenStands): 3, which opens
+    // only where no key has a place that stands
+    if (t.how === 'between') return (await betweenStands(vol, t, w)) ? 2 : 3;
+    return NEAR.has(t.how) ? 2 : 0;
   }
-  async function firstOnVerse(keys, v, w, still) {
+  /* (2026-11-09) Where the Hebrew, and the Latin and the Greek after it, count the chapter's verses otherwise (`shifted`: the anchor's
+   * SHIFTS), a key's note under the verse's number may be its note on the verse before or after it: Cajetan's "Verse 4. A woman, if she
+   * has vowed anything" is the English Numbers 30:3, the Greek "VERSE 9. Its leaves were beautiful" the English Daniel 4:12. There the
+   * first key with any place on the verse opens, as before the two passes, and none ranked below it is preferred for such a note. */
+  async function firstOnVerse(keys, v, w, still, shifted) {
     const xs = keys.slice(0, 9), runs = [];
-    const start = (i) => { if (i < xs.length && !runs[i]) runs[i] = onVerse(xs[i], v, w).catch(() => false); };
+    const start = (i) => { if (i < xs.length && !runs[i]) runs[i] = onVerse(xs[i], v, w).catch(() => 0); };
+    // (2026-11-10, pane3c) the key opened for a place of the second kind opens unmarked (S.plain, read by paint)
+    const plain = (c) => { S.plain = { key: `${w.book}/${w.ch}`, slug: volumeFor(c, v).slug, v: Number(v) }; return c; };
+    let near = null, until = 0, weak = null;
     for (let i = 0; i < xs.length; i += 1) {
+      // (2026-11-09, the owner: "Look at most 3 places down") past the first three keys, a place in hand opens at once
+      if (i >= PASS_ONE_KEYS && near) return plain(near);
       start(i);
       if (volumeFor(xs[i], v).notes[v] == null) { start(i + 1); start(i + 2); }
-      if (await runs[i]) return still() ? xs[i] : null;
+      // (a key already looked at counts however late it is; one still on its way is waited for no longer than the bound)
+      const r = near ? await Promise.race([runs[i], new Promise((ok) => { setTimeout(() => ok(-1), Math.max(0, until - performance.now())); })]) : await runs[i];
       if (!still()) return null;
+      // (where the verses are counted otherwise the first key with a place opens as it did, marked as paint marks it; a place the pages
+      // do not bear out too, 3: the key after it would open with a mark no first pass has read, Cajetan's "Verse 4. A woman, if she has
+      // vowed anything", the English Numbers 30:3, on 30:4)
+      if (r === 3 && shifted) return xs[i];
+      if ((r === 1 && i < PASS_ONE_KEYS) || ((r === 1 || r === 2) && (shifted || i >= PASS_ONE_KEYS))) return r === 2 && !shifted ? plain(xs[i]) : xs[i];
+      if (r === -1) break;
+      if (r === 2 && !near) { near = xs[i]; until = performance.now() + PASS_ONE; }
+      // (2026-11-10, pane3c) a place the pages do not bear out: the next key with a place that stands opens instead; with none, it
+      // opens as it did
+      if (r === 3 && !weak) weak = xs[i];
     }
-    return null;
+    return near || weak ? plain(near || weak) : null;
   }
   // while it is looked for, nothing that would change: the keys with none pressed, no work named, the line saying what is looked for
   function seeking(w) {
@@ -2437,7 +2678,7 @@
     const tok = (S.initTok = (S.initTok || 0) + 1);
     S.seeking = false;
     // a new chapter: the rail follows the reading line again, its list shut (its key commentaries open the first time it opens: seedDir)
-    S.rec = null; S.pin = false; S.hold = false; S.placed = !!w.v; S.dirOpen = new Set(); S.dirSeeded = false;
+    S.rec = null; S.pin = false; S.hold = false; S.placed = !!w.v; S.dirOpen = new Set(); S.dirSeeded = false; S.plain = null;
     setDir(false);
     const [list, rec, hits, pr] = await Promise.all([commentaries(w.book, w.ch), recOf(w.book, w.ch), hitsOf(w.book, w.ch), preachOf(w.book)]);
     // the hits join the list as works the pane can open at their page (wb 2: a list of their own, never a key). (10-22) A work the map
@@ -2513,7 +2754,7 @@
       if (!c && keys.length > 1) {
         // (2026-11-08) the first key that has the verse; a newer chapter, or a pick of the reader's while it is looked for, wins
         S.cur = null; S.seeking = true; S.firstEl = document.querySelector(SITE.verses); seeking(w);
-        c = await firstOnVerse(keys, S.verse, w, () => tok === S.initTok && !S.cur);
+        c = await firstOnVerse(keys, S.verse, w, () => tok === S.initTok && !S.cur, !!(A && A.otherNumbers && A.otherNumbers(w.book, w.ch, Number(S.verse)).length));
         if (tok !== S.initTok) return;
         S.seeking = false;
       }

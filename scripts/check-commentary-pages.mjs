@@ -54,6 +54,17 @@ const R = A.createResolver(async (slug, n) => { const d = await pg.page(slug, n)
 const rr = await R.resolve({ slug: 'eebo-53832', notes: {}, rows: {}, open: 11, close: 13, pv: {} }, 3, { name: 'Genesis', ch: '1' });
 ok(rr && rr.p >= 11, `EEBO work: the resolver anchors on it (got ${JSON.stringify(rr)})`);
 
+// (2026-11-09, pane3b; the owner, of Calov's Illustrated Old Testament, vol. 1: "Unmark it until fixed") a map entry's `nm` is carried onto
+// its work, which the pane then never marks; a work without it is as before
+{
+  const MAPNM = { books: { 'i-kings': [{ w: 'calov-vt1', a: 'Abraham Calov', t: 'Biblia illustrata', c1: 1, c2: 22, an: { 3: 829, 4: 831 }, nm: 1 },
+    { w: 'poole-x', a: 'Matthew Poole', t: 'Synopsis', c1: 1, c2: 22, an: { 3: 600 } }] } };
+  const pgN = P.createPages({ base: 'http://x', mo: true, async json(u) { if (/\/v1\/devotion\.json\.gz$/.test(u)) return MAPNM; throw new Error(`404 ${u}`); }, async text() { throw new Error('no text'); } });
+  const { works } = await pgN.listWorks('i-kings', 3);
+  const cv = works.find((x) => x.slug === 'calov-vt1'), po = works.find((x) => x.slug === 'poole-x');
+  ok(cv && cv.nm === 1 && cv.open === 829 && po && !po.nm && po.open === 600, `a map entry's nm is carried onto its work, its place unchanged; others have none (got ${JSON.stringify(cv && { nm: cv.nm, open: cv.open })}, ${JSON.stringify(po && { nm: po.nm })})`);
+}
+
 // (2026-11-08) a Migne file that opens with the volume's own mark where the first column's would be ("35", then "35:1380", Augustine's
 // Tractates on John): the text before the first column mark is its column, 1379, and the map's "35" opens there
 const PLD = `<?xml version="1.0"?><TEI xmlns="http://www.tei-c.org/ns/1.0"><text xml:lang="la"><body><div>
