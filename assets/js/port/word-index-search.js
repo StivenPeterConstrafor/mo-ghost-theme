@@ -458,8 +458,8 @@
     const box = document.createElement('section');
     box.className = 'wix'; box.setAttribute('aria-live', 'polite');
     const quoted = ph ? '“' + esc(ph.text) + '”' : shown(opts.query, ws).map(w => '“' + esc(w) + '”').join(' + ');
-    const phNote = ph ? `<span class="wix-phn"> The words stand next to each other, in this order${ph.skipped.length ? ` — the index leaves out small words (${ph.skipped.map(esc).join(', ')}), so “${esc(ph.ws.join(' … '))}” also finds the phrase with another small word between` : ''}.</span>` : '';
-    box.innerHTML = `<h3>${quoted}<span class="wix-how">${ph ? ' as a phrase' : ws.length > 1 ? ' on the same page' : ''}</span> — ${opts.scope ? 'in ' + esc(opts.scope.label) : 'every text in the library'}</h3>
+    const phNote = ph ? `<span class="wix-phn"> The words stand next to each other, in this order${ph.skipped.length ? `; the index leaves out small words (${ph.skipped.map(esc).join(', ')}), so “${esc(ph.ws.join(' … '))}” also finds the phrase with another small word between` : ''}.</span>` : '';
+    box.innerHTML = `<h3>${quoted}<span class="wix-how">${ph ? ' as a phrase' : ws.length > 1 ? ' on the same page' : ''}</span>, ${opts.scope ? 'in ' + esc(opts.scope.label) : 'in every text in the library'}</h3>
       <p class="wix-sub">Counted from the library’s word index: every page of ${opts.scope ? esc(opts.scope.label) : 'every work'}, a duplicate edition once.${phNote} <a href="#" class="wix-jump">Passages with excerpts ↓</a></p>
       <div class="wix-forms"></div><div class="wix-dist" role="group" aria-label="How close" hidden></div><div class="wix-sum">Counting…</div><div class="wix-trad" role="group" aria-label="Tradition"></div><div class="wix-list"></div>`;
     host.appendChild(box);
@@ -609,7 +609,7 @@
       const vrows = vols ? g.rows.slice().sort((a, b) => volNo(a.volume) - volNo(b.volume) || String(a.slug).localeCompare(String(b.slug), undefined, { numeric: true })) : [];
       const vlab = volLabels(vrows);
       const volBtns = vols ? vrows
-        .map((r, i) => `<button type="button" class="wix-vol" data-pages="${esc(r.slug)}" data-hl="${esc(hlOf(r))}" aria-expanded="false"${i >= 12 ? ' hidden' : ''} title="${esc([r.volume, times(r.occurrences, r.pages)].filter(Boolean).join(' — '))}">${esc(vlab[i])}<span>${n(r.occurrences)}</span></button>`).join('')
+        .map((r, i) => `<button type="button" class="wix-vol" data-pages="${esc(r.slug)}" data-hl="${esc(hlOf(r))}" aria-expanded="false"${i >= 12 ? ' hidden' : ''} title="${esc([r.volume, times(r.occurrences, r.pages)].filter(Boolean).join(': '))}">${esc(vlab[i])}<span>${n(r.occurrences)}</span></button>`).join('')
           + (g.rows.length > 12 ? `<button type="button" class="wix-pv" data-allvols>all ${g.rows.length} volumes ▾</button>` : '') : '';
       li.innerHTML = `<div class="wix-h"><a class="wix-t" href="${esc(opts.readHref(top.slug, top.best_page, hlOf(top)))}">${title}</a><span class="wix-n">${times(g.occ, g.pages)}</span></div>
         ${meta ? `<div class="wix-m">${meta}</div>` : ''}
