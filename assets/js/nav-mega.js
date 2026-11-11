@@ -107,6 +107,9 @@
     }, 200);
   }
 
+  let lastPointer = "";
+  document.addEventListener("pointerdown", (e) => { lastPointer = e.pointerType; }, { capture: true, passive: true });
+
   triggers.forEach((t, i) => {
     const name = t.getAttribute("data-mm-trigger");
     t.addEventListener("mouseenter", () => {
@@ -126,6 +129,10 @@
       closeTimer = setTimeout(close, CLOSE_DELAY);
     });
     t.addEventListener("click", (e) => {
+      // A trigger that is also a link (The Faith Received) follows its
+      // href on a mouse click, or once its panel is already open; a first
+      // tap on a touch screen opens the panel instead.
+      if (t.tagName === "A" && (lastPointer === "mouse" || current === name)) { clearTimeout(openTimer); return; }
       e.preventDefault();
       clearTimeout(openTimer);
       // A click that lands just after hover opened this panel is the
@@ -309,6 +316,13 @@
     const link = indexLinks.find((a) => { return a.getAttribute("data-mm-set") === name; });
     if (!link) return;
     indexLinks.forEach((a) => { a.setAttribute("aria-current", a === link ? "true" : "false"); });
+    // Ebooks is a shelf, not a tag: it swaps the two essay columns for
+    // the cover row in [data-mm-ebooks].
+    const grid = index.closest(".mm-grid");
+    const shelf = grid && grid.querySelector("[data-mm-ebooks]");
+    if (grid) grid.classList.toggle("is-ebooks", name === "ebooks");
+    if (shelf) shelf.hidden = name !== "ebooks";
+    if (name === "ebooks") return;
     const all = name === "latest" || name === "must";
     if (setTitle) setTitle.textContent = link.textContent;
     if (setMore) {

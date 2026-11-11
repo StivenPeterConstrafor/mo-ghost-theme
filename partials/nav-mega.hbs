@@ -14,7 +14,7 @@
     hairlines or a carousel with dots; those read as another site's menu.
 --}}
 <div class="mm-backdrop" data-mm-backdrop hidden></div>
-<div class="mm" id="mm" data-mm role="region" aria-label="Menu" hidden>
+<div class="mm" id="mm" data-mm data-keep-href role="region" aria-label="Menu" hidden>
   <div class="container">
 
     <section class="mm-panel" data-mm-panel="read" aria-label="Read">
@@ -31,8 +31,26 @@
             <li><a href="/tag/family/" data-mm-set="family">Family</a></li>
             <li><a href="/tag/technology/" data-mm-set="technology">Technology</a></li>
             <li><a href="/tag/book-reviews/" data-mm-set="book-reviews">Book Reviews</a></li>
+            <li class="mm-index-sep" role="presentation"></li>
+            <li><a href="/ebooks/" data-mm-set="ebooks">Ebooks</a></li>
           </ul>
         </nav>
+        {{!-- Ebooks: hovering the index link shows this shelf across the
+             two right columns in place of the essays (nav-mega.js,
+             showSet). Covers are the drawn .lib-ecover from the member
+             library (partials/ebooks-list.hbs); add a book in both. --}}
+        <div class="mm-ebooks" data-mm-ebooks hidden>
+          <div class="mm-feature mm-card">
+            <div class="mm-set-head"><p class="mm-col-title">Ebooks</p><a class="mm-more" href="/ebooks/">All ebooks</a></div>
+            <p>Essays collected into short books. Free to read online or download.</p>
+            <div class="mm-books mm-books--ebooks">
+              <a class="mm-book" href="/ebook/ai-and-the-church/" aria-label="Christians and Artificial Intelligence"><span class="lib-ecover lib-ecover--sand" aria-hidden="true"><span class="lib-ecover-mast">Mere Orthodoxy</span><span class="lib-ecover-title">Christians and Artificial Intelligence</span><span class="lib-ecover-foot">14 essays</span></span></a>
+              <a class="mm-book" href="/ebook/formation/" aria-label="Christian Formation in the Modern World"><span class="lib-ecover lib-ecover--cream" aria-hidden="true"><span class="lib-ecover-mast">Mere Orthodoxy</span><span class="lib-ecover-title">Christian Formation in the Modern World</span><span class="lib-ecover-foot">11 essays</span></span></a>
+              <a class="mm-book" href="/ebook/spiritual-formation-for-the-family/" aria-label="Spiritual Formation for the Family"><span class="lib-ecover lib-ecover--terracotta" aria-hidden="true"><span class="lib-ecover-mast">Mere Orthodoxy</span><span class="lib-ecover-title">Spiritual Formation for the Family</span><span class="lib-ecover-foot">9 essays</span></span></a>
+              <a class="mm-book" href="/ebook/navigating-the-fracture/" aria-label="Navigating the Fracture"><span class="lib-ecover lib-ecover--dark" aria-hidden="true"><span class="lib-ecover-mast">Mere Orthodoxy</span><span class="lib-ecover-title">Navigating the Fracture</span><span class="lib-ecover-foot">6 essays</span></span></a>
+            </div>
+          </div>
+        </div>
         {{#if @member}}
         <div>
           <div class="mm-set-head"><p class="mm-col-title" data-mm-set-title>Latest</p><a class="mm-more" data-mm-set-more href="/archive/">All essays</a></div>
@@ -102,14 +120,17 @@
           {{else}}
             {{!-- The site's own sign-up (assets/js/inline-signup.js): Ghost
                  emails a sign-in link that lands on the reader, signed in.
-                 Newsletter:daily-liturgy starts the morning email via mo-kit. --}}
+                 Newsletter:daily-liturgy starts the morning email via mo-kit.
+                 Ghost drops that label for someone who is already a member,
+                 so the landing turns it on through mo-kit /preferences
+                 (claimOptin in inline-signup.js). --}}
             <div class="today-digest mm-digest-card">
               <div class="today-digest-copy">
                 <div class="mm-dl-framed mm-digest-logo-frame"><img class="mm-digest-logo" src="{{asset "images/daily-liturgy-logo.png"}}" alt="The Daily Liturgy" loading="lazy"></div>
                 <p class="mm-digest-title">Morning prayer read aloud.</p>
-                <p>Read today's liturgy free. Sign up and we'll email you a link to it.</p>
+                <p>Today's liturgy in your inbox each morning. Free.</p>
               </div>
-              <div class="digest-form" data-inline-signup data-newsletter="daily-liturgy" data-source="nav-daily-liturgy" data-signup-redirect="/daily-liturgy/read/" data-signup-confirmation="Open it to read today's liturgy.">
+              <div class="digest-form" data-inline-signup data-newsletter="daily-liturgy" data-source="nav-daily-liturgy" data-signup-redirect="/daily-liturgy/read/" data-signup-confirmation="Open it to read today's liturgy. After that, it arrives each morning.">
                 <div class="digest-field">
                   <label for="nav-dl-first">First Name</label>
                   <input id="nav-dl-first" type="text" autocomplete="given-name" placeholder="First" data-signup-first required />
@@ -143,7 +164,7 @@
           </ul>
           {{!-- Same stage and issue as the homepage tracker; site-settings.js
                fills both from the mo-admin settings. --}}
-          <div class="mm-journal-status">
+          <div class="mm-journal-status mm-card">
             <p class="mm-col-title">Journal status</p>
             <p class="mm-journal-next">Next issue: <span data-journal-issue>&hellip;</span></p>
             <ol class="journal-status" aria-label="Journal status">
@@ -242,7 +263,6 @@
           <p class="mm-col-title">Read and download</p>
           <ul class="mm-links">
             <li><a href="https://mereorthodoxy.substack.com"><svg class="mm-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="#FF6719" d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>Mere Orthodoxy on Substack</a></li>
-            <li><a href="/ebooks/">Ebooks<span class="mm-note">Essays collected into short books</span></a></li>
           </ul>
           <p class="mm-col-title mm-col-title--next">Gather</p>
           <ul class="mm-links">
@@ -284,16 +304,68 @@
             <li><a href="/institutions/">Churches and institutions<span class="mm-note">Seats for your staff or congregation</span></a></li>
           </ul>
           <p class="mm-col-title mm-col-title--next">Give</p>
-          <ul class="mm-links">
-            <li><a href="https://secure.anedot.com/institute-for-christianity-and-common-life/donate">Donate</a></li>
-          </ul>
+          <div class="mm-appeal">
+            <p>Mere Orthodoxy is paid for by its readers. A gift keeps the essays, podcasts, resources, and print journal going.</p>
+            <a class="btn btn-solid" href="https://secure.anedot.com/institute-for-christianity-and-common-life/donate">Donate</a>
+            <span class="mm-note">Tax-deductible through the Institute for Christianity and Common Life</span>
+          </div>
         </div>
         <div>
-          <div class="mm-feature mm-card">
-            <a href="/membership/" tabindex="-1" aria-hidden="true"><div class="mm-plate"><img src="{{asset "images/nav/membership-hero.jpg"}}" alt="" loading="lazy"></div></a>
-            <p class="mm-feature-title">Become a member</p>
-            <p>Get the print journal and support the work of Mere Orthodoxy.</p>
-            <a class="btn btn-solid" href="/membership/">See membership</a>
+          {{!-- One card by membership and survey role (Ghost "Role:"
+               labels), highest leverage first. Pastor -> church,
+               academic -> school, parachurch ministry -> ministry (all three
+               institutions), home group leader or
+               elder -> groups, student -> student (free members only). With
+               no matching role, paid members get the gift card and everyone
+               else gets Become a member. Ghost gives the theme no labels,
+               so member-profile.js fills data-roles from mo-kit. The CSS
+               under "Support panel: role card" picks which card shows. --}}
+          <div class="mm-pick" data-paid="{{#if @member.paid}}1{{else}}0{{/if}}" data-roles="|">
+            <div class="mm-feature mm-card mm-pick-church">
+              <a href="/institutions/" tabindex="-1" aria-hidden="true"><div class="mm-plate"><img src="{{asset "images/nav/membership-hero.jpg"}}" alt="" loading="lazy"></div></a>
+              <p class="mm-feature-title">Bring Mere Orthodoxy to your church</p>
+              <p>Organizational memberships give seats to your staff and congregation.</p>
+              <a class="btn" href="/institutions/">See organizational memberships</a>
+            </div>
+            <div class="mm-feature mm-card mm-pick-school">
+              <a href="/institutions/" tabindex="-1" aria-hidden="true"><div class="mm-plate"><img src="{{asset "images/nav/membership-hero.jpg"}}" alt="" loading="lazy"></div></a>
+              <p class="mm-feature-title">Bring Mere Orthodoxy to your school</p>
+              <p>Organizational memberships give seats to your faculty and students.</p>
+              <a class="btn" href="/institutions/">See organizational memberships</a>
+            </div>
+            <div class="mm-feature mm-card mm-pick-ministry">
+              <a href="/institutions/" tabindex="-1" aria-hidden="true"><div class="mm-plate"><img src="{{asset "images/nav/membership-hero.jpg"}}" alt="" loading="lazy"></div></a>
+              <p class="mm-feature-title">Bring Mere Orthodoxy to your ministry</p>
+              <p>Organizational memberships give seats to your staff and volunteers.</p>
+              <a class="btn" href="/institutions/">See organizational memberships</a>
+            </div>
+            <div class="mm-feature mm-card mm-pick-group">
+              <a href="/groups/" tabindex="-1" aria-hidden="true"><div class="mm-plate"><img src="{{asset "images/nav/membership-hero.jpg"}}" alt="" loading="lazy"></div></a>
+              <p class="mm-feature-title">Read together with your group</p>
+              <p>Group memberships cover a small group, staff or elder board.</p>
+              <a class="btn" href="/groups/">See group memberships</a>
+            </div>
+            <div class="mm-feature mm-card mm-pick-student">
+              <a href="/student/" tabindex="-1" aria-hidden="true"><div class="mm-plate"><img src="{{asset "images/nav/membership-hero.jpg"}}" alt="" loading="lazy"></div></a>
+              <p class="mm-feature-title">Student membership</p>
+              <p>Undergraduate and graduate students get membership at a discount.</p>
+              <a class="btn" href="/student/">See student membership</a>
+            </div>
+            {{#if @member.paid}}
+            <div class="mm-feature mm-card mm-pick-default">
+              <a href="/give/" tabindex="-1" aria-hidden="true"><div class="mm-plate"><img src="{{asset "images/nav/membership-hero.jpg"}}" alt="" loading="lazy"></div></a>
+              <p class="mm-feature-title">Give a membership</p>
+              <p>Share Mere Orthodoxy with a friend.</p>
+              <a class="btn" href="/give/">Give a membership</a>
+            </div>
+            {{else}}
+            <div class="mm-feature mm-card mm-pick-default">
+              <a href="/membership/" tabindex="-1" aria-hidden="true"><div class="mm-plate"><img src="{{asset "images/nav/membership-hero.jpg"}}" alt="" loading="lazy"></div></a>
+              <p class="mm-feature-title">Become a member</p>
+              <p>Get the print journal and support the work of Mere Orthodoxy.</p>
+              <a class="btn" href="/membership/">See membership</a>
+            </div>
+            {{/if}}
           </div>
         </div>
       </div>
