@@ -9032,7 +9032,7 @@ async function loadWork(ws){
        words and given the ways on: a search for the words of the address, the library, or another try. The error goes to the console. */
     try{console.error('reader: the work did not load',err);}catch(_){}
     const gone=/\bHTTP 404\b/.test(String(err)),words=String(ws||'').replace(/^[a-z]{2,4}-\d+$/i,'').replace(/[-_]+/g,' ').replace(/\b\d{1,2}\b/g,' ').replace(/\s+/g,' ').trim();
-    const wt=$("#wt");if(wt){wt.textContent=gone?'Work not found':'The text did not load';wt.title='';}
+    for(const bar of [$("#wt"),$("#h1")])if(bar){bar.textContent=gone?'Work not found':'The text did not load';bar.title='';}
     $("#reading").innerHTML='<div class="loading">'+(gone
       ?'This work is not in the library at this address. It may have been moved or renamed. '+(words?'<a href="/the-faith-received/search/?q='+encodeURIComponent(words)+'">Search the library for it</a>, or <a href="/the-faith-received/all-works/?collection=all">return to the library</a>.':'<a href="/the-faith-received/all-works/?collection=all">Return to the library</a>.')
       :'The text did not load. <a href="#" data-reader-retry>Try again</a>, or <a href="/the-faith-received/all-works/?collection=all">return to the library</a>.')+'</div>';
