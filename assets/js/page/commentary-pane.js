@@ -2553,10 +2553,15 @@
    * marks were first commentaries the first pass chose). A key's place counts as its own note on the verse only where the mark paint draws
    * there (noteMark) leads with the verse (the anchor's leads: for a bare label, the paragraph after it), no other verse of the chapter more.
    * Never a mark found only by the indexed page's older reading, a numbered question or section that names its verse (Willet's "6. Quest.
-   * v. 5."), a work the map marks `nm`, or Calvin's Harmonies, whose passages run across the books: those count as a page (pass 2).
+   * v. 5."), or a work the map marks `nm`: those count as a page (pass 2). Calvin's Harmonies, whose passages run across the books, are
+   * read by a rule of their own (HARMONY_IN, below).
    * Cajetan's margin labels a line off his text ("Verse 3." over Deuteronomy 34:2), a chapter's last notes on the next chapter's page,
    * another book's page among a work's rows (pg-3227's 1 Samuel 3:7 for Deuteronomy 3:7) are no longer chosen over a key ranked above */
   const HARMONY = /harmony-of-the-(?:law|evangelists)/;
+  /* (2026-11-11, pane3f) Calvin's Harmonies are let into the first pass under the anchor's harmonyNote: a note of theirs is the verse's own
+   * only where it is not the passage's printed text, the nearest paragraph before it that names a book and chapter names the verse's, and
+   * it leads with the verse by two words that tell, no other verse of the chapter as many. HARMONY_IN: the Harmonies so admitted. */
+  const HARMONY_IN = /harmony-of-the-(?:law|evangelists)/;
   const QUESTION = /^\W{0,3}\d{1,3}\.?\s*(?:Quest(?:ion)?|Qu|Sect(?:ion)?)\.?\s/i;
   // a landing's pages as show() reads them
   async function pagesAt(vol, t, w) {
@@ -2567,7 +2572,8 @@
     return [a && a.p, b && b.p].filter(Boolean);
   }
   async function ownNote(vol, t, v, w) {
-    if (!A || !(A.leads || A.quotes) || vol.nm || t.misfit || HARMONY.test(vol.slug)) return false;
+    const harmony = HARMONY.test(vol.slug);
+    if (!A || !(A.leads || A.quotes) || vol.nm || t.misfit || (harmony && !(A.harmonyNote && HARMONY_IN.test(vol.slug)))) return false;
     let pages = [];
     try { pages = await pagesAt(vol, t, w); } catch (_) { return false; }
     if (!pages.length) return false;
@@ -2575,6 +2581,7 @@
     const m = noteMark(pages, lane, t, w, v, vol);
     if (m.h < 0 || m.via === 'fallback' || QUESTION.test(m.all[m.h])) return false;
     const s = m.all[m.h];
+    if (harmony) return !!A.harmonyNote(m.all, m.h, v, verseText, w.book, w.ch);
     return !!(A.leads || A.quotes)(LABEL.test(s) && m.h + 1 < m.all.length ? m.all[m.h + 1] : s, v, verseText);
   }
   /* A PLACE IN HAND THAT THE PAGES BEAR OUT (2026-11-10, pane3c; the three places on the 150 verses: two first commentaries opened where

@@ -1164,6 +1164,96 @@ TRACTATE XI. From that which is written, Now when he was at Jerusalem at the Pas
     ok(A.leads(r17, 17, rom) && A.quotes(r17, 17, rom) && A.leads(g18, 18, gen) && !A.leads('17. For [39] the wrath of God, etc. He reasons now by stating things of a contrary nature.', 17, rom) && !A.leads(r17, 18, rom),
       `a lemma with a footnote's number in it leads with its verse, read on past the number (${A.leads(r17, 17, rom)}) or cut at it (${A.leads(g18, 18, gen)}); another verse's lemma does not (${A.leads(r17, 18, rom)})`);
   }
+  /* (2026-11-11, pane3f) A LEMMA WITH NO STOP AFTER IT: Calvin's "4 And God saw the light Here God is introduced by Moses" took in the
+   * comment's words and could not lead with Genesis 1:4. The lemma is read a third way, cut where a capitalised word follows a lower-case
+   * one, each such cut tried; a cut that leaves one word that tells ("unto Abram He now relates") verifies nothing */
+  {
+    const gen1 = (n) => ({ 3: 'And God said, Let there be light: and there was light.', 4: 'And God saw the light, that it was good: and God divided the light from the darkness.',
+      5: 'And God called the light Day, and the darkness he called Night. And there was evening and there was morning, one day.',
+      18: 'and to rule over the day and over the night, and to divide the light from the darkness: and God saw that it was good.' })[n] || '';
+    const gen12 = (n) => ({ 1: "Now Jehovah said unto Abram, Get thee out of thy country, and from thy kindred, and from thy father's house, unto the land that I will show thee:",
+      4: 'So Abram went, as Jehovah had spoken unto him; and Lot went with him: and Abram was seventy and five years old when he departed out of Haran.' })[n] || '';
+    const g4 = '4 And God saw the light Here God is introduced by Moses as surveying his work, that he might take pleasure in it.';
+    const a1 = '1. Now the Lord had said unto Abram He now relates that the holy man was called a second time.';
+    ok(A.leads(g4, 4, gen1) && A.quotes(g4, 4, gen1) && !A.leads(g4, 3, gen1) && !A.leads(g4, 5, gen1) && !A.leads(a1, 4, gen12) && !A.leads(a1, 1, gen12),
+      `a lemma with no stop after it leads with its verse, cut where a capital follows a lower-case word (${A.leads(g4, 4, gen1)}), and with no other (${A.leads(g4, 5, gen1)}); a cut of one telling word verifies nothing (${A.leads(a1, 4, gen12)})`);
+    // every telling word before the cut must be the verse's: Cajetan's "Vers. 1. And Solomon began to build the house of the Lord in
+    // Jerusalem on mount Moriah" (2 Chronicles 3:1), cut at the name, has three of 2:1's words and "began", which 2:1 has not; under
+    // his margin labels it is not taken for the note on 2:1 (quotes: half of the whole lemma's words, or every word of a cut)
+    const ch2 = (n) => ({ 1: 'Now Solomon purposed to build a house for the name of Jehovah, and a house for his kingdom.', 2: 'And Solomon counted out threescore and ten thousand men to bear burdens, and fourscore thousand men that were hewers in the mountains, and three thousand and six hundred to oversee them.' })[n] || '';
+    const s31 = 'Vers. 1. And Solomon began to build the house of the Lord in Jerusalem on mount Moriah.] Read the twenty-second chapter of Genesis.';
+    ok(!A.quotes(s31, 1, ch2) && A.quotes('1. Now Solomon purposed to build a house Here the sacred writer', 1, ch2), `a cut with a word the verse has not quotes nothing: 2 Chronicles 3:1 on 2:1 (${A.quotes(s31, 1, ch2)})`);
+    // nor where a verse within two has as many of the cut's words: Calvin's "26. I will call them my people which are not a people" is
+    // Romans 9:25's wording; a verse far off may have as many (Genesis 1:18 has "saw" and "light", and 1:4 still leads, above)
+    const rom9 = (n) => ({ 25: 'As he saith also in Hosea, I will call that my people, which was not my people; And her beloved, that was not beloved.',
+      26: 'And it shall be, that in the place where it was said unto them, Ye are not my people, There shall they be called sons of the living God.' })[n] || '';
+    const r26 = '26. I will call them my people which are not a people This is said with respect to the divorce, which God had already made with the people, by depriving them of all honor.';
+    ok(!A.leads(r26, 26, rom9) && !A.quotes(r26, 26, rom9) && A.leads(r26, 26, (n) => (n === 26 ? rom9(26) : '')),
+      `a cut that a verse within two has as many words of is no lemma of this one: Romans 9:25's words under "26." (${A.leads(r26, 26, rom9)})`);
+  }
+  /* (2026-11-11, pane3f) THE DIVINE NAME: Calvin's "1. Jehovah is my shepherd." could not lead with Psalm 23:1 where the page prints "The
+   * LORD is my shepherd". "Jehovah", "Yahweh" and "LORD" in capitals among lower-case words are one name; the name alone verifies nothing
+   * ("Thus saith the LORD"), and Augustine's Vulgate lemma, "The Lord ruleth me", is left as it was */
+  {
+    const ps23 = (n) => ({ 1: 'The LORD is my shepherd; I shall not want.', 2: 'He makes me lie down in green pastures. He leads me beside still waters.',
+      6: 'Surely goodness and mercy shall follow me all the days of my life, and I shall dwell in the house of the LORD forever.' })[n] || '';
+    const c1 = '1. Jehovah is my shepherd. Although God, by his benefits, gently allures us to himself, as it were by a taste of his fatherly sweetness';
+    ok(A.leads(c1, 1, ps23) && A.leads('1. Yahweh is my shepherd. A comment.', 1, ps23) && !A.leads(c1, 6, ps23) && !A.leads('1. Thus saith the LORD. A comment.', 1, ps23)
+      && !A.leads('1. [vers. 1.] The Church speaks to Christ: The Lord ruleth me, and I shall want nothing. The Lord Jesus Christ is my Shepherd', 1, ps23),
+    `"Jehovah is my shepherd" leads with "The LORD is my shepherd" (${A.leads(c1, 1, ps23)}), not with a verse that has the name alone (${A.leads(c1, 6, ps23)}); the name alone is no lemma (${A.leads('1. Thus saith the LORD. A comment.', 1, ps23)})`);
+  }
+  /* (2026-11-11, pane3f) CALVIN'S HARMONIES IN THE FIRST PASS (harmonyNote): a note of theirs is the verse's own only where it is not the
+   * passage's printed text, the nearest paragraph before it that names a book and chapter names the verse's, and it leads with the verse
+   * by two words that tell, no other verse of the chapter as many */
+  {
+    const m19 = ['Matthew 19:13-15; Mark 10:13-16; Luke 18:15-17', 'Matthew 19:13-15', 'Mark 10:13-16', 'Luke 18:15-17',
+      '13. Then were presented to him children, that he might lay hands on them, and pray; but the disciples rebuked them. 14. But Jesus said to them, Suffer children, and forbid them not to come to me.',
+      '13. And they brought to him children, that he might touch them; but the disciples rebuked those who presented them. 14. And when Jesus saw it, he was displeased.',
+      '15. And they presented to him also infants, that he might touch them; and when the disciples saw it, they rebuked them.',
+      'This narrative is highly useful; for it shows that Christ receives not only those who, moved by holy desire and faith, freely approach to him, but those who are not yet of age to know how much they need his grace.',
+      'Matthew 19:13. But the disciples rebuked them. If a diadem had been placed on his head, they would have admitted it willingly, and with approbation; for they did not yet comprehend his actual office.',
+      '14. Suffer children. He declares that he wishes to receive children; and at length, taking them in his arms, he not only embraces, but blesses them by the laying on of hands.'];
+    const mt19 = (n) => ({ 13: 'Then were there brought unto him little children, that he should lay his hands on them, and pray: and the disciples rebuked them.',
+      14: 'But Jesus said, Suffer the little children, and forbid them not, to come unto me: for to such belongeth the kingdom of heaven.', 15: 'And he laid his hands on them, and departed thence.' })[n] || '';
+    const mk10 = (n) => ({ 13: 'And they were bringing unto him little children, that he should touch them: and the disciples rebuked them.',
+      14: 'But when Jesus saw it, he was moved with indignation, and said unto them, Suffer the little children to come unto me; forbid them not: for to such belongeth the kingdom of God.' })[n] || '';
+    const H = (ps, h, v, text, book, ch) => A.harmonyNote(ps, h, v, text, book, ch);
+    ok(!H(m19, 5, 13, mt19, 'matthew', 19) && !H(m19, 4, 13, mt19, 'matthew', 19) && !H(m19, 5, 13, mk10, 'mark', 10),
+      `a Gospel's printed text under the passage's headings is no note: Mark's "13. And they brought to him children" on Matthew 19:13 (${H(m19, 5, 13, mt19, 'matthew', 19)}), nor on Mark 10:13 (${H(m19, 5, 13, mk10, 'mark', 10)})`);
+    ok(H(m19, 9, 14, mt19, 'matthew', 19) && H(m19, 8, 13, mt19, 'matthew', 19) && !H(m19, 9, 14, mk10, 'mark', 10)
+      && !H([...m19.slice(0, 8), 'Mark 10:14. And when Jesus saw it. Mark alone relates that Christ was displeased with his disciples.', m19[9]], 9, 14, mt19, 'matthew', 19) && !H(m19.slice(9), 0, 14, mt19, 'matthew', 19),
+    `"14. Suffer children." after "Matthew 19:13. But the disciples rebuked them." is his note on Matthew 19:14 (${H(m19, 9, 14, mt19, 'matthew', 19)}), and that note his on 19:13 (${H(m19, 8, 13, mt19, 'matthew', 19)}); not on Mark 10:14, nor after "Mark 10:14.", nor with no reference on the pages read (${H(m19.slice(9), 0, 14, mt19, 'matthew', 19)})`);
+    const d5 = ['Deuteronomy 5', 'THE REPETITION', 'Deuteronomy 5:1-6, 4:20', '3. The Lord made not this covenant with our fathers, but with us, even us, who are all of us here alive this day.',
+      '3. Non cum patribus nostris percussit Deus foedus hoc, sed nobiscum, qui ipsi hodie omnes vivimus.', '4. The Lord talked with you face to face in the mount, out of the midst of the fire,',
+      '4. Facie ad faciem loquutus est Jehova nobiscum in monte e medio ignis, coram vobis omnibus,', '3. The Lord made not this covenant. He does not here deny that the fathers had been included in the covenant; the comparison is of less and more.',
+      '4. Face to face. Again he commends the Law by mentioning their certainty about it; for, when God openly manifests himself, there is no room for doubt.'];
+    const ex20 = (n) => ({ 3: 'Thou shalt have no other gods before me.', 4: 'Thou shalt not make unto thee a graven image, nor any likeness of any thing that is in heaven above, or that is in the earth beneath, or that is in the water under the earth:' })[n] || '';
+    const dt5 = (n) => ({ 2: 'Jehovah our God made a covenant with us in Horeb.', 3: 'Jehovah made not this covenant with our fathers, but with us, even us, who are all of us here alive this day.',
+      4: 'Jehovah spake with you face to face in the mount out of the midst of the fire,' })[n] || '';
+    const d7 = ['Deuteronomy 7', 'Deuteronomy 7:6-8', '6. For thou art an holy people unto the Lord thy God: the Lord thy God hath chosen thee to be a special people unto himself, above all people that are upon the face of the earth.',
+      '6. Quia populus sanctus es Jehovae Deo tuo: te elegit Jehova Deus tuus ut sis ei in populum peculiarem ex omnibus populis qui sunt in superficie terrae.',
+      "6. For thou art a holy people. He explains more distinctly what we have lately seen respecting God's gratuitous love; for the comparison of the fewness of the people with the whole world illustrates His grace. He proves it to be of God's gratuitous favor that He has exalted them to such high honor, because He had passed over all other nations, and deigned to embrace them alone.",
+      "7. The Lord did not set his love upon you. He proves it to be of God's gratuitous favor, that He has exalted them to such high honor."];
+    const dt7 = (n) => ({ 6: 'For thou art a holy people unto Jehovah thy God: Jehovah thy God hath chosen thee to be a people for his own possession, above all peoples that are upon the face of the earth.',
+      7: 'Jehovah did not set his love upon you, nor choose you, because ye were more in number than any people; for ye were the fewest of all peoples:' })[n] || '';
+    ok(!H(d5, 8, 4, ex20, 'exodus', 20) && !H(d5, 8, 4, dt5, 'deuteronomy', 5) && H(d7, 4, 6, dt7, 'deuteronomy', 7) && !H(d7, 2, 6, dt7, 'deuteronomy', 7)
+      && !H(['Deuteronomy 9:1-6', ...d7.slice(2)], 3, 6, dt7, 'deuteronomy', 7) && !H(d7.slice(4), 0, 6, dt7, 'deuteronomy', 7),
+    `under "Deuteronomy 5:1-6, 4:20" his "4. Face to face." is no note on Exodus 20:4 (${H(d5, 8, 4, ex20, 'exodus', 20)}), nor, by one word, on Deuteronomy 5:4 (${H(d5, 8, 4, dt5, 'deuteronomy', 5)}); under "Deuteronomy 7:6-8" his "6. For thou art a holy people." is his note on 7:6 (${H(d7, 4, 6, dt7, 'deuteronomy', 7)}), the verse printed in both tongues is not (${H(d7, 2, 6, dt7, 'deuteronomy', 7)}), nor the note under another chapter's heading or under none`);
+    const l18 = ['Leviticus 18', 'Leviticus 18:5', '5. Ye shall therefore keep my statutes and my judgments; which if a man do, he shall live in them: I am the Lord.', '5. Custodite statuta mea, et judicia mea, quae homo si faciat, vivet in ipsis: ego Jehova.',
+      '5. Ye shall therefore keep my statutes. Although Moses introduces this passage, where he exhorts the Israelites to cultivate chastity, it extends to the whole Law.'];
+    const lv18 = (n) => ({ 4: 'Mine ordinances shall ye do, and my statutes shall ye keep, to walk therein: I am Jehovah your God.', 5: 'Ye shall therefore keep my statutes, and mine ordinances; which if a man do, he shall live in them: I am Jehovah.' })[n] || '';
+    const e22 = ['Exodus 22:1-4', 'Thus far God has proclaimed Himself the avenger of iniquities; He now sets forth the punishments of theft.',
+      '1. If a man shall steal an ox, or a sheep, and kill it, or sell it; he shall restore five oxen for an ox, and four sheep for a sheep.', '2. If a thief be found breaking up, and be smitten that he die, there shall no blood be shed for him.',
+      '1. If a man shall steal. Thus far God has proclaimed Himself the avenger of iniquities, and, citing thieves before His tribunal, has threatened them with eternal death.',
+      '2. If a thief be found breaking up. This clause is to be taken separately, and is inserted by way of parenthesis; for, after having decreed the punishment, He adds in connection that the thief should be slain.'];
+    const ex22 = (n) => ({ 1: 'If a man shall steal an ox, or a sheep, and kill it, or sell it; he shall pay five oxen for an ox, and four sheep for a sheep.',
+      2: 'If the thief be found breaking in, and be smitten so that he dieth, there shall be no bloodguiltiness for him.', 3: 'If the sun be risen upon him, there shall be bloodguiltiness for him; he shall make restitution: if he have nothing, then he shall be sold for his theft.' })[n] || '';
+    ok(!H(l18, 4, 5, lv18, 'leviticus', 18) && !H(e22, 3, 2, ex22, 'exodus', 22) && H(e22, 5, 2, ex22, 'exodus', 22),
+      `a lemma another verse of the chapter has as many words of is refused ("5. Ye shall therefore keep my statutes.", Leviticus 18:5 beside 18:4: ${H(l18, 4, 5, lv18, 'leviticus', 18)}); a printed line, the notes after it beginning again, is no note (${H(e22, 3, 2, ex22, 'exodus', 22)}), the note is (${H(e22, 5, 2, ex22, 'exodus', 22)})`);
+    ok(/const harmony = HARMONY\.test\(vol\.slug\);\s*if \(!A \|\| !\(A\.leads \|\| A\.quotes\) \|\| vol\.nm \|\| t\.misfit \|\| \(harmony && !\(A\.harmonyNote && HARMONY_IN\.test\(vol\.slug\)\)\)\) return false;/.test(js)
+      && /if \(harmony\) return !!A\.harmonyNote\(m\.all, m\.h, v, verseText, w\.book, w\.ch\);/.test(js),
+    'the pane takes a Harmony\'s note for the first pass only under the anchor\'s harmonyNote, on the pages its mark was looked for in');
+  }
   /* (2026-11-10, pane3c) a place between its notes is a place in hand only where the pages bear it out: each side is looked for as paint
    * would mark it, and the place does not stand where a side is only the printed text or where one side's note is there and the other's
    * is not; and a next or closest note the pages do not show is said to be the comment on its verse, on this page */

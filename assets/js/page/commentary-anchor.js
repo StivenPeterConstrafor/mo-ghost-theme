@@ -1029,6 +1029,31 @@
    * the lemma is read both ways where it meets such a number before any stop (lemmaPast: the lemma with the number dropped, null where
    * it meets none), and a note leads with its verse, or quotes it, where either reading does. */
   const lemmaPast = (s) => { const t = lemmaText(s); return /^[^.;?!()[\]]*\s\[\d{1,4}\]\s/.test(t) ? wordsTold(lemmaCut(t.replace(/\s*\[\d{1,4}\]/, ''))) : null; };
+  /* A LEMMA WITH NO STOP AFTER IT (2026-11-11, pane3f; the coordinator's read of Mere Orthodoxy: Genesis 1:4 with Calvin open, his note
+   * unmarked). Some of the Calvin Translation Society's volumes are stored with the stop after a lemma lost, the comment running on: "4
+   * And God saw the light Here God is introduced by Moses as surveying his work", "5. And God called the light That is, God willed". Read
+   * to the first stop, the lemma took in the comment's words, and too few of them were the verse's. So it is read a third way: cut where
+   * a capitalised word follows a lower-case one with no stop between, within its first words. A name begins with a capital too ("unto
+   * Abram He now relates"), so each such cut is tried (lemmaCuts: the words that tell before each). A lemma cut so leads with its verse,
+   * or quotes it, only by two of the verse's words that tell at least, and where every word of its own that tells is the verse's: cut at
+   * a name inside it, a lemma is a shorter lemma, and under the guards the other readings have (a third of its words, a half) Cajetan's
+   * "Vers. 1. And Solomon began to build the house of the Lord in Jerusalem on mount Moriah" (2 Chronicles 3:1), cut before "Jerusalem",
+   * was marked on 2:1, "Now Solomon purposed to build a house" (the Bible-wide screen, both judges). Nor where a verse within two of
+   * it has as many of the cut's words: the paragraph under Luther's margin label "V. 12", "And I gave Gilead to Machir" (Deuteronomy
+   * 3:15), has "gave" and "Gilead" of 3:12 and of 3:13 alike; Calvin's "26. I will call them my people which are not a people" is Romans
+   * 9:25's wording. A verse far off may have as many, as with the other readings: Genesis 1:18 has "saw" and "light" too. */
+  const CUT_WORDS = 14;
+  const lemmaCuts = (s) => {
+    const ws = lemmaCut(lemmaText(s)).split(/\s+/), out = [];
+    for (let i = 2; i < ws.length && i <= CUT_WORDS; i += 1) if (/^[A-Z]/.test(ws[i]) && /[a-z]$/.test(ws[i - 1])) out.push(wordsTold(ws.slice(0, i).join(' ')));
+    return out;
+  };
+  /* THE DIVINE NAME (2026-11-11, pane3f; the coordinator's read of Mere Orthodoxy: Psalm 23:1, Calvin's "1. Jehovah is my shepherd."
+   * unmarked). The page there prints "The LORD is my shepherd", and "Lord" is a small word (every psalm has it), so the lemma had one of
+   * the verse's words, not two. "Jehovah", "Yahweh" and "LORD" in capitals among lower-case words are one name (named: each written
+   * "Jehovah"); a lemma all in capitals has no such "LORD". */
+  const NAME_G = /\b(?:Jehovah|Jehova|Yahweh|Yahveh|Jahveh)\b/gi, NAME_CAPS_G = /\bLORD\b/g;
+  const named = (s) => { const t = String(s || ''); return (/[a-z]{2}/.test(t) ? t.replace(NAME_CAPS_G, 'Jehovah') : t).replace(NAME_G, 'Jehovah'); };
   // the chapter's verses as the page gives them, each with its words: [[n, words], ...]
   const versesOf = (textOf) => {
     const out = [];
@@ -1048,11 +1073,18 @@
     const V = wordsTold(textOf(v));
     if (!V.size) return false;
     // (2026-11-11, pane3c) by the lemma as cut, or as read on past a footnote's number (lemmaPast)
-    return [lemmaWords(s), lemmaPast(s)].some((L) => {
+    if ([lemmaWords(s), lemmaPast(s)].some((L) => {
       if (!L || !L.size) return false;
       const own = shared(L, V);
       if (own < Math.min(2, L.size) || 2 * own < L.size) return false;
       return versesOf(textOf).every(([u, w]) => u === Number(v) || shared(L, w) <= own);
+    })) return true;
+    // (2026-11-11, pane3f) or as cut where a capital follows a lower-case word (lemmaCuts): two of the verse's words at least, every
+    // word of the cut the verse's, and no verse within two with as many
+    return lemmaCuts(s).some((L) => {
+      const own = shared(L, V);
+      if (own < 2 || own < L.size) return false;
+      return versesOf(textOf).every(([u, w]) => u === Number(v) || (Math.abs(u - Number(v)) <= 2 ? shared(L, w) < own : shared(L, w) <= own));
     });
   }
   /* THE COMMENT AFTER A PRINTED PASSAGE (2026-11-09, pane3b; the coordinator's read of the word judge). The Calvin Translation Society
@@ -1088,18 +1120,98 @@
     return !(p < 6 && a.length - p === 1 && b.length - p === 1);
   };
   const sharedStrict = (a, b) => { let n = 0; for (const x of a) for (const y of b) if (sameStrict(x, y)) { n += 1; break; } return n; };
-  function leads(s, v, textOf) {
+  // (2026-11-11, pane3f) `hard`, for Calvin's Harmonies (harmonyNote): two of the verse's words always, and no other verse with as many
+  function leadsBy(s, v, textOf, hard) {
     const V = wordsTold(textOf(v));
     if (!V.size) return false;
+    // (`cut`, a reading by lemmaCuts: nor a verse within two of this one with as many)
+    const rest = (L, own, text, cut) => versesOf(text).every(([u, w]) => u === Number(v) || (hard || (cut && Math.abs(u - Number(v)) <= 2) ? sharedStrict(L, w) < own : sharedStrict(L, w) <= own));
     // (2026-11-11, pane3c) by the lemma as cut, or as read on past a footnote's number (lemmaPast)
-    return [lemmaWords(s), lemmaPast(s)].some((L) => {
+    if ([lemmaWords(s), lemmaPast(s)].some((L) => {
       if (!L || !L.size) return false;
       const own = sharedStrict(L, V);
       // (and a third of the lemma's own words that tell, at least: pg-2352's "And he came to Capernaum: and when he was come into the
       // house, he asked them", Mark 9:33, has only "come" and "asked" of 10:35)
-      if (own < Math.min(2, L.size) || 3 * own < L.size) return false;
-      return versesOf(textOf).every(([u, w]) => u === Number(v) || sharedStrict(L, w) <= own);
-    });
+      if (own < (hard ? 2 : Math.min(2, L.size)) || 3 * own < L.size) return false;
+      return rest(L, own, textOf);
+    })) return true;
+    // (2026-11-11, pane3f) or as cut where a capital follows a lower-case word (lemmaCuts): two of the verse's words at least, every
+    // word of the cut the verse's, and no verse within two with as many
+    if (lemmaCuts(s).some((L) => {
+      const own = sharedStrict(L, V);
+      return own >= 2 && own === L.size && rest(L, own, textOf, true);
+    })) return true;
+    // (2026-11-11, pane3f) or by the divine name (named), where the lemma has it and a word that tells beside it
+    const t = named(lemmaCut(lemmaText(s)));
+    if (!/\bJehovah\b/.test(t)) return false;
+    const L = wordsTold(t), own = sharedStrict(L, wordsTold(named(textOf(v))));
+    return L.size >= 2 && own >= 2 && 3 * own >= L.size && rest(L, own, (u) => named(textOf(u)));
+  }
+  const leads = (s, v, textOf) => leadsBy(s, v, textOf, false);
+  /* CALVIN'S HARMONIES IN THE FIRST PASS (2026-11-11, pane3f; the coordinator's brief: "admit a Harmony note only where all three hold").
+   * His Harmonies set passages of several books side by side, so a number alone does not say whose verse a paragraph is on: let into the
+   * first pass as other works are, they marked Mark's printed text for Matthew 19:13, 24:1 and 28:8, Luke's for 27:33, his "8. Thus did
+   * your fathers" (Numbers 32:8) for Numbers 36:8. A note of theirs is the verse's own only where
+   *   1. it is not the passage's printed text: no verse printed in both tongues (twin), with none such after it before the next heading;
+   *      not among the numbered paragraphs that follow a passage's headings before its first comment (the Gospels' columns: "13. Then
+   *      were presented to him children", "13. And they brought to him children", "15. And they presented to him also infants" under
+   *      "Matthew 19:13-15", "Mark 10:13-16", "Luke 18:15-17"); and no numbered paragraph after it, before the next heading or
+   *      reference, counts back to its number or below (a printed line, the notes after it beginning again);
+   *   2. the nearest paragraph before it that names a book and chapter names the verse's own: a note that opens with its reference
+   *      ("Matthew 19:13. But the disciples rebuked them.", before his "14. Suffer children."), or the passage's headings, where they give
+   *      the verse to this book and its number to no other ("Matthew 27:33-38; Mark 15:22-28; Luke 23:33-34, 38" gives 33 to two). Under
+   *      "Deuteronomy 5:1-6, 4:20" his "4. Face to face" is Deuteronomy 5:4, not Exodus 20:4. With none on the pages read, it is refused;
+   *   3. its lemma leads with the verse by two words that tell, never one, and no other verse of the chapter has as many (leadsBy, hard).
+   * A note that opens with its own reference ("Matthew 9:9. Jesus saw a man sitting at the customhouse.") must name the verse, and lead
+   * with it so. paras: the pages' paragraphs as the mark was looked for in them; h: the mark; book, ch: the reader's. */
+  const bookKey = (s) => String(s || '').toLowerCase().replace(/[^a-z ]/g, ' ').trim().split(/\s+/).pop().replace(/s$/, '');
+  const HEAD_BOOK = /^((?:(?:[1-3]|I{1,3})\s+)?[A-Z][A-Za-z]+)\.?\s+(\d{1,3})$/;
+  // the references a paragraph opens with: {refs: [{book, c, a, b}] (a chapter alone: a and b null), head: whether it is nothing but
+  // them, rest: the words after the first}
+  const markerOf = (s) => {
+    const t = String(s || '').replace(/^#{1,6}\s+/, '').trim(), refs = [];
+    let tail = '', first = 0;
+    for (const part of t.split(/\s*;\s*/)) {
+      const m = REF_BOOK.exec(part), g = !m && t.length <= 60 ? HEAD_BOOK.exec(part) : null;
+      if (!m && !g) break;
+      if (m) { refs.push({ book: bookKey(m[1]), c: +m[2], a: +m[3], b: m[4] ? +m[4] : +m[3] }); tail = part.slice(m[0].length); }
+      else { refs.push({ book: bookKey(g[1]), c: +g[2], a: null, b: null }); tail = ''; }
+      if (refs.length === 1) first = m ? m[0].length : part.length;
+    }
+    return refs.length ? { refs, head: !/[A-Za-z]{2}/.test(tail), rest: t.slice(first) } : null;
+  };
+  function harmonyNote(paras, h, v, textOf, book, ch) {
+    const s = String(paras[h] || ''), n = Number(v), bk = bookKey(book);
+    const mine = (r) => r.book === bk && r.c === Number(ch), holds = (r) => r.a != null && r.a <= n && n <= r.b;
+    if (twin(paras, h)) return false;
+    const own = markerOf(s);
+    if (own) return !own.head && own.refs.length === 1 && mine(own.refs[0]) && holds(own.refs[0]) && leadsBy(own.rest.replace(/^[\s.,:]+/, ''), v, textOf, true);
+    const num = LEAD_NUM.exec(s);
+    if (!num || +num[1] !== n) return false;
+    for (let k = h + 1, last = n; k < paras.length && !markerOf(paras[k]); k += 1) {
+      const x = LEAD_NUM.exec(paras[k]);
+      if (twin(paras, k) || (x && +x[1] <= last)) return false;
+      if (x) last = +x[1];
+    }
+    let j = h - 1, mk = null;
+    for (; j >= 0; j -= 1) { mk = markerOf(paras[j]); if (mk) break; }
+    if (!mk) return false;
+    if (!mk.head) { if (!mk.refs.some(mine)) return false; } else {
+      const refs = mk.refs.slice();
+      for (let k = j - 1; k >= 0; k -= 1) { const x = markerOf(paras[k]); if (!x || !x.head) break; refs.push(...x.refs); }
+      let numbered = true, twins = false;
+      for (let k = j + 1; k < h; k += 1) {
+        // (a footnote set at the page's foot is neither)
+        if (/^\W{0,2}\[\d{1,4}\]/.test(paras[k])) continue;
+        if (!LEAD_NUM.test(paras[k])) numbered = false;
+        if (twin(paras, k)) twins = true;
+      }
+      if (numbered && !twins) return false;
+      const ranged = refs.filter((r) => mine(r) && r.a != null);
+      if (ranged.length ? !ranged.some(holds) : !refs.some(mine)) return false;
+      if (refs.some((r) => !mine(r) && holds(r))) return false;
+    }
+    return leadsBy(s, v, textOf, true);
   }
   // (2026-11-09, pane3b) whether a lecture's line of the verse's number is its verse's: not where it has fewer than two of the verse's words
   // and another verse of the chapter has more (Aquinas prints the Vulgate's numbers: his "40:15 The mountains yield grass for him" is the
@@ -1763,7 +1875,7 @@
   }
 
   return { strongRx, bareRx, strongNum, bareNum, capsNum, verseHead, chapterHead, refHead, isApparatus, apparatusIndexes, apparatusShare, quotesVerse, lemmaParts, lemmaIndexes, cvMarks, findNote, noteEnd, gistClaims, candidatePages, rangeOf, createResolver,
-    lemmaOf, wordsTold, quoteFit, quotesOther, fitsVerse, quotes, leads, lineFits, misfit, afterPassage, onOther, twin, printedText, otherNumbers, otherCount, REFUSED,
+    lemmaOf, wordsTold, quoteFit, quotesOther, fitsVerse, quotes, leads, harmonyNote, lineFits, misfit, afterPassage, onOther, twin, printedText, otherNumbers, otherCount, REFUSED,
     // (2026-11-09) whether paragraph k is of chapter ch, by the chapter and reference headings above it (chapterScope)
     inScope: (paras, ch) => chapterScope(paras, ch).mine };
 }));
