@@ -52,6 +52,8 @@
   const $attr = $root.querySelector("[data-sd-attribution]");
 
   const narrow = window.matchMedia("(max-width: 899px)");
+  // the chapter last drawn, kept for the next visit (THE PLACE KEPT, at the foot of this file)
+  const LS_LAST = "sd_last_ref";
 
   // The sidebar sticks under the bar, whose height changes as it wraps.
   const $bar = $root.querySelector(".sd-bar");
@@ -183,6 +185,8 @@
         `<div class="bible-chapter-content sd-chapter-content"></div>`;
       const $host = $text.querySelector(".sd-chapter-content");
       while (node.firstChild) $host.appendChild(node.firstChild);
+      // the chapter in hand is the place kept for the reader's next visit (THE PLACE KEPT, at the foot of this file)
+      try { localStorage.setItem(LS_LAST, S.refKey(book, c, 0)); } catch (_) {}
       if (wantVerse) openVerse(wantVerse, { scroll: true, keep: keepPanel });
       else showOverview();
     }).catch(() => {
@@ -746,7 +750,16 @@
   /* AN ADDRESS THAT DOES NOT RESOLVE SAYS SO (2026-10-15: ?ref=rom.5.12 opened Genesis 1 without a word). A known book
    * with a chapter it does not have opens the book; anything else opens Genesis 1. Either way one line says what happened. */
   const rawRef = (new URLSearchParams(location.search).get("ref") || "").trim();
-  const start = S.parseRef(rawRef) || S.legacyRef();
+  let start = S.parseRef(rawRef) || S.legacyRef();
+  /* THE PLACE KEPT (2026-11-10, owner: "iterate until scripture can be used as a daily driver"; "traverse scripture ... to improve
+   * it, primarily the mereO site"). The page opened at Genesis 1 under its picture on every visit: a reader partway through Romans
+   * chose the book and the chapter again each day. The chapter last drawn is kept in this browser (sd_last_ref, book and chapter only),
+   * and an address that names no passage opens there, the page brought down to it: the picker on a wide screen, the chapter's heading
+   * on a phone. A first visit opens at Genesis 1 at the top of the page, as before; an address that names a passage is obeyed. */
+  let resumed = false;
+  if (!start && !rawRef) {
+    try { const last = S.parseRef(localStorage.getItem(LS_LAST) || ""); if (last && last.book) { start = { book: last.book, c: last.c, v: 0 }; resumed = true; } } catch (_) {}
+  }
   let fallback = null;
   if (!start && rawRef) {
     const bk = S.bookFrom(rawRef.replace(/[\s.:]+\d.*$/, "").replace(/[ .]+/g, "-").toLowerCase());
@@ -762,5 +775,22 @@
       : `No passage matches “${rawRef}”, so the reader opens at Genesis 1. Choose a book and chapter above.`;
     $layout.before($wrap);
   }
-  load(start ? start.book : fallback || S.BOOK_BY_SLUG.get("genesis"), start ? start.c : 1, start ? start.v : 0, false);
+  const first = load(start ? start.book : fallback || S.BOOK_BY_SLUG.get("genesis"), start ? start.c : 1, start ? start.v : 0, false);
+  if (resumed && first && first.then) first.then(() => {
+    // not over a reader who has already moved the page
+    if (window.scrollY > 40) return;
+    const to = narrow.matches ? $text.querySelector(".bible-chapter-header") : $root.querySelector(".sd-bar");
+    if (!to) return;
+    const was = to.style.scrollMarginTop;
+    // (the page's scroll-padding already clears the site's header and the rail: header-behaviors.js)
+    const place = () => {
+      to.style.scrollMarginTop = "12px";
+      to.scrollIntoView({ block: "start" });
+      to.style.scrollMarginTop = was;
+      return window.scrollY;
+    };
+    // The page above settles after the chapter has arrived, so the place is taken again, twice, while the reader has not moved the page.
+    let at = place();
+    [450, 1600].forEach((ms) => setTimeout(() => { if (Math.abs(window.scrollY - at) < 4) at = place(); }, ms));
+  });
 })();
