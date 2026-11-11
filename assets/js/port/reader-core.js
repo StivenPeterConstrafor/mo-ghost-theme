@@ -1511,8 +1511,13 @@ function rememberReaderChoice(page,title='',id=null){
   window.__readerChoice={page,title,id,serial};window.__frTgt=page;window.__frUserScrolled=false;document.getElementById('app')?.classList.remove('prelanding');
   return serial;
 }
+// A PAGE ADDRESS WRITTEN WITH LEADING ZEROS (2026-11-10, owner: "traverse scripture, ask ... to improve it"). An Ask citation on Mere
+// Orthodoxy opened Vermigli's Defensio at its first page, not at p. 166: the answer's source gave the page as "0166", the link said
+// #b0166-0, and no block has that id (the page is #b166-0; no work numbers its pages with leading zeros). The address is read as the
+// page it means. A Migne "vol:col" id (52:0183A) is not a plain number and stays as it is.
+function frPlainBlockId(id){return String(id||'').replace(/^b0+(\d+-\d+)$/,'b$1');}
 function frReaderBlockReference(hash){
-  let id;try{id=decodeURIComponent(String(hash||'').replace(/^#/,''));}catch(_){return null;}
+  let id;try{id=frPlainBlockId(decodeURIComponent(String(hash||'').replace(/^#/,'')));}catch(_){return null;}
   const match=/^b(.+)-(\d+)$/.exec(id);return match?{id,page:match[1],index:match[2]}:null;
 }
 function captureReaderPosition(rebuild){
@@ -1680,7 +1685,7 @@ window.__frNavigateReaderAnchor=href=>{
     if(!(samePage||/^\/read(?:\.html|\/[^/]+)?$/.test(target.pathname))||!targetWork||![currentWork,DATA?.slug].filter(Boolean).includes(targetWork))return false;
     // A citation can omit the current lane/view settings; an explicit change still needs navigation.
     for(const [key,value]of target.searchParams)if(!['w','ws','p','section','heading','at'].includes(key)&&here.searchParams.get(key)!==value)return false;
-    let id;try{id=decodeURIComponent(target.hash.slice(1));}catch(_){return false;}
+    let id;try{id=frPlainBlockId(decodeURIComponent(target.hash.slice(1)));}catch(_){return false;}
     const sourcePath=target.searchParams.get('section'),sourceKey=target.searchParams.get('heading')||'',at=String(target.searchParams.get('at')||'').slice(0,240);
     if(sourceKey&&!sourcePath)return false;
     const sourceRow=sourcePath?readerDisplayOutline().find(row=>row.navSourcePath===sourcePath&&(!sourceKey||row.navSourceKey===sourceKey)):null;
@@ -9020,4 +9025,15 @@ async function loadWork(ws){
       // fr_lanes2 remembers the reader's own combination on every return.
       else{Object.assign(LN,{en:true,la:false,fx:false});applyLanes();}}}
     if(window.__frApplyOwner)window.__frApplyOwner();}   // owner signed in BEFORE the text loaded → wire review controls now
-  catch(err){$("#reading").innerHTML='<div class="loading">Failed to load: '+esc(String(err))+' — <a href="/the-faith-received/all-works/?collection=all">return to the library</a></div>';}})();
+  catch(err){
+    /* THE WORK DID NOT LOAD (2026-11-10, owner: "traverse scripture, ask ... and other things in the site to improve it"). A link to
+       a work the library does not hold printed the raw error at the reader ("Failed to load: Error: HTTP 404 https://.../v1/works/
+       calvin-institutes-1559/meta.json?v=...") and left the title bar on "Loading...". The reader is told what happened in plain
+       words and given the ways on: a search for the words of the address, the library, or another try. The error goes to the console. */
+    try{console.error('reader: the work did not load',err);}catch(_){}
+    const gone=/\bHTTP 404\b/.test(String(err)),words=String(ws||'').replace(/^[a-z]{2,4}-\d+$/i,'').replace(/[-_]+/g,' ').replace(/\b\d{1,2}\b/g,' ').replace(/\s+/g,' ').trim();
+    const wt=$("#wt");if(wt){wt.textContent=gone?'Work not found':'The text did not load';wt.title='';}
+    $("#reading").innerHTML='<div class="loading">'+(gone
+      ?'This work is not in the library at this address. It may have been moved or renamed. '+(words?'<a href="/the-faith-received/search/?q='+encodeURIComponent(words)+'">Search the library for it</a>, or <a href="/the-faith-received/all-works/?collection=all">return to the library</a>.':'<a href="/the-faith-received/all-works/?collection=all">Return to the library</a>.')
+      :'The text did not load. <a href="#" data-reader-retry>Try again</a>, or <a href="/the-faith-received/all-works/?collection=all">return to the library</a>.')+'</div>';
+    const again=$("#reading [data-reader-retry]");if(again)again.addEventListener('click',e=>{e.preventDefault();location.reload();});}})();

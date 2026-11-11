@@ -76,7 +76,7 @@
      match is by prefix: a short quote is still found whole. Re-apply when
      re-vendoring. The reader PATH is no longer patched here: it comes
      from CFG.readPath, which faith-ask-config.js sets. */
-  const readURL = (slug,page,quote) => CFG.readPath+'?w='+encodeURIComponent(slug)+(quote?'&hl='+encodeURIComponent(String(quote).slice(0,300)):'')+(page == null || page === '' ? '' : '#b'+encodeURIComponent(String(page).split(/[–—,]|(?<=\d)-(?=\d)/)[0].trim())+'-0');
+  const readURL = (slug,page,quote) => CFG.readPath+'?w='+encodeURIComponent(slug)+(quote?'&hl='+encodeURIComponent(String(quote).slice(0,300)):'')+(page == null || page === '' ? '' : '#b'+encodeURIComponent(String(page).split(/[–—,]|(?<=\d)-(?=\d)/)[0].trim().replace(/^0+(?=\d+$)/,''))+'-0');
   function safeURL(value) { if(typeof value!=='string'||!value.trim())return ''; try { const u = new URL(value, location.origin); return ['http:','https:'].includes(u.protocol) ? u.href : ''; } catch (_) { return ''; } }
   let catalog = [], catalogBySlug = new Map(), catalogRevision = 0, catalogPromise, conversations = [], current = null, panel, port, worker, initPromise, renderTimer, draftTimer;
   const backgroundInert = new Map();

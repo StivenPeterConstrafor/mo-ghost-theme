@@ -60,6 +60,30 @@ for (const [text, want] of CASES) {
   }
 }
 
+/* The page a citation opens (2026-11-10). The worker gives a page as it files it, "0166": the link said #b0166-0, no block has that id,
+ * and the reader opened the work at its first page. readURL() writes the page as the reader names it, and the reader reads an address
+ * already written with the zeros (a link copied from an older answer) as the page it means. A Migne "vol:col" id is no plain number
+ * and stays as it is. */
+const urlLine = src.match(/const readURL = [^\n]+\n/);
+const core = readFileSync(join(root, "assets/js/port/reader-core.js"), "utf8");
+const plainFn = core.match(/function frPlainBlockId\(id\)\{[^\n]+\}\n/);
+if (!urlLine || !plainFn) {
+  console.error("✗ ask cite quote: readURL() or frPlainBlockId() not found");
+  process.exit(1);
+}
+const { readURL } = new Function("CFG", `${urlLine[0]}; return { readURL };`)({ readPath: "/the-faith-received/read/" });
+const { frPlainBlockId } = new Function(`${plainFn[0]}; return { frPlainBlockId };`)();
+const PAGES = [["0166", "#b166-0"], ["166", "#b166-0"], ["0520–0521", "#b520-0"], ["12-15", "#b12-0"], ["0", "#b0-0"], ["52:0183A", "#b52%3A0183A-0"], ["0183A", "#b0183A-0"]];
+for (const [page, want] of PAGES) {
+  const got = readURL("a-work", page).replace(/^[^#]*/, "");
+  if (got !== want) { bad++; console.error(`  ✗ readURL page ${JSON.stringify(page)} -> ${got}, wanted ${want}`); }
+}
+const IDS = [["b0166-0", "b166-0"], ["b166-0", "b166-0"], ["b0-0", "b0-0"], ["b52:0183A-0", "b52:0183A-0"], ["b0183A-0", "b0183A-0"], ["heading-3", "heading-3"]];
+for (const [id, want] of IDS) {
+  const got = frPlainBlockId(id);
+  if (got !== want) { bad++; console.error(`  ✗ frPlainBlockId ${JSON.stringify(id)} -> ${got}, wanted ${want}`); }
+}
+
 if (bad) {
   console.error(`✗ ask cite quote: ${bad} of ${CASES.length} cases failing`);
   process.exit(1);
