@@ -792,7 +792,7 @@
     const keep = typeof cfg.keep === "function" ? cfg.keep : () => true;
     const method = typeof cfg.method === "function" ? cfg.method : (html) => `<p class="vdb-method">${html.replace(/^<p>|<\/p>$/g, "")}</p>`;
     let v = Number(cfg.verse) || Number((cfg.verses || [])[0]) || 1;
-    let M = null, VM = null, CM = null, dead = false;
+    let M = null, VM = null, CM = null, dead = false, keyed = false;
     const st = { g: cfg.state && cfg.state.g != null ? String(cfg.state.g) : null, r: (cfg.state && cfg.state.r) || "", k: "", tool: "", lane: new Map(), limit: new Map() };
     let verses = (cfg.verses || []).map(Number);
     const ref = (x) => `${cfg.book.slug === "psalms" ? "Psalm" : cfg.book.name} ${cfg.ch}:${x}`;
@@ -877,24 +877,32 @@
     }
 
     // ── the band ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    /* WHERE AN AUTHOR STANDS ON THE BAND (2026-11-11, owner, of the pages that still named a century from a birth year: "yes fix").
+       An author's year here is his birth year wherever one is known, and the band counted him in the century of his birth: Luther
+       under the 15th, Peter Lombard under the 11th, Cyril of Alexandria under the 4th. The module now draws each man in the years
+       he was at work (tradition-graphics.js placedYear, by his record in the author dates), so the line of centuries over the band,
+       the counts under each century and the names over the bars take the same year (bandAt); a man the key does not hold stays at
+       his own. The band waits for the key once and is drawn again when it comes, so its counts and its columns agree. */
+    const bandAt = (a) => { const G = TG(), y = a.y > 0 && a.y < 2100 ? a.y : 0; return y && G && G.placed ? G.placed({ name: a.name, y }) || y : y; };
     function drawBand() {
       const G = TG(), box = $("[data-vdb-strip]");
+      if (G && G.dates && !keyed) { keyed = true; G.dates.ready.then((ok) => { if (ok && !dead && M && VM && CM) drawBand(); }); }
       const items = bandItems(M, VM, CM, st.k);
       const all = bandItems(M, VM, CM, "");
       const n = all.length;
-      const years = all.map((a) => a.y).filter((y) => y > 0 && y < 2100), lo = years.length ? Math.min(...years) : 0, hi = years.length ? Math.max(...years) : 0;
+      const years = all.map(bandAt).filter((y) => y > 0 && y < 2100), lo = years.length ? Math.min(...years) : 0, hi = years.length ? Math.max(...years) : 0;
       // the citations not yet loaded (a verse cited thousands of times comes in two parts) are said, and one press away
       const part = !CM.full && CM.total > CM.loaded ? `${DOT}in the first ${fmt(CM.loaded)} of ${fmt(CM.total)} citations ` : "";
       $("[data-vdb-sum]").innerHTML = n ? `${esc(plural(n, "author", "authors"))}${lo ? `, ${ord(Math.floor(lo / 100) + 1)} to ${ord(Math.floor(hi / 100) + 1)} century` : ""}${part ? `${esc(part)}<button type="button" class="vdb-act vdb-act-in" data-vdb-loadall>Load the other ${fmt(CM.total - CM.loaded)}</button>` : ""}` : "";
       if (!G || !items.length) { box.innerHTML = items.length ? "" : `<p class="vdb-wait">${st.k ? "None of this kind on the verse in these sources." : "No author in the library treats this verse yet."}</p>`; drawKinds(); return; }
       const data = G.bin(items.map((a) => ({ y: a.y, t: a.t, name: a.name })), 25);
       const marks = [...(M.head || []), ...(M.tail || [])].filter((c) => keep({ sh: rawShelf(c), w: c.slug, a: c.a }))
-        .map((c, i) => ({ y: yearOf(M, c.a, c), label: short(c.a), p: i })).filter((m) => m.y > 0);
+        .map((c, i) => ({ y: yearOf(M, c.a, c), name: properName(c.a), label: short(c.a), p: i })).filter((m) => m.y > 0);
       const kindName = st.k ? (KINDS.find((k) => k[0] === st.k) || [])[3] : "";
       let html = G.eraStrip(data, { unit: "author", units: "authors", marks, title: `Who treats ${ref(v)}${kindName ? `: ${kindName}` : ""}`, legendLabel: "Traditions shown" });
       // the authors under each century, set under its name on the axis (the strip's own positions)
       const cents = new Map();
-      for (const a of items) if (a.y > 0 && a.y < 2100) { const c = Math.floor(a.y / 100); cents.set(c, (cents.get(c) || 0) + 1); }
+      for (const a of items) if (a.y > 0 && a.y < 2100) { const c = Math.floor(bandAt(a) / 100); cents.set(c, (cents.get(c) || 0) + 1); }
       const row = html.match(/<div class="tg-ax"[^>]*>([\s\S]*?)<\/div>/);
       if (row) {
         const spans = [...row[1].matchAll(/<span class="tg-c([^"]*)" style="left:([^"]+)">(\d+)\w+<\/span>/g)];
@@ -903,7 +911,7 @@
       }
       box.innerHTML = html;
       if (!box.__vdbTg) { box.__vdbTg = true; G.mount(box); } else G.layout(box);
-      if (!box.querySelector(".vdb-method")) box.insertAdjacentHTML("beforeend", method(`<p>Each author appears once on his tradition's shelf. He is placed at his birth year or his first recorded date. The names over the bars are the landmark commentators on ${esc(chRef)}. Point at the strip or use its arrow keys to see each quarter-century's authors.</p>`));
+      if (!box.querySelector(".vdb-method")) box.insertAdjacentHTML("beforeend", method(`<p>Each author appears once on his tradition's shelf. He is placed in the years he was at work: the middle of his life where both its ends are known, else 35 years after his birth or 20 before his death, else his first recorded date. The names over the bars are the landmark commentators on ${esc(chRef)}. Point at the strip or use its arrow keys to see each quarter-century's authors.</p>`));
       drawKinds();
     }
     function kindCounts() {
@@ -1386,7 +1394,7 @@
         const fig = host.querySelector(".tg-era"); if (!fig) return;
         const on = new Set([...fig.querySelectorAll(".tg-lg button[data-tg-k]")].filter((b) => b.getAttribute("aria-pressed") === "true").map((b) => b.dataset.tgK));
         const cents = new Map();
-        for (const a of bandItems(M, VM, CM, st.k)) if (a.y > 0 && a.y < 2100 && on.has(TG().key(a.t))) { const c = Math.floor(a.y / 100); cents.set(c, (cents.get(c) || 0) + 1); }
+        for (const a of bandItems(M, VM, CM, st.k)) if (a.y > 0 && a.y < 2100 && on.has(TG().key(a.t))) { const c = Math.floor(bandAt(a) / 100); cents.set(c, (cents.get(c) || 0) + 1); }
         fig.querySelectorAll(".vdb-cn").forEach((s, i) => {
           const ax = fig.querySelectorAll(".tg-ax span")[i]; const nth = ax ? parseInt(ax.textContent, 10) : 0; const n = cents.get(nth - 1) || 0;
           s.textContent = n ? fmt(n) : ""; s.toggleAttribute("data-zero", !n);

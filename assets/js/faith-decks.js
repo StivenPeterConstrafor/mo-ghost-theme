@@ -1295,7 +1295,7 @@ function rcvCardHTML(s,x){
     +`${more?`<p class="rcv-more"><button type="button" class="res-of" data-osel="${go}" data-sheet="1">${more} more ${more===1?'passage':'passages'} beside</button></p>`:''}</section>`;
 }
 // THE BAND under the disputation's head: the opinions' holders by school (a share bar), Suárez's verdicts on the opinions (a tally in the
-// verdict colours), and the holders through time (the module's era strip: a holder once, at his birth year, in his school's colour, the
+// verdict colours), and the holders through time (the module's era strip: a holder once, in the years he was at work, in his school's colour, the
 // legend switching a school off, the readout naming a column)
 // AN ERA ON A NARROW STRIP (owner, at a phone's width: the era row "cut"): a name that does not fit its span takes its short form, and
 // is left out only when that does not fit either; fitted after the module lays the strip out, when the fonts come and as its width changes
@@ -1329,12 +1329,17 @@ function mGraphHTML(P){
     cnt.set(nm,(cnt.get(nm)||0)+1);
     if(seen.has(nm))continue;
     seen.add(nm);
-    if(yy>0&&yy<2100)items.push({y:yy,t:TGK[mschool(sch)],name:nm});else if(yy<0)early.push(nm);
+    if(yy>0&&yy<2100)items.push({y:yy,t:TGK[mschool(sch)],name:nm,dates:`b. ${yy}`});else if(yy<0)early.push(nm);
   }
+  /* WHERE A HOLDER STANDS (2026-11-11, owner, of the pages that still named a century from a birth year: "yes fix"). The deck's years
+     are birth years, and the strip drew each man in the column of his birth under the centuries and the eras: Cajetan (1469) among the
+     men of the 15th century, Luther (1483) in the High medieval band's last years. The module now places an item in the years he
+     was at work (tradition-graphics.js placedYear): by his record in the author dates, and where the key does not hold him, 35 years
+     after the birth year the deck gives ("b. 1469"). Suárez's own name stands at the middle of his life. */
   const R=PL.rec&&PL.rec.sections?Object.values(PL.rec.sections):[];
-  for(const x of R)for(const r of (x&&x.reception)||[]){const nm=String(r.author||'').trim(),yy=Number(r.year);if(!nm||seen.has(nm))continue;seen.add(nm);if(yy>0&&yy<2100)items.push({y:yy,t:TGK[mschool(r.school)],name:nm});}
-  const marks=[{y:SUAREZ_Y,label:'Suárez',p:-1}].concat(items.slice().sort((a,b)=>(cnt.get(b.name)-cnt.get(a.name))||(a.y-b.y)).map((x,i)=>({y:x.y,label:x.name,p:i}))).slice(0,matchMedia('(max-width:480px)').matches?4:undefined);
-  const strip=items.length?TG.eraStrip(TG.bin(items,25),{unit:'author',units:'authors',labels:TGL,title:'Authors Suárez cites and authors who received him, by birth year',legendLabel:'Schools shown',marks}):'';
+  for(const x of R)for(const r of (x&&x.reception)||[]){const nm=String(r.author||'').trim(),yy=Number(r.year);if(!nm||seen.has(nm))continue;seen.add(nm);if(yy>0&&yy<2100)items.push({y:yy,t:TGK[mschool(r.school)],name:nm,dates:`b. ${yy}`});}
+  const marks=[{y:SUAREZ_Y,name:SUAREZ,dates:SUAREZ_D,label:'Suárez',p:-1}].concat(items.slice().sort((a,b)=>(cnt.get(b.name)-cnt.get(a.name))||(a.y-b.y)).map((x,i)=>({y:x.y,name:x.name,dates:x.dates,label:x.name,p:i}))).slice(0,matchMedia('(max-width:480px)').matches?4:undefined);
+  const strip=items.length?TG.eraStrip(TG.bin(items,25),{unit:'author',units:'authors',labels:TGL,title:'Authors Suárez cites and authors who received him, in the years they were at work',legendLabel:'Schools shown',marks}):'';
   const box=(h,body)=>`<div class="pg-c"><h3 class="pg-h">${h}</h3>${body}</div>`;
   return `<section class="pgraph pg-schools tg" aria-label="This disputation in figures">${parts.length?box('The opinions’ holders, by school',tgBar(parts,'The holders of the opinions in this disputation, by school')):''}`
     +`${vs.length?box('Suárez’s verdicts on the opinions',tgBar(vs,'Suárez’s verdicts on the opinions of this disputation')):''}`
@@ -1751,7 +1756,7 @@ function receiversHTML(s,list){
   const by=new Map();for(const x of list){const g=rgroup(x);if(!by.has(g))by.set(g,[]);by.get(g).push(x);}
   const yr=x=>x.year||(TG&&TG.dates?TG.dates.year(x.author):0)||0,sorted=g=>by.get(g).sort((a,b)=>(yr(a)||9999)-(yr(b)||9999));
   return `<div class="f1-set">${RGROUPS.filter(([g])=>by.has(g)).map(([g,l],gi)=>fold1(`rcv-${s.n}`,`<i class="dot" style="--sc:${RCOL[g]||mcol(g)}" aria-hidden="true"></i><span class="f1-k">${l}</span> <span class="cc-ct">${by.get(g).length}</span>${peek(sorted(g).map(x=>x.author))}`,
-    `<ol class="f1-rows">${sorted(g).map(x=>{const y=yr(x),n=x.pages.size;return `<li><button type="button" class="f1-row" data-dsel="s${esc(s.n)}/w${esc(x.key)}"><span class="f1-k">${esc(x.author)}</span><span class="f1-n">${[y?yearOf(y):'',n?`${n} ${n===1?'page':'pages'}`:''].filter(Boolean).join(' · ')}</span>${x.whole?'<small class="rcv-tag">whole work</small>':''}</button></li>`;}).join('')}</ol>`,{open:gi===0})).join('')}</div>`;
+    `<ol class="f1-rows">${sorted(g).map(x=>{const y=yr(x),n=x.pages.size;return `<li><button type="button" class="f1-row" data-dsel="s${esc(s.n)}/w${esc(x.key)}"><span class="f1-k">${esc(x.author)}</span><span class="f1-n">${[whenBeside(x.author,y),n?`${n} ${n===1?'page':'pages'}`:''].filter(Boolean).join(' · ')}</span>${x.whole?'<small class="rcv-tag">whole work</small>':''}</button></li>`;}).join('')}</ol>`,{open:gi===0})).join('')}</div>`;
 }
 // A READER OF SUÁREZ, read beside the section: his work and its places on this disputation, his words at length, his answers on this
 // section with their passages, his path; then the section's before and after
@@ -1793,7 +1798,7 @@ function rcvReadHTML(s,x){
 }
 // the holders he cites, by school, each with his year (a chip opens his dossier)
 function citedHTML(hs,sn){
-  const by=holdersBy(hs),n=[...by.values()].reduce((x,l)=>x+l.length,0),chips=(k,list)=>list.map(h=>`<span class="rec-h1">${holderChip(h,k,h._plain?null:sn)}${h.year!=null&&h.year!==''?` <small>${esc(yearOf(h.year))}</small>`:''}</span>`).join(' ');
+  const by=holdersBy(hs),n=[...by.values()].reduce((x,l)=>x+l.length,0),chips=(k,list)=>list.map(h=>`<span class="rec-h1">${holderChip(h,k,h._plain?null:sn)}${(w=>w?` <small>${esc(w)}</small>`:'')(whenBeside(h.author||h.name,h.year))}</span>`).join(' ');
   if(n<=8)return `<ul class="rec-who">${MSCH.filter(([k])=>by.has(k)).map(([k,l])=>`<li><span class="hg-k">${l}</span> ${chips(k,by.get(k))}</li>`).join('')}</ul>`;
   const groups=MSCH.filter(([k])=>by.has(k)),big=groups.reduce((x,[k])=>(by.get(k).length>(x?by.get(x).length:0)?k:x),'');
   return `<div class="f1-set">${groups.map(([k,l])=>fold1(`cited-${sn}`,`<i class="dot" style="--sc:${mcol(k)}" aria-hidden="true"></i><span class="f1-k">${l}</span> <span class="cc-ct">${by.get(k).length}</span>${peek(by.get(k).map(h=>h.name||h.author))}`,`<p class="rec-who-l">${chips(k,by.get(k))}</p>`,{open:k===big})).join('')}</div>`;
@@ -1802,23 +1807,32 @@ function citedHTML(hs,sn){
 // whom suaurez cites"). One axis of years with Suárez's birth on it: above it a dot for each author he cites, below it one for each who
 // received him, at his year, in his school's or his tradition's colour; the counts and the spans beside the figure, the names in the
 // lists under it. A dot that would touch its neighbour steps away from the axis. Undated authors are counted, not drawn.
-const SUAREZ_Y=1548;
+const SUAREZ_Y=1548,SUAREZ='Francisco Suárez',SUAREZ_D='1548–1617';
+/* BEFORE AND AFTER, IN THE YEARS THEY WORKED (2026-11-11, owner: "yes fix"). The axis drew every man at his birth year, Suárez at 1548:
+   Luther (1483) left of 1500, Cajetan (1469) with him. A dot, the pivot and the axis's span take the year a man was at work (the
+   module's placed: his record in the author dates, else 35 years after the birth year the deck gives), so Suárez stands at the middle
+   of his life, 1583, with his dates under his name. What is said in words keeps the birth years, and says so: "born 1225–1535". */
+/* THE DATES BESIDE A NAME (2026-11-11, owner's session, reading the live pages): a bare birth year beside a name ("Clemens Timpler
+   1563") reads as the date of the man or of his work. A holder's or a receiver's line is his dates as the author dates give them
+   ("1563/4–1624"); where the key does not hold him, the deck's year with the word that says what it is ("born 1563"). */
+const whenBeside=(name,y)=>(TG&&TG.dates&&name?TG.dates.label(name):'')||(y!=null&&y!==''&&y!==0?`born ${yearOf(y)}`:'');
+const pvPlaced=(name,y,dates)=>{const T=TG&&TG.placed?TG.placed({name,y,dates:dates||`b. ${y}`}):0;return T>0&&T<2100?T:y+35;};
 const recvC=x=>(/luther/i.test(x.tradition||x.school||'')?'var(--tg-lu)':/reform|calvin|english/i.test(x.tradition||x.school||'')?'var(--tg-rf)':mcol(mschool(x.school)));
 function pivotHTML(before,after){
   const yr=x=>{const y=Number(x.year)||(TG&&TG.dates?TG.dates.year(x.author||x.name):0);return y>0&&y<2100?y:0;};
-  const uniq=list=>{const seen=new Set(),out=[];for(const x of list){const k=fold(x.author||x.name);if(!k||seen.has(k))continue;seen.add(k);out.push({...x,y:yr(x)});}return out;};
+  const uniq=list=>{const seen=new Set(),out=[];for(const x of list){const k=fold(x.author||x.name);if(!k||seen.has(k))continue;seen.add(k);const y=yr(x);out.push({...x,y,py:y?pvPlaced(x.author||x.name,y):0});}return out;};
   const B=uniq(before),A=uniq(after),bd=B.filter(x=>x.y),ad=A.filter(x=>x.y);
   if(!bd.length&&!ad.length)return '';
-  const ys=[...bd,...ad].map(x=>x.y).concat(SUAREZ_Y),lo=Math.floor(Math.min(...ys)/100)*100,hi=Math.max(1700,Math.ceil((Math.max(...ys)+1)/100)*100),X=y=>(y-lo)/(hi-lo)*100;
-  const place=(list,dir)=>{const lanes=[];return list.slice().sort((a,b)=>a.y-b.y).map(x=>{const cx=X(x.y);let k=0;while(k<4&&lanes[k]!=null&&cx-lanes[k]<1.9)k++;lanes[Math.min(k,3)]=cx;return `<i class="pv-d" style="left:${cx.toFixed(2)}%;--k:${Math.min(k,3)};--c:${dir<0?mcol(mschool(x.school)):recvC(x)}" data-dir="${dir<0?'b':'a'}" title="${esc(`${x.author||x.name}, ${yearOf(x.y)}`)}"></i>`;}).join('');};
+  const SP=pvPlaced(SUAREZ,SUAREZ_Y,SUAREZ_D),ys=[...bd,...ad].map(x=>x.py).concat(SP),lo=Math.floor(Math.min(...ys)/100)*100,hi=Math.max(1700,Math.ceil((Math.max(...ys)+1)/100)*100),X=y=>(y-lo)/(hi-lo)*100;
+  const place=(list,dir)=>{const lanes=[];return list.slice().sort((a,b)=>a.py-b.py||a.y-b.y).map(x=>{const cx=X(x.py);let k=0;while(k<4&&lanes[k]!=null&&cx-lanes[k]<1.9)k++;lanes[Math.min(k,3)]=cx;return `<i class="pv-d" style="left:${cx.toFixed(2)}%;--k:${Math.min(k,3)};--c:${dir<0?mcol(mschool(x.school)):recvC(x)}" data-dir="${dir<0?'b':'a'}" title="${esc(`${x.author||x.name}, born ${yearOf(x.y)}`)}"></i>`;}).join('');};
   const span=l=>(l.length?`${yearOf(Math.min(...l.map(x=>x.y)))}${l.length>1?`–${yearOf(Math.max(...l.map(x=>x.y)))}`:''}`:'');
-  const ticks=[];for(let c=Math.ceil(lo/200)*200;c<hi;c+=200)if(Math.abs(c-SUAREZ_Y)>90)ticks.push(`<span style="left:${X(c).toFixed(2)}%">${c}</span>`);
-  ticks.push(`<span class="pv-sy" style="left:${X(SUAREZ_Y).toFixed(2)}%"><b>Suárez</b> 1548</span>`);
+  const ticks=[];for(let c=Math.ceil(lo/200)*200;c<hi;c+=200)if(Math.abs(c-SP)>90)ticks.push(`<span style="left:${X(c).toFixed(2)}%">${c}</span>`);
+  ticks.push(`<span class="pv-sy" style="left:${X(SP).toFixed(2)}%"><b>Suárez</b> ${SUAREZ_D}</span>`);
   const und=B.length-bd.length+A.length-ad.length;
   const say=`${B.length} ${B.length===1?'author':'authors'} he cites${bd.length?` (born ${span(bd)})`:''}. ${A.length} received him${ad.length?` (born ${span(ad)})`:''}.`;
   return `<figure class="pv" role="img" aria-label="${esc(`Before and after Suárez (born 1548). ${say}`)}"><div class="pv-plot">`
     +`<span class="pv-n pv-nb">He cites <b>${B.length}</b></span><span class="pv-n pv-na">Received by <b>${A.length}</b></span>`
-    +`<i class="pv-axis"></i><span class="pv-piv" style="left:${X(SUAREZ_Y).toFixed(2)}%"></span>${place(bd,-1)}${place(ad,1)}</div>`
+    +`<i class="pv-axis"></i><span class="pv-piv" style="left:${X(SP).toFixed(2)}%"></span>${place(bd,-1)}${place(ad,1)}</div>`
     +`<div class="pv-ax" aria-hidden="true">${ticks.join('')}</div><figcaption class="pg-note">${bd.length?`He cites authors born ${span(bd)}.`:''}${ad.length?` Authors who received him were born ${span(ad)}.`:''}${und?` ${und} undated, not drawn.`:''}</figcaption></figure>`;
 }
 async function recFill(root,s,sel,c){

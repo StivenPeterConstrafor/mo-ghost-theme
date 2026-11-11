@@ -93,11 +93,45 @@
   }
   /* an item's year: its own, else the key's for its name (0 when neither dates it) */
   const yearOf = (it) => goodYear(it && it.y) || goodYear((dateOf(nameOf(it)) || {}).y);
+  /* WHERE AN AUTHOR IS PLACED IN TIME (2026-11-11, owner, of the site's surfaces: "what baout maps and controversies"). The key's y is
+     a birth year wherever one is known, and a century named from it is a century early for one author in four (711 of the 2,800
+     dated): Luther in the 15th century, Ockham in the 13th, Albert the Great in the 12th, Peter Lombard in the 11th. A century's
+     label and a place on a time axis take the year he was at work: the middle of his life where both ends are known, a floruit as it
+     stands, else 35 years after his birth or 20 before his death. (Sixty records give a span of a few years, a range for one end
+     of a life or a tenure, "c. 1030-1031", "patriarch 960-967": its middle is a year the man was alive.) An order by year keeps y. rec is the key's record (or none: the item's own line of dates is read),
+     y the item's own year where it has one. */
+  function placedYear(rec, y, text) {
+    const r = rec || {};
+    const v = goodYear(y) || goodYear(r.y);
+    let b = goodYear(r.born);
+    let d = goodYear(r.died);
+    let fl = !!r.fl;
+    if (!rec) {
+      const t = String(text || '');
+      const m = /(\d{3,4})(?:\/\d{1,2})?\s*[\u2013-]\s*(\d{3,4})/.exec(t);
+      if (m) { b = goodYear(m[1]); d = goodYear(m[2]); } else if (/^\s*d\./i.test(t)) d = v; else if (/^\s*fl\./i.test(t)) fl = true; else if (/^\s*b\./i.test(t)) b = v;
+    }
+    if (b && d && d >= b && d - b <= 110) return Math.round((b + d) / 2);
+    if (fl && v) return v;
+    if (b) return b + 35;
+    if (d) return d - 20;
+    return v;
+  }
+  /* AN ITEM'S PLACE (2026-11-11, owner, of the pages that still named a century from a birth year: "yes fix"). The one door to the
+     rule for whatever draws an author in time: the strips (bin), the names over them (eraStrip's marks) and a page's own lanes,
+     eras and century heads. An item {y, name (or a, author), dates} is placed by the key's record for its name; without one, by
+     its own line of dates ("1483–1546", "d. 1347"); with neither it stays at y. Thomas Cajetan (y 1469, 1469–1534) is placed at
+     1502, so his column and his name stand in the 16th century, not the 15th. Give it the item's own y, never a year already
+     placed: "b. 1500" read twice is 70 years on. 0 when nothing dates him. */
+  const placedOf = (it) => goodYear(placedYear(dateOf(nameOf(it)), it && it.y, it && it.dates));
 
-  /* RUNS. items [{y, t, name}] (y a year, missing or 0 when undated; t a tradition or a shelf code; name the author's, by which
-     the author dates give a year the item lacks) become {size, b, u, n}: for each shelf the run of its bins from the first to
-     the last that holds anyone, [first bin, n, n, …] (bin = year / size), and the undated counted apart.
-     v1/enrich/topic_graphics.json stores each topic in the same shape (size 50). */
+  /* RUNS. items [{y, t, name, dates}] (y a year, missing or 0 when undated; t a tradition or a shelf code; name the author's, by
+     which the author dates give a year the item lacks and the year he was at work; dates his line of dates, read when the key
+     does not hold him) become {size, b, u, n}: for each shelf the run of its bins from the first to the last that holds anyone,
+     [first bin, n, n, …] (bin = placed year / size, placedOf above: a column holds the men at work in its years, not those born
+     in them), and the undated counted apart. An item with neither a name nor dates is counted at its y (a council, a printing).
+     v1/enrich/topic_graphics.json stores each topic in the same shape (size 50), counted by the same rule
+     (tools/topic_graphics/placed.py, the rule's Python twin). */
   function bin(items, size = 25) {
     const by = new Map();
     const u = {};
@@ -105,10 +139,11 @@
     let wait = false;
     for (const it of items || []) {
       const k = key(it.t);
-      const y = yearOf(it);
+      const y = placedOf(it);
       n += 1;
+      /* (2026-11-11) every named item waits for the key, not the undated alone: until it comes he stands at his birth year */
+      if (!DATES.done && nameOf(it)) wait = true;
       if (!(y > 0 && y < 2100)) {
-        if (!DATES.done && nameOf(it)) wait = true;
         u[k] = (u[k] || 0) + 1;
         continue;
       }
@@ -132,7 +167,8 @@
     }
     return data;
   }
-  /* a strip drawn before the author dates came is drawn again, in place, with them (the same figure, its legend reset) */
+  /* a strip drawn before the author dates came is drawn again, in place, with them (the same figure, its legend reset; the names
+     over it, which eraStrip places at each drawing, move with their columns) */
   function redraw() {
     if (typeof document === 'undefined') return;
     for (const [id, r] of [...REG]) {
@@ -141,8 +177,10 @@
       const fig = document.getElementById(id);
       if (!fig) { REG.delete(id); continue; }
       const data = bin(r.data.items, r.data.size || 25);
-      const und = (d) => Object.values(d.u || {}).reduce((s, v) => s + v, 0);
-      if (und(data) === und(r.data)) continue;
+      /* (2026-11-11) drawn again when any column moved (the key places a man in the years he worked), not only when the undated
+         count fell */
+      const runs = (d) => JSON.stringify([d.b || {}, d.u || {}]);
+      if (runs(data) === runs(r.data)) continue;
       const tmp = document.createElement('div');
       tmp.innerHTML = eraStrip(data, { ...r.opts, _id: id });
       const next = tmp.firstElementChild;
@@ -211,7 +249,9 @@
   }
 
   /* data {size, b, u, n} (bin() or the key); opts: unit ("author"), units ("authors"), labels {code: name}, title (the figure's
-     name for a screen reader), marks [{y, label, sub}] (the names written over the strip at their years) */
+     name for a screen reader), marks [{y, label, sub, name, dates}] (the names written over the strip at their years; a mark that
+     gives the author's name, and his dates where it has them, is placed where bin() counts him, placedOf: Luther's name over
+     the column of 1500 to 1524, which holds him, not over 1475 to 1499; a mark without a name stands at its y) */
   function eraStrip(data, opts = {}) {
     const size = data.size || 25;
     const keys = ORDER.filter((k) => data.b && data.b[k]);
@@ -241,7 +281,7 @@
       const h = Math.min(z, to);
       return h > l ? `<span style="left:${pct((l - from) / span * 100)};width:${pct((h - l) / span * 100)}" title="${esc(label)}">${esc(label)}</span>` : '';
     }).join('');
-    const marks = (opts.marks || []).filter((m) => m.y >= from && m.y < to).map((m, i) => `<span class="tg-mk" data-x="${((m.y - from) / span * 100).toFixed(3)}" data-p="${m.p != null ? m.p : i}"><i aria-hidden="true"></i><b>${esc(m.label)}</b>${m.sub ? ` <small>${esc(m.sub)}</small>` : ''}</span>`).join('');
+    const marks = (opts.marks || []).map((m, i) => ({ m, i, my: m.name ? placedOf(m) || m.y : m.y })).filter((x) => x.my >= from && x.my < to).map(({ m, i, my }) => `<span class="tg-mk" data-x="${((my - from) / span * 100).toFixed(3)}" data-p="${m.p != null ? m.p : i}"><i aria-hidden="true"></i><b>${esc(m.label)}</b>${m.sub ? ` <small>${esc(m.sub)}</small>` : ''}</span>`).join('');
     const legend = keys.concat(Object.keys(data.u || {}).filter((k) => !data.b[k])).filter((k, i, a) => a.indexOf(k) === i && t[k]);
     const sr = (() => {
       const rows = [];
@@ -660,18 +700,51 @@
     marks.sort((a, z) => Number(a.dataset.p || 0) - Number(z.dataset.p || 0));
     for (const m of marks) {
       m.hidden = false;
+      const sm = m.querySelector('small');
+      if (sm) sm.hidden = false;
       const x = Number(m.dataset.x) / 100 * W;
-      const w = m.offsetWidth;
-      const left = Math.max(0, Math.min(W - w, x - w / 2));
-      const right = left + w;
+      let left = 0;
+      let right = 0;
       /* a name keeps clear of the names in its lane; its hairline, which runs down through the lanes below, keeps clear of the
          names there; and the hairlines of the names above keep clear of it */
       const free = (lane) => placed.every((p) => (p.lane === lane ? right + 10 <= p.a || left >= p.z + 10
         : p.lane < lane ? !(x > p.a - 4 && x < p.z + 4) : !(p.x > left - 4 && p.x < right + 4)));
-      let lane = 0;
-      while (lane < maxLanes && !free(lane)) lane += 1;
-      if (lane >= maxLanes) { m.hidden = true; continue; }
-      placed.push({ lane, a: left, z: right, x });
+      const seat = () => {
+        const w = m.offsetWidth;
+        left = Math.max(0, Math.min(W - w, x - w / 2));
+        right = left + w;
+        let k = 0;
+        while (k < maxLanes && !free(k)) k += 1;
+        return k;
+      };
+      let lane = seat();
+      /* (2026-11-11) a name with its dates ("Anselm of Canterbury c. 1033–1109") is wider than the name with a bare year was, and on
+         a narrow strip it found no lane where the shorter line had (over Free will, Anselm's hairline ran into "John Duns Scotus
+         c. 1265/66–1308"). It then stands without its dates rather than not at all; and if it still finds no lane, the names seated
+         nearest to it give up their dates, nearest first, until it does. A name is worth more than a date here: the dates are on
+         every row below. A name that fits no lane even so is left out, as before, and nothing is changed for it. */
+      if (lane >= maxLanes && sm && sm.textContent) { sm.hidden = true; lane = seat(); }
+      if (lane >= maxLanes) {
+        const shrunk = [];
+        const near = placed.filter((p) => p.sm && !p.sm.hidden && p.sm.textContent).sort((a, z) => Math.abs(a.x - x) - Math.abs(z.x - x)).slice(0, 3);
+        for (const p of near) {
+          p.sm.hidden = true;
+          const w = p.el.offsetWidth;
+          shrunk.push([p, p.a, p.z]);
+          p.a = Math.max(0, Math.min(W - w, p.x - w / 2));
+          p.z = p.a + w;
+          lane = seat();
+          if (lane < maxLanes) break;
+        }
+        if (lane >= maxLanes) for (const [p, a0, z0] of shrunk) { p.sm.hidden = false; p.a = a0; p.z = z0; }
+        else {
+          for (const [p] of shrunk) { p.el.style.left = `${p.a}px`; p.el.style.setProperty('--tick', `${Math.round(p.x - p.a)}px`); }
+          /* with the room made, the name takes its own dates back where they now fit */
+          if (sm && sm.hidden) { sm.hidden = false; const again = seat(); if (again < maxLanes) lane = again; else { sm.hidden = true; lane = seat(); } }
+        }
+      }
+      if (lane >= maxLanes) { if (sm) sm.hidden = false; m.hidden = true; continue; }
+      placed.push({ lane, a: left, z: right, x, el: m, sm });
       used = Math.max(used, lane + 1);
       m.style.left = `${left}px`;
       m.style.setProperty('--lane', lane);
@@ -835,7 +908,10 @@
     get: (name) => dateOf(name),
     year: (name) => goodYear((dateOf(name) || {}).y),
     label: (name) => (dateOf(name) || {}).dates || '',
+    // the year an author was at work, for a century's label or a place on a time axis (placedYear above); 0 when undated
+    placed: (name, y, text) => placedYear(dateOf(name), y, text),
   };
+  /* placed(item): the same for an item {y, name (or a, author), dates}, as bin() and the marks place it (placedOf above) */
 
-  return { TRADITIONS, ERAS, CANON, key, colour, label: (k, labels) => namer(labels)(key(k)), bin, year: yearOf, dates, eraStrip, eraMini, miniAxis, positionBlock, positionRows, questionMap, scriptureBand, preview, mount, layout, esc, fmt, ord };
+  return { TRADITIONS, ERAS, CANON, key, colour, label: (k, labels) => namer(labels)(key(k)), bin, year: yearOf, placed: placedOf, placedYear, dates, eraStrip, eraMini, miniAxis, positionBlock, positionRows, questionMap, scriptureBand, preview, mount, layout, esc, fmt, ord };
 });

@@ -142,18 +142,24 @@ function tradsHTML(m){
    a tradition off in every lane (hollow and grey, as on the maps; the lanes are drawn again without it), the undated counted and not
    drawn, and for a screen reader a table of the answers by century. */
 const AL={off:new Set()},AL_STEP=7,AL_CAP=12,AL_BIN=25;
+/* WHERE A DOT STANDS (2026-11-11, owner, of the pages that still named a century from a birth year: "yes fix"). An answer's y is its
+   author's birth year, and a dot drawn there stood a century early for one author in four: Luther among the men of 1475 to 1499 and
+   in the table's 15th century, Ockham in the 13th, Cyril of Alexandria in the 4th. A dot's column, the lanes' span and the table's
+   century take the year he was at work (py: the module's placed, tradition-graphics.js placedYear); the order inside a column and the
+   dates a dot says when pointed at keep his own. */
+const dotAt=x=>x.py||x.y;
 function lanesHTML(m,parts){
   if(!TG||!m||!m.lanes.length)return '';
   const all=m.lanes.flatMap(l=>l.dots),dated=all.filter(x=>x.y);if(!dated.length)return '';
   const ORD=TG.TRADITIONS.map(t=>t[0]).concat('x'),oi=k=>ORD.indexOf(k),shown=x=>!AL.off.has(tkey(x.tradition));
-  const ys=dated.map(x=>x.y),from=Math.max(0,Math.floor(Math.min(...ys)/100)*100),to=Math.min(2100,Math.max(from+200,Math.ceil((Math.max(...ys)+1)/100)*100)),span=to-from;
+  const ys=dated.map(dotAt),from=Math.max(0,Math.floor(Math.min(...ys)/100)*100),to=Math.min(2100,Math.max(from+200,Math.ceil((Math.max(...ys)+1)/100)*100)),span=to-from;
   const X=y=>((y-from)/span*100).toFixed(3),U=y=>((y-from)/span*1000).toFixed(1);
   let bg='';TG.ERAS.forEach(([a,z],i)=>{const l=Math.max(a,from),h=Math.min(z,to);if(h>l&&i%2===1)bg+=`<rect class="tg-band" x="${U(l)}" y="0" width="${((h-l)/span*1000).toFixed(1)}" height="100"/>`;});
   for(let c=Math.ceil(from/100)*100;c<=to;c+=100)bg+=`<line class="tg-grid" x1="${U(c)}" x2="${U(c)}" y1="0" y2="100"/>`;
   const svg=`<svg class="al-bg" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">${bg}<line class="tg-base" x1="0" x2="1000" y1="100" y2="100"/></svg>`;
   const lanes=m.lanes.map(l=>{
     const p=parts[l.k]||{l:l.l,c:'var(--muted)',pale:false},on=l.dots.filter(shown),und=on.filter(x=>!x.y).length,bins=new Map();
-    for(const x of on){if(!x.y)continue;const b=Math.floor(x.y/AL_BIN);if(!bins.has(b))bins.set(b,[]);bins.get(b).push(x);}
+    for(const x of on){if(!x.y)continue;const b=Math.floor(dotAt(x)/AL_BIN);if(!bins.has(b))bins.set(b,[]);bins.get(b).push(x);}
     const most=Math.max(0,...[...bins.values()].map(v=>v.length)),step=most>AL_CAP?AL_CAP*AL_STEP/most:AL_STEP,h=Math.max(16,Math.min(most,AL_CAP)*AL_STEP+6);
     let dots='';
     for(const [b,xs] of bins){xs.sort((a,z)=>oi(tkey(a.tradition))-oi(tkey(z.tradition))||a.y-z.y);xs.forEach((x,j)=>{dots+=`<i class="al-d" style="left:${X(b*AL_BIN+AL_BIN/2)}%;bottom:${(3+j*step).toFixed(1)}px;--c:${tcol(x.tradition)}" title="${esc(`${x.author}, ${x.dates||x.y}, ${tname(x.tradition)}`)}"></i>`;});}
@@ -163,7 +169,7 @@ function lanesHTML(m,parts){
   const eras=TG.ERAS.map(([a,z,label])=>{const l=Math.max(a,from),h=Math.min(z,to);return h>l?`<span style="left:${X(l)}%;width:${((h-l)/span*100).toFixed(3)}%" title="${esc(label)}">${esc(label)}</span>`:'';}).join('');
   const tc=new Map();for(const x of all){const k=tkey(x.tradition);tc.set(k,(tc.get(k)||0)+1);}
   const keys=ORD.filter(k=>tc.has(k)),undAll=all.filter(x=>!x.y&&shown(x)).length;
-  const rows=[];for(let c=Math.floor(from/100);c<Math.ceil(to/100);c+=1){const cells=m.lanes.map(l=>l.dots.filter(x=>x.y&&Math.floor(x.y/100)===c&&shown(x)).length);if(cells.some(Boolean))rows.push(`<tr><th scope="row">${TG.ord(c+1)} century</th>${cells.map(v=>`<td>${v}</td>`).join('')}</tr>`);}
+  const rows=[];for(let c=Math.floor(from/100);c<Math.ceil(to/100);c+=1){const cells=m.lanes.map(l=>l.dots.filter(x=>x.y&&Math.floor(dotAt(x)/100)===c&&shown(x)).length);if(cells.some(Boolean))rows.push(`<tr><th scope="row">${TG.ord(c+1)} century</th>${cells.map(v=>`<td>${v}</td>`).join('')}</tr>`);}
   const summary=`${fmtN(dated.filter(shown).length)} authors placed at their years, an answer a lane, from the ${TG.ord(from/100+1)} century to the ${TG.ord(to/100)}: ${m.lanes.map(l=>`${(parts[l.k]||l).l} ${l.dots.length}`).join(', ')}${undAll?`; ${fmtN(undAll)} undated`:''}`;
   return `<section class="al-sec" id="al-sec" aria-labelledby="al-h"><h3 class="sec-h" id="al-h">Through the centuries</h3><figure class="tg tg-era al" id="al-fig">
     <div class="al-ls" role="img" aria-label="${esc(summary)}">${lanes}</div>
@@ -193,12 +199,15 @@ const mapOf=id=>{if(!MAPPED.has(id))return Promise.resolve(null);if(!MAPQ.has(id
    the module loads the key and the question waits for it); an author the library cannot date stays in the lane's undated count */
 const yearOf=a=>{const y=Number(a.y);return y>0&&y<9999?y:(TG&&TG.dates&&TG.dates.year(a.author))||null;};
 const datesOf=a=>a.dates||(TG&&TG.dates?TG.dates.label(a.author):'');
+/* the year he was at work, for his dot's column and his century (2026-11-11; the module's rule, by his record in the author dates,
+   else by his own line of dates): 0 when nothing dates him */
+const placedOf=a=>{const y=yearOf(a);return y&&TG&&TG.placed?TG.placed({name:a.author,y,dates:datesOf(a)})||y:y||0;};
 /* one question's figures: the split of its answers, the era strip's lanes (one an answer, each author at his year in his tradition),
    the traditions by answer, and its map's positions */
 function modelOf(d,m){
   const A=answersOf(d),keys=A.map(([k])=>k);
   const split=A.map(([k,l])=>({k,l,n:d.answers.filter(a=>a.answer===k).length})).filter(x=>x.n);
-  const lanes=A.map(([k,l])=>({k,l,dots:d.answers.filter(a=>a.answer===k).map(a=>({author:a.author,y:yearOf(a),dates:datesOf(a),tradition:a.tradition||''}))})).filter(x=>x.dots.length);
+  const lanes=A.map(([k,l])=>({k,l,dots:d.answers.filter(a=>a.answer===k).map(a=>({author:a.author,y:yearOf(a),py:placedOf(a),dates:datesOf(a),tradition:a.tradition||''}))})).filter(x=>x.dots.length);
   const byT=new Map();for(const a of d.answers){const t=tkey(a.tradition);if(!byT.has(t))byT.set(t,{t,name:tname(a.tradition),c:tcol(a.tradition),r:new Map()});const g=byT.get(t);g.r.set(a.answer,(g.r.get(a.answer)||0)+1);}
   const traditions=[...byT.values()].map(g=>({t:g.t,name:g.name,c:g.c,n:[...g.r.values()].reduce((s,x)=>s+x,0),cells:keys.map(k=>[k,g.r.get(k)||0])})).sort((a,b)=>b.n-a.n||a.name.localeCompare(b.name));
   const total=m?(m.n||m.positions.reduce((s,p)=>s+p.holders.length,0)+(m.unplaced||[]).length):0;

@@ -503,21 +503,69 @@
     } catch (_) { return null; }
   }
   const histOf = async (id) => { const d = await jz(`/v1/lexicon/history/${fnv(id) % 2048}.json.gz`); return d && d.terms && Object.hasOwn(d.terms, id) ? d.terms[id] : null; };
+  const centN = (y) => (y == null ? null : Math.floor((y - 1) / 100) + 1);
   const cent = (y) => {
     if (y == null) return 'Undated';
-    const c = Math.floor((y - 1) / 100) + 1;
+    const c = centN(y);
     const s = c % 100 >= 11 && c % 100 <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' }[c % 10] || 'th');
     return `${c}${s} century`;
   };
+  /* THE CENTURY AN AUTHOR WORKED IN (2026-11-11, owner, of the pages that still named a century from a birth year: "yes fix"). A
+     history's year for an author is his birth year, and the century heads cut from it stood a century early for one author in four:
+     Luther's definitions under "15th century", Cajetan's with them, Albert the Great's under the 12th. A head, and the century of
+     the first author to define the word, take the year he was at work: the middle of his life where both ends are known, a floruit
+     as it stands, else 35 years after his birth or 20 before his death, by his record in the author dates
+     (v1/enrich/author_dates.json, read once, when the first history opens), else by the line of dates the history gives him. The
+     dates beside his name and the order under a head stay as they were. The same rule as port/tradition-graphics.js placedYear,
+     which this page does not load: keep the two equal. */
+  const goodYear = (y) => { const v = Number(y); return v > 0 && v < 2100 ? v : 0; };
+  function placedYear(rec, y, text) {
+    const r = rec || {};
+    const v = goodYear(y) || goodYear(r.y);
+    let b = goodYear(r.born);
+    let d = goodYear(r.died);
+    let fl = !!r.fl;
+    if (!rec) {
+      const t = String(text || '');
+      const m = /(\d{3,4})(?:\/\d{1,2})?\s*[\u2013-]\s*(\d{3,4})/.exec(t);
+      if (m) { b = goodYear(m[1]); d = goodYear(m[2]); } else if (/^\s*d\./i.test(t)) d = v; else if (/^\s*fl\./i.test(t)) fl = true; else if (/^\s*b\./i.test(t)) b = v;
+    }
+    if (b && d && d >= b && d - b <= 110) return Math.round((b + d) / 2);
+    if (fl && v) return v;
+    if (b) return b + 35;
+    if (d) return d - 20;
+    return v;
+  }
+  let DATES_P = null;
+  const datesKey = () => DATES_P || (DATES_P = fetch(`${BLOB}/v1/enrich/author_dates.json`).then((r) => (r.ok ? r.json() : null)).then((k) => {
+    const by = (k && k.authors) || {};
+    const fold = (t) => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+    const f = new Map();
+    for (const [n, r] of Object.entries(by)) for (const x of [n].concat(r.aliases || [])) { const key = fold(x); if (key && !f.has(key)) f.set(key, r); }
+    return (n) => by[n] || f.get(fold(n)) || null;
+  }).catch(() => null));
+  /* a history's rows under the centuries their authors worked in: each row's placed year (py; a confession's own year stands), the
+     centuries in order and the undated last, the history's own order (the oldest first) kept under each head */
+  function placeRows(h, dateOf) {
+    if (h.srt) return h.srt;
+    const at = (r) => {
+      const a = h.authors[r[2]] || [];
+      if (a[2] == null) return null;
+      if (/^(?:rc|lc|cf)-\d/.test(r[0])) return a[2];
+      return placedYear(dateOf ? dateOf(a[0]) : null, a[2], a[1]) || a[2];
+    };
+    h.srt = h.rows.map((r, i) => ({ r, i, py: at(r) })).sort((a, z) => (a.py == null) - (z.py == null) || (centN(a.py) || 0) - (centN(z.py) || 0) || a.i - z.i);
+    return h.srt;
+  }
   const who = (a, w) => (a ? `${nameHTML(a[0] || 'Unknown author', w)}${a[1] ? ` (${esc(a[1])})` : ''}` : '');
   /* the works draw forty at a time as the page scrolls toward the end of the list, each century under its own head */
   const HSTEP = 40;
   function histRows(h, from, to, last) {
     let out = '';
     let lastC = last;
-    h.rows.slice(from, to).forEach((r) => {
+    h.srt.slice(from, to).forEach(({ r, py }) => {
       const a = h.authors[r[2]] || [];
-      const c = cent(a[2]);
+      const c = cent(py);
       if (c !== lastC) { out += `<li class="lx-hc">${esc(c)}</li>`; lastC = c; }
       out += `<li class="lx-hr"><p class="lx-hw2">${who(a, r[0])}${a.length ? ', ' : ''}<a href="${esc(read(r[0], r[3]))}">${esc(r[1] || r[0])}, p. ${esc(r[3])}</a>${r[5] > 1 ? ` (${nf(r[5])} pages)` : ''}</p><p>${esc(r[4])}</p></li>`;
     });
@@ -525,17 +573,19 @@
   }
   async function showHistory(id, seq) {
     const box = $('#lx-hist');
-    const h = await histOf(id);
+    const [h, dateOf] = await Promise.all([histOf(id), datesKey()]);
     if (!box || seq !== TSEQ) return;
     if (!h || !h.rows.length) { box.innerHTML = ''; return; }
-    const dated = h.rows.map((r) => h.authors[r[2]]).filter((a) => a && a[2] != null);
+    placeRows(h, dateOf);
+    const datedRows = h.srt.filter((x) => { const a = h.authors[x.r[2]]; return a && a[2] != null; });
+    const dated = datedRows.map((x) => h.authors[x.r[2]]);
     const a0 = dated[0];
     const a1 = dated[dated.length - 1];
     const authors = new Set(h.rows.map((r) => r[2])).size;
     const fa = $('#lx-f-authors');
     if (fa) { fa.textContent = nf(authors); fa.closest('div').hidden = false; }
     const ff = $('#lx-f-first');
-    if (ff && a0) { ff.textContent = `${a0[0]}, ${cent(a0[2])}`; ff.closest('div').hidden = false; }
+    if (ff && a0) { ff.textContent = `${a0[0]}, ${cent(datedRows[0].py)}`; ff.closest('div').hidden = false; }
     const span = a0 && a1 && a0 !== a1 ? `From ${esc(a0[0])} to ${esc(a1[0])}, oldest first.` : 'Oldest first.';
     const [html, lastC0] = histRows(h, 0, HSTEP, null);
     let lastC = lastC0;

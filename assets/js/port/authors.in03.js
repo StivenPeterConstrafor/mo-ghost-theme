@@ -106,7 +106,24 @@ const wOf=a2=>(WTS&&WTS[a2])||0;
 // era authority = the rooms index (dated bios); the bible rows' own e field is unreliable
 let AERAS=null;
 J(BLOB+"/v1/bible/pl/rooms/index.json").then(d2=>{AERAS={};(d2.authors||[]).forEach(r=>{AERAS[r.a]={e:r.e,y:r.y};});}).catch(()=>{});
-const eraOf=r=>{const author=AERAS?.[r.a],year=r.y||author?.y;if(year)return RX.era({y:year});const era=r.e||author?.e;return Object.hasOwn(ERAL,era)?era:"U";};
+/* THE PERIOD A MAN WORKED IN (2026-11-11, owner, of the pages that still named a century or a period from a birth year: "yes fix").
+   A row's y and a room's are birth years wherever one is known, and a period cut from it put a man in the period before his own:
+   Bernard of Clairvaux (1090) and Peter Lombard (1096) among the Carolingians, Johann Gerhard (1582) and William Ames (1576) under
+   "Reformation", Boethius (c. 477) among the early Fathers. A period is taken from the year he was at work (workedIn: the module's
+   placedYear over his record in the author dates, tradition-graphics.js), and a man the key does not hold keeps his own year. The
+   order by year stays as it was. datesReady: the key, waited for a moment before a page that names periods is drawn; on a page
+   that does not load the module (the Topics port) nothing changes. */
+const workedIn=(name,y)=>{const G=window.FRTraditionGraphics,v=Number(y)||0,rec=G&&G.dates&&name?G.dates.get(aName(name))||G.dates.get(name):null;return rec&&G.placedYear?G.placedYear(rec,v,'')||v:v;};
+const datesReady=()=>{const G=window.FRTraditionGraphics;return G&&G.dates?Promise.race([G.dates.ready,new Promise(r=>setTimeout(r,1500))]):null;};
+/* THE DATES BESIDE A NAME (2026-11-11, owner's session, reading the live pages): a bare birth year beside a name ("c. 1033" under
+   Anselm of Canterbury, "c. 1483" under Luther) reads as the date of the man or of his work. Where the author dates hold him the
+   line is his dates as the key gives them ("c. 1033–1109", "1483–1546"); the "c." year only where the key has none. */
+const whenLabel=(name,y)=>{const G=window.FRTraditionGraphics,l=G&&G.dates&&name?G.dates.label(aName(name))||G.dates.label(name):'';return l||(Number(y)>0?'c. '+y:'');};
+/* a reception row's period: the one he worked in where the author dates hold him, else the row's own (the mine's, by his birth) */
+const periodOf=r=>{const p=workedIn(r.a,0);return p?RX.era({y:p}):r.e;};
+/* a Scripture row's period: by the year he worked in where the row, his room or the author dates give one; the mine's letter only
+   for a man nothing dates */
+const eraOf=r=>{const author=AERAS?.[r.a],year=workedIn(r.a,r.y||author?.y||0);if(year)return RX.era({y:year});const era=r.e||author?.e;return Object.hasOwn(ERAL,era)?era:"U";};
 // baked rows carry a truncated upstream author string until the next full bake
 const AFIX={"Westminster Divines (Ley, Gouge":"Westminster Divines"};
 const aName=a2=>AFIX[a2]||a2;
@@ -346,7 +363,7 @@ async function authorsIndex(){
    revealedQuery=null;paint();});};
  const sorter=()=>AV.sort==='a'?(a,b)=>a.a.localeCompare(b.a):AV.sort==='w'?(a,b)=>(b.w||0)-(a.w||0):AV.sort==='n'?(a,b)=>(b.n||0)-(a.n||0):(a,b)=>_edt(a.a)-_edt(b.a)||(rank[a.s]??9999)-(rank[b.s]??9999)||(b.w||0)-(a.w||0);
  const matches=r=>(!AV.era||r.e===AV.era)&&RX.authorScore(r,AV.q)>0;
- const rowHTML=r=>r.own?`<article class="rx-author-row"><a class="rx-author-main" href="${authorHref(r)}"><span><strong>${esc(aName(r.a))}</strong>${r.yl?`<small>${esc(r.yl)}</small>`:''}</span><span class="rx-counts"><span>${fmtR(r.w)} ${r.w===1?'work':'works'}</span></span></a></article>`:`<article class="rx-author-row"><a class="rx-author-main" href="${RX.authorURL(r)}"><span><strong>${esc(aName(r.a))}</strong><small>${r.y?'c. '+r.y+' · ':''}${esc(RX.eras[r.e])}</small></span><span class="rx-counts"><span>${fmtR(r.w)} ${r.w===1?'work':'works'}</span><span>${fmtR(r.nt)} topic entries</span>${AV.sort==='n'?`<span>${fmtR(r.n)} Scripture citations</span>`:''}</span></a><div class="rx-author-actions"><a class="rx-text-link" href="${RX.authorURL(r)}">Browse works</a><a class="rx-text-link" href="${RX.authorURL(r)}/positions">Browse positions</a></div>${r.variants.length>1?`<div class="rx-editions">Also on ${r.variants.slice(1).map(v=>`<a href="${RX.authorURL(v)}">${esc(RX.shelfName(v.sh))} (${fmtR(v.w)} works)</a>`).join(' · ')}</div>`:''}</article>`;
+ const rowHTML=r=>r.own?`<article class="rx-author-row"><a class="rx-author-main" href="${authorHref(r)}"><span><strong>${esc(aName(r.a))}</strong>${r.yl?`<small>${esc(r.yl)}</small>`:''}</span><span class="rx-counts"><span>${fmtR(r.w)} ${r.w===1?'work':'works'}</span></span></a></article>`:`<article class="rx-author-row"><a class="rx-author-main" href="${RX.authorURL(r)}"><span><strong>${esc(aName(r.a))}</strong><small>${(w=>w?esc(w)+' · ':'')(whenLabel(r.a,r.y))}${esc(RX.eras[r.e])}</small></span><span class="rx-counts"><span>${fmtR(r.w)} ${r.w===1?'work':'works'}</span><span>${fmtR(r.nt)} topic entries</span>${AV.sort==='n'?`<span>${fmtR(r.n)} Scripture citations</span>`:''}</span></a><div class="rx-author-actions"><a class="rx-text-link" href="${RX.authorURL(r)}">Browse works</a><a class="rx-text-link" href="${RX.authorURL(r)}/positions">Browse positions</a></div>${r.variants.length>1?`<div class="rx-editions">Also on ${r.variants.slice(1).map(v=>`<a href="${RX.authorURL(v)}">${esc(RX.shelfName(v.sh))} (${fmtR(v.w)} works)</a>`).join(' · ')}</div>`:''}</article>`;
  page.innerHTML=`<div class="research-intro"><div><h1>Authors</h1><p>Every writer in the library, shelf by shelf. Open a tradition to see its authors; open an author to read their works, follow their use of Scripture, and explore the passages behind their ideas.</p></div><a class="rx-text-link" href="/the-faith-received/connections/">Explore citation connections</a></div>
  <form class="rx-filters" role="search" onsubmit="return false"><label class="rx-search">Find an author<input id="q" type="search" placeholder="Search by name, across all traditions" value="${esc(AV.q)}"></label><label>Period<select id="author-era"><option value="">All periods</option>${Object.entries(RX.eras).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label><label>Order authors<select id="sort"><option value="imp">Library selection</option><option value="a">Name A–Z</option><option value="w">Most works</option><option value="n">Most Scripture citations</option></select></label></form>
  <div class="rx-results-line"><p id="dircount" role="status"></p><span><button class="rx-text-link" id="author-expand">Expand all</button> <button class="rx-text-link" id="author-reset">Reset filters</button></span></div>
@@ -1299,7 +1316,7 @@ async function room(slug,arg){
   async function renderReception(){
     VIEW="rc";segOn("r");starSel(null);const token=roomViewRun;
     pbody.innerHTML='<p class="loading">…</p>';
-    if(!RECD){try{RECD=await gzJ(BLOB+"/v1/reception/"+slug+".json.gz?d="+bust());}
+    if(!RECD){await datesReady();try{RECD=await gzJ(BLOB+"/v1/reception/"+slug+".json.gz?d="+bust());}
       catch(e){RECD={a:d.a,in:{n:0,na:0,rows:[]},out:{n:0,na:0,rows:[]}};}}
     if(token!==roomViewRun||run!==RESEARCH_RUN)return;
     let side=RECD.in.n>=RECD.out.n?"in":"out", rq="";
@@ -1314,7 +1331,7 @@ async function room(slug,arg){
       const grp={};rows.forEach(r=>{(grp[r.tr||""]=grp[r.tr||""]||[]).push(r);});
       const arow=(r,i)=>`<details class="rrow" style="--i:${Math.min(i,40)}">
         <summary><span class="nm">${r.s?`<a href="#${r.s}">${esc(r.a)}</a>`:esc(r.a)}</span>
-          ${r.e&&ERAL[r.e]&&!(["English Divines","Reformed","Lutheran","Roman Catholic"].includes(r.tr)&&"ELCH".includes(r.e))?`<span class="rera">${ERAL[r.e]}</span>`:""}
+          ${(e=>e&&ERAL[e]&&!(["English Divines","Reformed","Lutheran","Roman Catholic"].includes(r.tr)&&"ELCH".includes(e))?`<span class="rera">${ERAL[e]}</span>`:"")(periodOf(r))}
           ${howbar(r.how||{})}<span class="rn">${r.n.toLocaleString()} ${r.n===1?'citation':'citations'}</span></summary>
         <div class="rdet">
           ${r.tw&&r.tw.length?`<div style="margin:.3rem 0 .45rem">${side==="in"?"Leans on":"Draws most on"}:
@@ -1586,7 +1603,7 @@ async function topicPage(slug){
   return `<div class="rx-voice-body"><div class="rx-topic-evidence-tools">${works.length?`<label>Work<select data-author-work="${a.i}" aria-label="Work by ${esc(a.a)}"><option value="">All indexed works</option>${works.map(x=>`<option value="${esc(x.w)}"${w===x.w?' selected':''}>${esc(workTitle(x.w))}${RX.edition(RX.orderWork(x))?' · '+esc(RX.edition(RX.orderWork(x))):''}</option>`).join('')}</select></label>`:''}<p class="rx-note" role="status">${fmtR(authorRows(a.i).length)} ${state?.started?'loaded':'preview'} ${authorRows(a.i).length===1?'statement':'statements'}${selectionTotal(a.i)?' of '+fmtR(selectionTotal(a.i))+' indexed':''}${q?' · '+fmtR(a.visible.length)+' match the current filter':''}.${!ledgerOK&&d.evidence?' Work choices cover the loaded selection.':''}</p>${d.evidence&&a.id&&a.np>0?`<div class="rx-topic-load">${state?.error?'<p role="status">The next records could not load. Your current page is retained.</p>':''}${state?.loading?`<span role="status">Loading positions…</span>${state.auto?`<button class="rx-text-link" data-stop-evidence="${a.i}">Stop loading</button>`:''}`:!state?.done?`<button class="rx-button" data-load-evidence="${a.i}">${state?.error?'Retry next 50':state?.started?'Load next 50':'Load first 50'}</button><button class="rx-text-link" data-load-evidence="${a.i}" data-load-all="true">Load all ${fmtR(selectionTotal(a.i))} positions</button>`:''}</div>`:''}${pager(win,'topic',a.i)}</div>
   ${a.visible.length?`<div class="rx-voice-pane" data-voice-pane="${a.i}"></div>`:'<p class="rx-note">No statements in this loaded selection. Choose a work, load its indexed positions, or clear the phrase filter.</p>'}
   ${!a.np&&a.n>0&&!pageState.get(all[a.i])?.done?`<button class="rx-button" data-load-pages="${a.i}"${pageState.get(all[a.i])?.loading?' disabled':''}>${pageState.get(all[a.i])?.loading?'Loading linked pages…':pageState.get(all[a.i])?.error?'Retry linked pages':'Load linked pages'}</button>`:''}${pager(win,'topic',a.i)}${link?`<a class="rx-room-link" href="${link}">Explore ${esc(a.a)} on ${esc(d.t)}</a>`:''}</div>`;};
- const voice=a=>view==='compare'?`<section class="rx-voice"><header><div><h2>${esc(a.a)}</h2><p class="rx-note">${a.y?'c. '+a.y+' · ':''}${esc(RX.shelfName(a.sh,a.a)||'Shelf not recorded')}</p></div>${choice(a)}</header>${body(a)}</section>`:`<div class="rx-voice-item"><details class="rx-fold rx-author-fold" data-topic-author="${a.i}"${openedAuthors.has(a.i)?' open':''}><summary><span><strong>${esc(a.a)}</strong><small>${a.y?'c. '+a.y+' · ':''}${a.n!=null?fmtR(a.n)+' indexed pages · ':''}${fmtR(authorRows(a.i).length)} loaded ${authorRows(a.i).length===1?'statement':'statements'}${a.visible.some(r=>r.pageSummary)?' · '+fmtR(a.visible.filter(r=>r.pageSummary).length)+' linked pages':''}</small></span></summary>${body(a)}</details>${choice(a)}</div>`;
+ const voice=a=>view==='compare'?`<section class="rx-voice"><header><div><h2>${esc(a.a)}</h2><p class="rx-note">${(w=>w?esc(w)+' · ':'')(whenLabel(a.a,a.y))}${esc(RX.shelfName(a.sh,a.a)||'Shelf not recorded')}</p></div>${choice(a)}</header>${body(a)}</section>`:`<div class="rx-voice-item"><details class="rx-fold rx-author-fold" data-topic-author="${a.i}"${openedAuthors.has(a.i)?' open':''}><summary><span><strong>${esc(a.a)}</strong><small>${a.y?'c. '+a.y+' · ':''}${a.n!=null?fmtR(a.n)+' indexed pages · ':''}${fmtR(authorRows(a.i).length)} loaded ${authorRows(a.i).length===1?'statement':'statements'}${a.visible.some(r=>r.pageSummary)?' · '+fmtR(a.visible.filter(r=>r.pageSummary).length)+' linked pages':''}</small></span></summary>${body(a)}</details>${choice(a)}</div>`;
  if(view==='compare'){const sl=[...selected].map(i=>{const a=all[i];return a.s?a:(a.rooms||[]).length===1?a.rooms[0]:null;}),tsl=tslugOf(d.t);
    const deskLink=sl.filter(Boolean).length?`<a class="rx-button cd-open" href="${cdURL({a:sl.filter(Boolean).map(x=>x.s),sel:slug,g:'work',s:'',q:''})}">Open in the comparison desk</a> `:'';
    const tools=sl.length===2&&sl[0]&&sl[1]?`<p class="rx-compare-links">${deskLink}<a class="rx-text-link" href="/the-faith-received/author/?sh=${encodeURIComponent(sl[0].sh)}#${encodeURIComponent(sl[0].s)}/with/${encodeURIComponent(sl[1].s)}/topic/${encodeURIComponent(tsl)}">Full comparison: every citation between them, all shared topics, Scripture</a> · <a class="rx-text-link" href="/the-faith-received/author/?sh=${encodeURIComponent(sl[0].sh)}&cmp=${encodeURIComponent(sl[1].s)}#${encodeURIComponent(sl[0].s)}/positions/${encodeURIComponent(d.t)}">${esc(sl[0].a)}’s positions with ${esc(sl[1].a)} beside them</a> · <a class="rx-text-link" href="/the-faith-received/connections/#e=${encodeURIComponent(sl[0].s)},${encodeURIComponent(sl[1].s)}">${esc(sl[0].a)} citing ${esc(sl[1].a)} in the citation web</a></p>`:sl.length===1&&sl[0]?`<p class="rx-compare-links">${deskLink}<a class="rx-text-link" href="/the-faith-received/author/?sh=${encodeURIComponent(sl[0].sh)}#${encodeURIComponent(sl[0].s)}/with">Compare ${esc(sl[0].a)} with any author</a> · <a class="rx-text-link" href="${RX.authorURL(sl[0],d.t)}">${esc(sl[0].a)}’s positions on ${esc(d.t)}</a></p>`:'';
@@ -1820,7 +1837,7 @@ const CD_SUGGEST=[[['augustine-of-hippo','john-calvin'],'grace','Grace'],
 
 async function compareDesk(host,state,opts={}){
   if(!['work','canon'].includes(state.g))state.g='work';
-  const run=RESEARCH_RUN,serial=(host.__compareSerial||0)+1;host.__compareSerial=serial;const active=()=>run===RESEARCH_RUN&&host.isConnected&&host.__compareSerial===serial;const roster=await getRoster();if(!active())return;
+  const run=RESEARCH_RUN,serial=(host.__compareSerial||0)+1;host.__compareSerial=serial;const active=()=>run===RESEARCH_RUN&&host.isConnected&&host.__compareSerial===serial;const [roster]=await Promise.all([getRoster(),datesReady()]);if(!active())return;
   const bySlug=new Map();roster.rows.forEach(r=>{const cur=bySlug.get(r.s);if(!cur||(r.w||0)>(cur.w||0))bySlug.set(r.s,r);});
   const TS=await topicSlugs();if(!active())return;
   const authors=[];
@@ -1830,7 +1847,7 @@ async function compareDesk(host,state,opts={}){
   // reception history; the topic list carries a stance bar per author; a disagreement finder pairs
   // opposite stances; any view exports to the Desk with every passage cited. No new evidence traffic.
   authors.sort((x,y)=>((x.r.y||9999)-(y.r.y||9999))||x.a.localeCompare(y.a));
-  const whenOf=au=>(au.r.y?'c. '+au.r.y+' · ':'')+(RX.shelfName(au.sh,au.a)||'');
+  const whenOf=au=>(w=>w?w+' · ':'')(whenLabel(au.a,au.r.y))+(RX.shelfName(au.sh,au.a)||'');
   const paintSave=()=>{const b=host.querySelector('#cd-save-view');if(!b)return;const on=!!cdViews.find(cdURL({...state,a:authors.map(x=>x.s)}));b.setAttribute('aria-pressed',String(on));b.textContent=on?'Saved view':'Save view';b.classList.toggle('on',on);};
   const emit=()=>{const st={...state,a:authors.map(x=>x.s)};if(opts.onState)opts.onState(st);const open=host.querySelector('.cd-open');if(open)open.href=cdURL(st);paintSave();};
   // topic rows: the union of the authors' topics, each author's count beside it, in the loci order
@@ -1880,7 +1897,7 @@ async function compareDesk(host,state,opts={}){
     // A RULED LIST, NOT A GRID OF CARDS (2026-10-22 compare pass): one row a pair, the two names, the topic, their years, as the
     // directory rows read. Under a topic (/compare#t=, opts.topicOnly) only the pairs on that topic are offered, or none.
     const sug=CD_SUGGEST.filter(([a,sel])=>a.every(sl=>bySlug.has(sl))&&(!opts.topicOnly||sel===state.sel));
-    const yearOf=sl=>{const y=Number(bySlug.get(sl).y)||0;return y>0?'c. '+y:'';};
+    const yearOf=sl=>{const r=bySlug.get(sl),y=Number(r.y)||0;return whenLabel(r.a,y);};
     if(sug.length){host.insertAdjacentHTML('beforeend',`<section class="cd-suggest" aria-labelledby="cd-suggest-h"><h2 id="cd-suggest-h">${opts.topicOnly?'A comparison on this topic':'Start with a comparison'}</h2><ul>${sug.map(([a,sel,label],i)=>`<li><a href="${cdURL({...state,a,sel})}" data-cd-suggest="${i}"><span class="cd-sg-who">${a.map(sl=>esc(bySlug.get(sl).a)).join(' <span class="cd-sg-and">and</span> ')}</span><span class="cd-sg-on">${esc(label)}</span><span class="cd-sg-when">${a.every(yearOf)?a.map(yearOf).join(' and '):''}</span></a></li>`).join('')}</ul></section>`);
       host.querySelectorAll('[data-cd-suggest]').forEach(el=>el.onclick=e=>{if(e.metaKey||e.ctrlKey||e.shiftKey||e.button)return;e.preventDefault();const [a,sel]=sug[+el.dataset.cdSuggest];state.a=a.slice();state.sel=sel;emit();compareDesk(host,state,opts);});}
     return;}
@@ -1933,9 +1950,13 @@ async function compareDesk(host,state,opts={}){
      voices, so the columns read against everyone who treats the topic. The topic file is the one each cell already loads for its
      evidence contract (cdExport), so the strip costs no request of its own. Without the module or the file there is no strip. */
   const drawTime=(box,t,ex)=>{const G=window.FRTraditionGraphics,list=(ex&&ex.authors)||[];if(!G||!list.length)return;
-    const rowOf=new Map(list.map(a=>[a.s,a])),items=list.map(a=>({y:a.y,t:a.sh,a:a.a}));
+    const rowOf=new Map(list.map(a=>[a.s,a])),items=list.map(a=>({y:a.y,t:a.sh,a:a.a,dates:a.dt}));
     const and=xs=>xs.length<3?xs.join(' and '):xs.slice(0,-1).join(', ')+' and '+xs[xs.length-1];
-    let marks=authors.map((au,i)=>{const row=rowOf.get(au.s)||positionAuthor(list,au.a,au.s,au.sh),y=Number(row&&row.y)||Number(au.r.y)||0;if(!(y>0))return null;const dt=String((row&&row.dt)||'');return {y,label:au.a,p:i,sub:/^\d{3,4}–\d{3,4}$/.test(dt)?dt:String(y),names:[au.a],years:[y]};}).filter(Boolean);
+    let marks=authors.map((au,i)=>{const row=rowOf.get(au.s)||positionAuthor(list,au.a,au.s,au.sh),y=Number(row&&row.y)||Number(au.r.y)||0;if(!(y>0))return null;const dt=String((row&&row.dt)||'');
+      /* (2026-11-11) under a name his dates as the author dates give them ("c. 1033–1109"), not a bare birth year, which reads as the
+         date of the man or his work; the year alone only where the key does not hold him and the topic file gives no span */
+      const line=(G.dates?G.dates.label(au.a):'')||(/^\d{3,4}–\d{3,4}$/.test(dt)?dt:String(y));
+      return {y,name:au.a,dates:dt,label:au.a,p:i,sub:line,names:[au.a],years:[y],dts:[dt],subs:[line]};}).filter(Boolean);
     const paint=()=>{const strip=G.eraStrip(G.bin(items,25),{title:`${t.label}: the authors through time`,marks,labels:Object.fromEntries(Object.keys(RX.shelves).map(k=>[k,RX.shelfName(k)]))});if(!strip)return false;
       box.innerHTML=`<h4 class="cd-time-h" id="cd-time-h">Through time<span class="tg-ct">${fmtR(list.length)} authors on ${esc(t.label)}</span></h4>${strip}`;box.hidden=false;
       if(box.__tg)G.layout(box);else G.mount(box);return true;};
@@ -1948,8 +1969,10 @@ async function compareDesk(host,state,opts={}){
     for(let pass=0;pass<3;pass++){const out=new Set([...box.querySelectorAll('.tg-mk[hidden]')].map(m=>+m.dataset.p));if(!out.size)break;
       const kept=marks.filter(m=>!out.has(m.p));if(!kept.length)break;
       marks.filter(m=>out.has(m.p)).forEach(m=>{const near=kept.reduce((a,b)=>Math.abs(b.y-m.y)<Math.abs(a.y-m.y)?b:a);
-        near.names=[...near.names,...m.names];near.years=[...near.years,...m.years];const ord=near.names.map((n,k)=>[n,near.years[k]]).sort((a,b)=>a[1]-b[1]);
-        near.y=ord[0][1];near.label=and(ord.map(x=>x[0]));near.sub=and(ord.map(x=>String(x[1])));});
+        near.names=[...near.names,...m.names];near.years=[...near.years,...m.years];near.dts=[...near.dts,...m.dts];near.subs=[...near.subs,...m.subs];const ord=near.names.map((n,k)=>[n,near.years[k],near.dts[k],near.subs[k]]).sort((a,b)=>a[1]-b[1]);
+        /* (2026-11-11) the module places a name where it counts the man (his placed year, by his name and dates): the joined name stands
+           at the earlier man's place */
+        near.y=ord[0][1];near.name=ord[0][0];near.dates=ord[0][2];near.label=and(ord.map(x=>x[0]));near.sub=and(ord.map(x=>x[3]));});
       marks=kept;paint();}
     // a joined name wider than the strip (three on a phone) keeps the names and drops the years the chips above already give
     const lane=box.querySelector('.tg-mks'),wide=m=>(m.querySelector('b')?.scrollWidth||0)+(m.querySelector('small')?.offsetWidth||0)+6>lane.clientWidth;

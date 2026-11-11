@@ -164,7 +164,16 @@ function undatedYear(name,hit){
   if(k&&k.y>0&&k.y<2100)return {y:k.y,d:k.dates||`c. ${k.y}`};
   return hit&&hit[1]>0?{y:hit[1],d:`c. ${hit[1]}`}:null;
 }
-const rowYear=a=>a.y>0?a.y:((undatedYear(a.a,roomOf(a.a))||{}).y||0);
+/* WHEN A WORK'S AUTHOR WAS AT WORK (2026-11-11, owner, of the pages that still named a century from a birth year: "yes fix"). A work's
+   year is its author's birth year, and a century head or a column of the strip taken from it stood a century early for one author in
+   four: Luther's works under "15th century", Ockham's under the 13th, Peter Lombard's under the 11th. The head a work stands under,
+   its column on the strip and the era its author is named for take the year he was at work (py: the module's placed,
+   tradition-graphics.js placedYear, by his record in the author dates, else by his own line of dates); the order under a head and
+   the dates beside a work keep his own. 0 for an undated work. */
+const placedOf=r=>(r.y>0?(G&&G.placed&&r.a&&!UNNAMED.test(r.a)?G.placed({name:r.a,y:r.y,dates:r.d}):0)||r.y:0);
+const centOf=r=>(r.y>0?Math.floor((r.py||r.y)/100):-1);
+/* an asked row's placed year (a row the part leaves undated takes the author dates' year, else his room's), for the list's ticks */
+const rowPlaced=a=>{if(a.y>0)return placedOf({a:a.a,y:a.y,d:a.d||''});const x=undatedYear(a.a,roomOf(a.a));return x?placedOf({a:a.a,y:x.y,d:x.d}):0;};
 /* the works among asked rows, each once, in the order of their first row: its author, his shelf, its year, its rows */
 function worksOf(rows){
   const by=new Map();
@@ -177,6 +186,7 @@ function worksOf(rows){
   for(const r of by.values()){
     if(r.y==null){const x=undatedYear(r.a,r.room);if(x){r.y=x.y;r.d=x.d;}}
     else if(!r.d)r.d=dateLabel(r.a);
+    r.py=placedOf(r);
   }
   return [...by.values()];
 }
@@ -191,16 +201,21 @@ function voices(ws){
   const by=new Map();
   for(const r of ws){
     if(!(r.y>0)||!r.room||/;/.test(r.a)||(r.a.match(/,/g)||[]).length>=2)continue;
-    const k=nameKey(r.a),v=by.get(k)||{a:r.a,y:r.y,d:r.d,n:0};
-    v.n+=1;if(r.y<v.y){v.y=r.y;v.d=r.d;}by.set(k,v);
+    const k=nameKey(r.a),v=by.get(k)||{a:r.a,y:r.y,py:r.py||r.y,d:r.d,n:0};
+    v.n+=1;if(r.y<v.y){v.y=r.y;v.py=r.py||r.y;v.d=r.d;}by.set(k,v);
   }
   const best=new Map();
-  for(const v of by.values()){const e=G.ERAS.findIndex(([lo,hi])=>v.y>=lo&&v.y<hi);if(e<0)continue;const cur=best.get(e);if(!cur||v.n>cur.n||(v.n===cur.n&&v.y<cur.y))best.set(e,v);}
+  /* (2026-11-11) an era's voice is a man at work in it: his era by his placed year, his name over the column that counts him */
+  for(const v of by.values()){const e=G.ERAS.findIndex(([lo,hi])=>v.py>=lo&&v.py<hi);if(e<0)continue;const cur=best.get(e);if(!cur||v.n>cur.n||(v.n===cur.n&&v.y<cur.y))best.set(e,v);}
   const vs=[...best.values()],rank=vs.slice().sort((a,z)=>z.n-a.n||a.y-z.y);
-  return vs.map(v=>({y:v.y,label:v.a,sub:/^\d{3,4}–\d{3,4}$/.test(v.d||'')?v.d:String(v.y),p:rank.indexOf(v)}));
+  /* THE DATES UNDER A NAME (2026-11-11, owner's session, reading the live strip): a bare birth year beside a name reads as the date
+     of the man or of his work ("John of Damascus 670", "Anselm of Canterbury 1033", "John Duns Scotus 1265", beside "Augustine of
+     Hippo 354–430"). A voice's line is his dates as the author dates give them ("c. 670–749", "c. 1033–1109", "c. 1265/66–1308");
+     the year alone only where the key does not hold him and his rows give no span. */
+  return vs.map(v=>({y:v.y,name:v.a,dates:v.d,label:v.a,sub:dateLabel(v.a)||(/^\d{3,4}–\d{3,4}$/.test(v.d||'')?v.d:String(v.y)),p:rank.indexOf(v)}));
 }
 function whoHTML(ws,label){
-  const strip=G.eraStrip(G.bin(ws.map(r=>({y:r.y,t:r.k})),25),{unit:'work',units:'works',title:`${label}: the works that ask it`,marks:voices(ws),legendLabel:'Traditions shown'});
+  const strip=G.eraStrip(G.bin(ws.map(r=>({y:r.y,t:r.k,name:UNNAMED.test(r.a||'')?'':r.a,dates:r.d})),25),{unit:'work',units:'works',title:`${label}: the works that ask it`,marks:voices(ws),legendLabel:'Traditions shown'});
   return strip||`<p class="wait">None of the ${fmt(ws.length)} works that ask it is dated.</p>`;
 }
 /* SHARE BY TRADITION, a page-local extension: the module draws this bar only inside a position block (its share bar is not exported),
@@ -260,12 +275,13 @@ async function fillWho(t,b){
 /* the list scrolls itself to the question open, never the page */
 function keepInView(el){const l=el&&el.closest('.list');if(!l)return;const lr=l.getBoundingClientRect(),er=el.getBoundingClientRect();
   if(er.top<lr.top)l.scrollTop-=lr.top-er.top;else if(er.bottom>lr.bottom)l.scrollTop+=er.bottom-lr.bottom;}
-/* each question's first and last asker, at the years its rows are placed by (as the strip and the rows place them), drawn once the
-   part's file, the rooms and the author dates are in, so a tick never moves */
+/* each question's first and last asker, at the years its rows are placed by (as the strip and the rows place them: the years their
+   authors were at work, rowPlaced, 2026-11-11), drawn once the part's file, the rooms and the author dates are in, so a tick never
+   moves */
 const AX0=100,AX1=1950,SPANS=new Map();
 const axX=y=>Math.max(0,Math.min(100,(y-AX0)/(AX1-AX0)*100));
 const spanTitle=s=>s[0]===s[1]?`Asked c. ${s[0]}`:`First asked c. ${s[0]}, last c. ${s[1]}`;
-function spansOf(d){return d.questions.map(q=>{let lo=Infinity,hi=-Infinity;for(const a of q.asked){const y=rowYear(a);if(y>0){if(y<lo)lo=y;if(y>hi)hi=y;}}return lo<=hi?[lo,hi]:null;});}
+function spansOf(d){return d.questions.map(q=>{let lo=Infinity,hi=-Infinity;for(const a of q.asked){const y=rowPlaced(a);if(y>0){if(y<lo)lo=y;if(y>hi)hi=y;}}return lo<=hi?[lo,hi]:null;});}
 const tickIn=s=>`<i style="left:${axX(s[0]).toFixed(2)}%;width:${(axX(s[1])-axX(s[0])).toFixed(2)}%"></i><b style="left:${axX(s[0]).toFixed(2)}%"></b>`;
 const tickHTML=s=>`<span class="qt" aria-hidden="true"${s?` title="${spanTitle(s)}"`:''}>${s?tickIn(s):''}</span>`;
 const firstSR=(n,s)=>` ${n===1?'work':'works'}${s?`, first asked c. ${s[0]}`:''}`;
@@ -301,13 +317,15 @@ async function showQ(i,write){
   keepInView($('#list [aria-current="true"]'));
   const t=T,b=B,[d]=await Promise.all([part(T,B),ROOMS]);if(CUR!==i||T!==t||B!==b)return;const x=d&&d.questions[i];
   if(!x){$('#entry').innerHTML='<p class="muted">This question could not be loaded. Reload the page to try again.</p>';return;}
-  /* each work once, at its author's year, oldest first and the undated last, under its century; its pages under it */
-  const ws=worksOf(x.asked).sort((a,z)=>(a.y==null)-(z.y==null)||(a.y||0)-(z.y||0)||a.i-z.i);
+  /* each work once, under the century its author was at work in (centOf: 2026-11-11, by his placed year, so Luther's works stand under
+     the 16th century and not the 15th), the centuries in order and the undated last; under a head, by the author's own year, oldest
+     first; its pages under it */
+  const ws=worksOf(x.asked).sort((a,z)=>(a.y==null)-(z.y==null)||centOf(a)-centOf(z)||(a.y||0)-(z.y||0)||a.i-z.i);
   const pageLine=a=>`<li><span class="pg"><a href="${read(a.w,a.p)}">p.&nbsp;${esc(a.p)}</a>${PVW.btn(a.w,a.p)}</span><span class="asked">${esc(a.q)}</span></li>`;
   const row=r=>`<li><span class="when">${esc(whenOf(r))}${G&&r.k!=='x'?`<span class="tr">${esc(trName(r.k))}</span>`:''}</span><span class="who">${swatch(r.k)}<span class="nm">${esc(r.a)}</span></span><span class="work"${slugTitle(r)?` data-work-name="${esc(r.w)}"`:''}>${esc(r.t||r.w)}</span><ul class="pp">${r.rows.map(pageLine).join('')}</ul></li>`;
   const draw=()=>{
     const groups=[];
-    for(const r of ws.slice(0,SHOWN)){const c=r.y>0?Math.floor(r.y/100):-1,g=groups[groups.length-1];if(g&&g.c===c)g.ws.push(r);else groups.push({c,ws:[r]});}
+    for(const r of ws.slice(0,SHOWN)){const c=centOf(r),g=groups[groups.length-1];if(g&&g.c===c)g.ws.push(r);else groups.push({c,ws:[r]});}
     $('#entry').innerHTML=`<h2 id="entry-h" tabindex="-1">${esc(x.q)}</h2><p class="count">Asked in ${x.works.toLocaleString()} ${x.works===1?'work':'works'}${x.n>x.works?`, on ${x.n.toLocaleString()} pages`:''}.</p>${G?shareHTML(ws):''}${
       groups.map(g=>{const id=g.c<0?'cg-u':`cg-${g.c}`;return `<section class="cg" aria-labelledby="${id}"><h3 class="cg-h" id="${id}">${g.c<0?'Undated':`${ord(g.c+1)} century`}<small>${g.ws.length.toLocaleString()} ${g.ws.length===1?'work':'works'}</small></h3><ul class="rows">${g.ws.map(row).join('')}</ul></section>`;}).join('')
       }${ws.length>SHOWN?`<button type="button" class="more" id="more">Show ${Math.min(80,ws.length-SHOWN)} more works</button>`:''

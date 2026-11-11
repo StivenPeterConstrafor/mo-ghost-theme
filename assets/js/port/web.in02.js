@@ -27,13 +27,41 @@ const SHN={pl:"Latin Fathers",gf:"Greek Fathers",po:"Eastern Fathers",ed:"Englis
 const SHD=k=>{const l=SHN[k];return l&&window.MOFaithLabel?window.MOFaithLabel.shelf(l):l;};
 
 function eraOf(y){return y<400?"E":y<700?"L":y<1050?"C":y<1450?"H":y<1610?"R":"P";}
+/* WHERE A STAR STANDS IN TIME (2026-11-11, owner, of the pages that still named a period from a birth year: "yes fix"). A node's year is
+   the first year its biography gives, a birth year wherever one is known, and the sky drew every man at it: Luther (1483) left of the
+   1500 line among the men of the 15th century, Bernard of Clairvaux (1090) with the early medievals, and the Period filter, the brush
+   and the year fields found him there. A star's place on the time axis, its period (colour, key, Period filter), the brush and the year
+   fields take the year he was at work (n.y): the middle of his life where both ends are known, a floruit as it stands, else 35 years
+   after his birth or 20 before his death, by his record in the author dates (v1/enrich/author_dates.json, read with the graph), else
+   by the dates his biography gives. His own year stays in n.by for what is said beside his name. The same rule as
+   tradition-graphics.js placedYear, which this page does not load: keep the two equal. */
+const goodYear=y=>{const v=Number(y);return v>0&&v<2100?v:0;};
+function placedYear(rec,y,text){
+  const r=rec||{},v=goodYear(y)||goodYear(r.y);let b=goodYear(r.born),d=goodYear(r.died),fl=!!r.fl;
+  if(!rec){const t=String(text||''),m=/(\d{3,4})(?:\/\d{1,2})?\s*[\u2013-]\s*(\d{3,4})/.exec(t);
+    if(m){b=goodYear(m[1]);d=goodYear(m[2]);}else if(/^\s*d\./i.test(t))d=v;else if(/^\s*fl\./i.test(t))fl=true;else if(/^\s*b\./i.test(t))b=v;}
+  if(b&&d&&d>=b&&d-b<=110)return Math.round((b+d)/2);
+  if(fl&&v)return v;if(b)return b+35;if(d)return d-20;return v;
+}
+let DATEOF=null;
+const datesKey=u=>J(u).then(k=>{
+  const by=(k&&k.authors)||{},fold=t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,''),f=new Map();
+  for(const [n,r] of Object.entries(by))for(const x of [n].concat(r.aliases||[])){const key=fold(x);if(key&&!f.has(key))f.set(key,r);}
+  DATEOF=n=>by[n]||f.get(fold(n))||null;}).catch(()=>{});
+/* the year a man was at work, from his own year: by the key's record, else by his biography's line of dates; one neither dates stays */
+function workYear(name,y,bio){const rec=DATEOF?DATEOF(name):null,p=placedYear(rec,y,rec?'':(bio&&typeof bio==='object'?bio.dates:''));return p>0?p:y;}
+/* THE DATES BESIDE A NAME (2026-11-11, owner's session, reading the live pages): "c. 1033" beside Anselm of Canterbury is his birth year
+   and reads as his date. The line is his dates as the author dates give them ("c. 1033–1109"); his own year, "c. 1033", only where
+   the key does not hold him. Nothing for a node whose year is an estimate. */
+const whenOf=n=>{if(!n.yok)return '';const r=DATEOF?DATEOF(n.a):null;return ((r&&r.dates)||'c. '+(n.by||n.y))+' · ';};
 function biographyYear(b){const text=b&&typeof b==='object'?(b.dates||String(b.bio||'').slice(0,160)):b;const match=String(text||'').match(/\b([1-9]\d{2,3})\b/);return match?+match[1]:0;}
-function refineBiographyDates(nodes,original,initial,bios){let changed=false;nodes.forEach(n=>{if(original[n.i].y||biographyYear(initial[n.a]))return;const year=biographyYear(bios[n.a]);if(year&&(!n.yok||n.y!==year)){n.y=year;n.yok=true;n.e=eraOf(year);changed=true;}});return changed;}
+function refineBiographyDates(nodes,original,initial,bios){let changed=false;nodes.forEach(n=>{if(original[n.i].y||biographyYear(initial[n.a]))return;const year=biographyYear(bios[n.a]);if(year&&(!n.yok||n.by!==year)){n.by=year;n.y=workYear(n.a,year,bios[n.a]);n.yok=true;n.e=eraOf(n.y);changed=true;}});return changed;}
 const hash=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0)/4294967295;};
 
 async function boot(){
   const _gb="?d="+Math.floor(Date.now()/6e5);
-  const graphReady=Promise.all([gz(BLOB+"/v1/graph/authors.json.gz"+_gb),gz(BLOB+"/v1/graph/edges.json.gz"+_gb),J(BLOB+"/v1/authors.json").catch(()=>({}))]);
+  const graphReady=Promise.all([gz(BLOB+"/v1/graph/authors.json.gz"+_gb),gz(BLOB+"/v1/graph/edges.json.gz"+_gb),J(BLOB+"/v1/authors.json").catch(()=>({})),
+    datesKey(BLOB+"/v1/enrich/author_dates.json?v="+encodeURIComponent(window.__FR_VER||"1"))]);
   // Shelf metadata is required for the same date/shelf fallbacks. Start it with
   // the graph, rather than adding a second network wave before the first draw.
   const rost={};
@@ -66,10 +94,13 @@ async function boot(){
     // placement no longer races the bio-shard fetches (Jerome sat at ~1550 on slow loads)
     let y=+n.y||bioY[n.a]||+r.y||0;
     const yok=!!y;                 // a MEASURED date; estimates place the star but are never printed
+    // (2026-11-11) the star stands in the years he worked; his own year is kept for the line beside his name (whenOf)
+    const by=y;
+    if(yok)y=workYear(n.a,y,initialBios[n.a]);
     if(!y){const e0=n.e||r.e;if(e0&&ERAMID[e0])y=ERAMID[e0]+Math.round((hash(n.s)-.5)*120);}
     // an anthology filed under its own title is a COLLECTION, not a person
     const coll=n.a.length>42||/gospels?|versions?|variants?|fragments|anthology|apocryph|texts on|documents relatifs|miracles de/i.test(n.a);
-    return {...n,i,sh:n.sh||r.sh||catalogue.authors?.[n.s]?.sh,y,yok,coll,e:y?eraOf(y):null};
+    return {...n,i,sh:n.sh||r.sh||catalogue.authors?.[n.s]?.sh,y,by,yok,coll,e:y?eraOf(y):null};
   });
   BYS={};NODES.forEach(n=>BYS[n.s]=n);
   // unknown years borrow the average of their neighbours, twice over
@@ -360,7 +391,7 @@ function drawBrush(){
     const tip=$("#tip");
     if(n){tip.style.display="block";
       const cr=cv.getBoundingClientRect();tip.style.left=Math.max(8,Math.min(innerWidth-280,e.clientX+14))+"px";tip.style.top=Math.min(innerHeight-110,e.clientY+12)+"px";
-      tip.innerHTML=`<b>${esc(n.a)}</b><span>${n.yok?"c. "+n.y+" · ":""}${esc(ERAL[n.e]||"")}${n.sh?" · "+esc(SHD(n.sh)||n.sh):""}</span><br><span>PageRank ${n.pr.toFixed(1)} · cited by ${n.din} · community: ${esc(n.com)}</span>`;
+      tip.innerHTML=`<b>${esc(n.a)}</b><span>${esc(whenOf(n))}${esc(ERAL[n.e]||"")}${n.sh?" · "+esc(SHD(n.sh)||n.sh):""}</span><br><span>PageRank ${n.pr.toFixed(1)} · cited by ${n.din} · community: ${esc(n.com)}</span>`;
     } else tip.style.display="none";
     draw();
   });
@@ -475,7 +506,7 @@ async function openAuthor(slug,push=true){
   // SIGNED GRAPH (2026-09-02): a star whose received citations are largely refutations
   // is a battleground, not an authority · say so where the reader first looks
   const ctr=(n.ctr&&n.nin>=40)?` · <span style="color:var(--fg)" title="${n.nin} of ${n.win} received citations are refutations">contested ${Math.round(n.ctr*100)}%</span>`:"";
-  openPanel(esc(n.a),`${n.yok?"c. "+n.y+" · ":""}${esc(ERAL[n.e]||"")}${n.sh?" · "+esc(SHD(n.sh)||""):""}${ctr}`);
+  openPanel(esc(n.a),`${esc(whenOf(n))}${esc(ERAL[n.e]||"")}${n.sh?" · "+esc(SHD(n.sh)||""):""}${ctr}`);
   pbody.innerHTML='<p class="loading" role="status">Loading author connections…</p>';
   $("#map-title").textContent=n.a;$("#map-summary").textContent="Recorded citations to and from this author";
   let d=null;try{d=await shard(slug);if(__my!==__PSEQ)return;}catch(_){
@@ -619,7 +650,7 @@ async function openJourney(chain,direction='in',options={}){
  $('#map-summary').textContent=connections.length.toLocaleString()+' recorded '+(direction==='out'?'source':direction==='in'?'reception':'author')+' connections'+(connections.length>80?' · strongest 80 shown on the map':'');draw();
  const authorOptions=NODES.slice().sort((a,b)=>a.a.localeCompare(b.a)).map(n=>`<option value="${esc(n.s)}"${n.s===current.s?' selected':''}>${esc(n.a)}${n.sh?' · '+esc(SHD(n.sh)||''):''}</option>`).join('');
  const heading=direction==='out'?'Cited authors':direction==='in'?'Citing authors':'Connected authors';
- pbody.innerHTML=`<div class="ce-journey"><nav class="ce-journey-trail" aria-label="Current research path">${nodes.map((n,i)=>i===nodes.length-1?`<span aria-current="step">${esc(n.a)}</span>`:`<a href="${journeyURL(chain.slice(0,i+1),direction,work,targetWork,'',stepKeys.slice(0,i))}">${esc(n.a)}</a>`).join('<span aria-hidden="true">›</span>')}</nav>${steps.length?`<p class="ce-path-direction">Latest step: ${esc(steps.at(-1).citing.a)} cites ${esc(steps.at(-1).target.a)}.</p>`:''}<div class="ce-direction-switch" aria-label="Citation direction"><button data-journey-direction="out" aria-pressed="${direction==='out'}">Sources</button><button data-journey-direction="in" aria-pressed="${direction==='in'}">Reception</button><button data-journey-direction="either" aria-pressed="${direction==='either'}">Both directions</button></div><details class="ce-journey-options"><summary>Change author or direction</summary><div class="ce-journey-controls"><label>Choose author<select id="journey-author">${authorOptions}</select></label><label>Follow<select id="journey-direction"><option value="out">Sources this author cites</option><option value="in">Authors who cite this author</option><option value="either">Both directions</option></select></label></div></details>${steps.length?`<details class="ce-path-history"><summary>Path so far · ${nodes.length} authors</summary><ol class="ce-chain">${nodes.map((n,i)=>`<li><a href="${journeyURL(chain.slice(0,i+1),direction,work,targetWork,'',stepKeys.slice(0,i))}">${esc(n.a)}</a><small>${n.yok?'c. '+n.y+' · ':''}${esc(SHD(n.sh)||'Indexed author')}</small></li>`).join('')}</ol><div class="ce-path-steps">${FRConnectionEvidence.journeyStepFolds(steps,resume?.openSteps||[])}</div><button class="ce-save-path" disabled>Save selected journey</button><p class="ce-journey-feedback" id="journey-selection" role="status">Select passages from the path to save them together.</p></details>`:''}<div class="ce-connections-heading"><h3>${esc(heading)}</h3><a href="/the-faith-received/connections/#a=${encodeURIComponent(current.s)}">Author overview</a></div><label><span class="sr-only">Find a cited author</span><input type="search" id="journey-query" placeholder="Filter these authors"></label><p class="ce-journey-feedback" id="journey-next-count" role="status"></p><div class="ce-next-list"></div><nav class="ce-pager ce-journey-pager" aria-label="Connection pages"><button class="ce-next-previous" hidden>Previous</button><button class="ce-next-more" hidden>Next authors</button></nav>${method(`<p class="ce-direction-help">${direction==='out'?'Recorded sources in works indexed under '+esc(current.a)+'.':direction==='in'?'Recorded references to '+esc(current.a)+' in other authors’ works.':'Recorded citations in either direction; each connection names who cites whom.'}</p><p class="ce-note">Open an author to read recorded references, grouped by their citing work. References are indexed under a work’s author; correspondence and editorial material can include other voices. Inspect the source before attributing a statement. Dates describe authors, not publication dates.</p>`)}<details class="ce-branch-history"><summary>Recently explored branches</summary><div></div></details></div>`;
+ pbody.innerHTML=`<div class="ce-journey"><nav class="ce-journey-trail" aria-label="Current research path">${nodes.map((n,i)=>i===nodes.length-1?`<span aria-current="step">${esc(n.a)}</span>`:`<a href="${journeyURL(chain.slice(0,i+1),direction,work,targetWork,'',stepKeys.slice(0,i))}">${esc(n.a)}</a>`).join('<span aria-hidden="true">›</span>')}</nav>${steps.length?`<p class="ce-path-direction">Latest step: ${esc(steps.at(-1).citing.a)} cites ${esc(steps.at(-1).target.a)}.</p>`:''}<div class="ce-direction-switch" aria-label="Citation direction"><button data-journey-direction="out" aria-pressed="${direction==='out'}">Sources</button><button data-journey-direction="in" aria-pressed="${direction==='in'}">Reception</button><button data-journey-direction="either" aria-pressed="${direction==='either'}">Both directions</button></div><details class="ce-journey-options"><summary>Change author or direction</summary><div class="ce-journey-controls"><label>Choose author<select id="journey-author">${authorOptions}</select></label><label>Follow<select id="journey-direction"><option value="out">Sources this author cites</option><option value="in">Authors who cite this author</option><option value="either">Both directions</option></select></label></div></details>${steps.length?`<details class="ce-path-history"><summary>Path so far · ${nodes.length} authors</summary><ol class="ce-chain">${nodes.map((n,i)=>`<li><a href="${journeyURL(chain.slice(0,i+1),direction,work,targetWork,'',stepKeys.slice(0,i))}">${esc(n.a)}</a><small>${esc(whenOf(n))}${esc(SHD(n.sh)||'Indexed author')}</small></li>`).join('')}</ol><div class="ce-path-steps">${FRConnectionEvidence.journeyStepFolds(steps,resume?.openSteps||[])}</div><button class="ce-save-path" disabled>Save selected journey</button><p class="ce-journey-feedback" id="journey-selection" role="status">Select passages from the path to save them together.</p></details>`:''}<div class="ce-connections-heading"><h3>${esc(heading)}</h3><a href="/the-faith-received/connections/#a=${encodeURIComponent(current.s)}">Author overview</a></div><label><span class="sr-only">Find a cited author</span><input type="search" id="journey-query" placeholder="Filter these authors"></label><p class="ce-journey-feedback" id="journey-next-count" role="status"></p><div class="ce-next-list"></div><nav class="ce-pager ce-journey-pager" aria-label="Connection pages"><button class="ce-next-previous" hidden>Previous</button><button class="ce-next-more" hidden>Next authors</button></nav>${method(`<p class="ce-direction-help">${direction==='out'?'Recorded sources in works indexed under '+esc(current.a)+'.':direction==='in'?'Recorded references to '+esc(current.a)+' in other authors’ works.':'Recorded citations in either direction; each connection names who cites whom.'}</p><p class="ce-note">Open an author to read recorded references, grouped by their citing work. References are indexed under a work’s author; correspondence and editorial material can include other voices. Inspect the source before attributing a statement. Dates describe authors, not publication dates.</p>`)}<details class="ce-branch-history"><summary>Recently explored branches</summary><div></div></details></div>`;
  $('#journey-direction').value=direction;$('#journey-query').value=resume?.query||'';if(resume?.pathOpen&&$('.ce-path-history'))$('.ce-path-history').open=true;
  if(direction!=='out')$('#journey-query').previousElementSibling.textContent='Find a connected author';
  $('.ce-branch-history div').innerHTML=journeyBranches.filter(b=>b.url!==journeyURL(chain,direction,work,targetWork,'',stepKeys)).map(b=>`<a href="${esc(b.url)}">${esc(b.label)}</a>`).join('')||'<p class="ce-note">Branches you explore in this session appear here.</p>';
@@ -915,7 +946,7 @@ function renderAuthorIndex(){
  $('#filter-count').textContent=anyFilter()?'Active':'';
  $('#map-empty').hidden=rows.length>0;
  if(FOCUS==null&&!PATHV&&!panel.classList.contains("open")){if(!indexCounts){const visible=new Set(NODES.filter(n=>!hidden(n)).map(n=>n.i));indexCounts={nodes:visible.size,edges:EDGES.reduce((count,[a,b])=>count+(visible.has(a)&&visible.has(b)?1:0),0)};}$('#map-summary').textContent=indexCounts.nodes.toLocaleString()+' entries · '+indexCounts.edges.toLocaleString()+' recorded connections';}
- $('#author-index').innerHTML=rows.slice(0,indexLimit).map(n=>`<button class="author-entry${FOCUS===n.i?' selected':''}" data-author="${esc(n.s)}" data-era="${n.e}" aria-pressed="${FOCUS===n.i}"><span><strong>${esc(n.a)}</strong><small><i class="era-dot" aria-hidden="true"></i>${n.yok?'c. '+n.y+' · ':''}${esc(SHD(n.sh)||ERAL[n.e]||'Indexed author')}${n.coll?' · collection':''}</small></span><span class="author-measure"><b>${fmt(sort==='citations'?(n.win||0):(n.din||0))}</b><small>${sort==='citations'?'citations':'citing authors'}</small></span></button>`).join('')||'<p class="index-note">No matching authors. Try another name or clear the filters.</p>';
+ $('#author-index').innerHTML=rows.slice(0,indexLimit).map(n=>`<button class="author-entry${FOCUS===n.i?' selected':''}" data-author="${esc(n.s)}" data-era="${n.e}" aria-pressed="${FOCUS===n.i}"><span><strong>${esc(n.a)}</strong><small><i class="era-dot" aria-hidden="true"></i>${esc(whenOf(n))}${esc(SHD(n.sh)||ERAL[n.e]||'Indexed author')}${n.coll?' · collection':''}</small></span><span class="author-measure"><b>${fmt(sort==='citations'?(n.win||0):(n.din||0))}</b><small>${sort==='citations'?'citations':'citing authors'}</small></span></button>`).join('')||'<p class="index-note">No matching authors. Try another name or clear the filters.</p>';
  $('#index-more').hidden=rows.length<=indexLimit;
 }
 function connectionExamples(){
