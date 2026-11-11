@@ -1316,11 +1316,15 @@
   // a Father in Migne or the Patrologia Orientalis is on the shelf of his Patrologia, where the map leaves him unshelved ("x"):
   // Chrysostom, Cyril, Origen and Athanasius were filed under Other (10-21)
   const famShelf = (slug) => { const m = /^(pld|pg|po)-/.exec(slug || ''); return m ? { pld: 'pl', pg: 'gf', po: 'po' }[m[1]] : ''; };
+  /* BEDE CLOSES THE LATIN FATHERS (2026-11-11, owner: "Keep Bede with the Fathers"). He worked in the 8th century (672 to 735), and the
+   * rank map now says so; it used to give the century of his birth, the 7th, and that alone kept him on this side of the line. He is
+   * the one Latin writer of the 8th century who stays with the Fathers; Alcuin and the Carolingians are Medieval as before. */
+  const lastFather = (a, cen) => cen === 8 && /\bBede\b/.test(a || '');
   const tradOf = (c) => {
     let sh = c.sh || '';
     if (!sh || sh === 'x') sh = famShelf(c.slug) || sh;
     const cen = S.cen[c.slug] || (RANK.works[c.slug] || [])[2] || 0;
-    if (sh === 'pl') return cen >= 16 ? 'x' : cen >= 8 ? 'md' : sh;
+    if (sh === 'pl') return cen >= 16 ? 'x' : cen >= 8 && !lastFather(c.a, cen) ? 'md' : sh;
     if (sh === 'gf') return cen >= 16 ? 'x' : cen >= 9 ? 'by' : sh;
     return sh;
   };

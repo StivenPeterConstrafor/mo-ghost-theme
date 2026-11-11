@@ -371,11 +371,15 @@
   // ── standing, shelf and year ────────────────────────────────────────────────────────────────────────────────────────────────────
   // the shelf a source filter reads (the map's, a Father in Migne on his Patrologia's), and the tradition a list files it under
   const rawShelf = (c) => (c.sh && c.sh !== "x" ? c.sh : famShelf(c.slug) || c.sh || "x");
+  /* BEDE CLOSES THE LATIN FATHERS (2026-11-11, owner: "Keep Bede with the Fathers"). He worked in the 8th century (672 to 735), and the
+   * rank map now says so; it used to give the century of his birth, the 7th, and that alone kept him on this side of the line. He is
+   * the one Latin writer of the 8th century who stays with the Fathers; Alcuin and the Carolingians are Medieval as before. */
+  const lastFather = (a, cen) => cen === 8 && /\bBede\b/.test(a || "");
   const tradOf = (M, c) => {
     let sh = c.sh || "";
     if (!sh || sh === "x") sh = famShelf(c.slug) || sh;
     const cen = (M.RANK.works[c.slug] || [])[2] || 0;
-    return shelfOk(sh === "pl" && cen >= 8 ? "md" : sh);
+    return shelfOk(sh === "pl" && cen >= 8 && !lastFather(c.a, cen) ? "md" : sh);
   };
   const TG = () => root.FRTraditionGraphics || null;
   const dateRec = (a) => { const G = TG(); return (G && G.dates && G.dates.get(a)) || null; };
@@ -691,7 +695,7 @@
         const m = M.meta[r.w] || {};
         let sh = r.sh && r.sh !== "x" ? r.sh : (m.sh && m.sh !== "x" ? m.sh : famShelf(r.w) || "x");
         const cen = (M.RANK.works[r.w] || [])[2] || 0;
-        if (sh === "pl" && cen >= 8) sh = "md";
+        if (sh === "pl" && cen >= 8 && !lastFather(r.a || m.a, cen)) sh = "md";
         by.set(r.w, { w: r.w, a: r.a || m.a || "", t: r.t || m.t || r.w, trad: shelfOk(sh), pages: [], kinds: {} });
       }
       const g = by.get(r.w);

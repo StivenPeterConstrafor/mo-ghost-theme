@@ -982,9 +982,13 @@
    * century on they go under "Other" ("x") instead of a tradition they do not belong to. The library carries no tradition for an author
    * beyond the shelf (works-index.json: Heinsius "Greek Fathers"), so the century is all the rule has. Kept in step with tradOf in
    * commentary-pane.js. */
+  /* BEDE CLOSES THE LATIN FATHERS (2026-11-11, owner: "Keep Bede with the Fathers"). He worked in the 8th century (672 to 735), and the
+   * rank map now says so; it used to give the century of his birth, the 7th, and that alone kept him on this side of the line. He is
+   * the one Latin writer of the 8th century who stays with the Fathers; Alcuin and the Carolingians are Medieval as before. */
+  const lastFather = (a, cen) => cen === 8 && /\bBede\b/.test(a || "");
   const tradOf = (e) => {
     const sh = e.sh || "", cen = Number(e.cen) || 0;
-    if (sh === "pl") return cen >= 16 ? "x" : cen >= 8 ? "md" : sh;
+    if (sh === "pl") return cen >= 16 ? "x" : cen >= 8 && !lastFather(e.a, cen) ? "md" : sh;
     if (sh === "gf") return cen >= 16 ? "x" : cen >= 9 ? "by" : sh;
     return sh;
   };

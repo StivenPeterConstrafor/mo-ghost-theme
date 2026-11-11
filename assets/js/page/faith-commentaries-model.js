@@ -41,10 +41,14 @@
    * shelf (or the map's tradition where it gives no shelf, or the Patrologia's), and the century: a Latin writer from the 8th century
    * through the 15th is Medieval, a Greek from the 9th Byzantine, a later editor on either shelf Other. The century is the rank's for
    * the work; where the rank has none, the author's from his dates (born, and forty years on), as near as the page can know it. */
+  /* BEDE CLOSES THE LATIN FATHERS (2026-11-11, owner: "Keep Bede with the Fathers"). He worked in the 8th century (672 to 735), and the
+   * rank map now says so; it used to give the century of his birth, the 7th, and that alone kept him on this side of the line. He is
+   * the one Latin writer of the 8th century who stays with the Fathers; Alcuin and the Carolingians are Medieval as before. */
+  const lastFather = (a, cen) => cen === 8 && /\bBede\b/.test(a || '');
   function tradOf(e, cen) {
     let sh = e.sh === 'x' ? (X_SHELF[e.tr] || 'x') : (e.sh || '');
     if (!sh || sh === 'x') sh = famShelf(e.w) || sh;
-    if (sh === 'pl') return cen >= 16 ? 'x' : cen >= 8 ? 'md' : sh;
+    if (sh === 'pl') return cen >= 16 ? 'x' : cen >= 8 && !lastFather(e.a, cen) ? 'md' : sh;
     if (sh === 'gf') return cen >= 16 ? 'x' : cen >= 9 ? 'by' : sh;
     return sh || 'x';
   }
