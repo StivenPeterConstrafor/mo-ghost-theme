@@ -827,7 +827,8 @@ function frResumePage(entry){
     const first=all[startOf(all)];
     if(first&&!shown(first)&&!laneShown){
       const lane=first.closest(".la")?"la":first.closest(".en")?"en":"";
-      if(lane&&window.LN&&!window.LN[lane]&&typeof applyLanes==="function"){
+      // (not in a preview that asked for one English column, ?lanes=en: owner 2026-09-25 "for preview mode make it english only by default")
+      if(lane&&window.LN&&!window.LN[lane]&&typeof applyLanes==="function"&&!/[?&]lanes=en(?:&|$)/.test(location.search)){
         laneShown=true;const was=window.__frLanesFromURL;window.__frLanesFromURL=true;window.LN[lane]=true;
         try{applyLanes();}catch(_){}finally{window.__frLanesFromURL=was;}
         marks=all.filter(shown);}}
