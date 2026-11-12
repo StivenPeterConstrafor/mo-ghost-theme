@@ -4999,6 +4999,15 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
   // (the Books model) — interactive elements, active selections, and review mode excluded.
   (function(){const sc=document.getElementById("scroll");if(!sc)return;
     let y0=sc.scrollTop,acc=0;
+    /* ONLY THE READER'S OWN SCROLLING HIDES THE BARS (2026-11-11, site tour). A link into a work arrived on a phone with the masthead
+       and the toolbar gone: read/?w=quenstedt-theologia-didactico-polemica#b705-0 opened on a page with no title, no page number
+       and no controls. The landing scrolls the reading into place in steps (a deep link settling, a searched word brought into
+       view), and those steps were counted as the reader reading down. Travel is counted only while the reader is scrolling: within
+       a second and a half of a wheel, a touch, a key or a press on the scrollbar, or while a press is held. */
+    let userAt=-1e9,held=false;const byHand=()=>{userAt=performance.now();};
+    ["wheel","touchmove","keydown"].forEach(t=>addEventListener(t,byHand,{passive:true,capture:true}));
+    addEventListener("mousedown",()=>{held=true;byHand();},{passive:true,capture:true});
+    addEventListener("mouseup",()=>{held=false;byHand();},{passive:true,capture:true});
     sc.addEventListener("scroll",()=>{
       const mob=mq.matches;
       const y=sc.scrollTop,d=y-y0;
@@ -5009,6 +5018,7 @@ if($("#contentsClose"))$("#contentsClose").onclick=()=>setContentsOpen(false,tru
       y0=y;
       if(mob&&!app.classList.contains("nosb")){acc=0;return;}
       if(y<90){HTML.classList.remove("mh-hide","mh-mini");acc=0;return;}
+      if(!held&&performance.now()-userAt>1500){acc=0;return;}
       acc=(d>0)===(acc>0)?acc+d:d;
       if(acc>140)HTML.classList.add(mob?"mh-hide":"mh-mini");
       else if(acc<=-(mob?(R.REVEAL_UP||600):24))HTML.classList.remove("mh-hide","mh-mini");   // phone: about 25 lines up (600px) to bring it back
