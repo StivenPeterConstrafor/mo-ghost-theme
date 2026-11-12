@@ -1202,6 +1202,23 @@ TRACTATE XI. From that which is written, Now when he was at Jerusalem at the Pas
       && !A.leads('1. [vers. 1.] The Church speaks to Christ: The Lord ruleth me, and I shall want nothing. The Lord Jesus Christ is my Shepherd', 1, ps23),
     `"Jehovah is my shepherd" leads with "The LORD is my shepherd" (${A.leads(c1, 1, ps23)}), not with a verse that has the name alone (${A.leads(c1, 6, ps23)}); the name alone is no lemma (${A.leads('1. Thus saith the LORD. A comment.', 1, ps23)})`);
   }
+  /* (2026-11-11, pane3g) THE VERSE IN THE COMMENTARIES' OWN BIBLE: the page prints a modern translation, the commentaries quote the
+   * Authorised Version's wording. A note leads with its verse where it does so within the page's text or within the chapter file's own,
+   * each read whole: Calvin's "1. And the Lord spake unto Moses." with Leviticus 17:1 as the file has it, not as the page does; a lemma
+   * with one word of each text and two of neither leads with nothing */
+  {
+    const page = (n) => ({ 1: 'And the LORD spoke to Moses, saying,', 2: 'Speak to Aaron and his sons and to all the people of Israel and say to them, This is the thing that the LORD has commanded.' })[n] || '';
+    const file = (n) => ({ 1: 'And Jehovah spake unto Moses, saying,', 2: 'Speak unto Aaron, and unto his sons, and unto all the children of Israel, and say unto them: This is the thing which Jehovah hath commanded, saying,' })[n] || '';
+    const l1 = '1. And the Lord spake unto Moses. In this, and similar passages, God appoints the priests to offer the sacrifices.';
+    const mixed = '2. The people and the children. A lemma with a word of each text.';
+    ok(!A.leads(l1, 1, page) && A.leads(l1, 1, file) && !A.leads(l1, 2, file) && !A.leads(mixed, 2, page) && !A.leads(mixed, 2, file),
+      `"And the Lord spake unto Moses." leads with Leviticus 17:1 in the chapter file's text (${A.leads(l1, 1, file)}), not in the page's (${A.leads(l1, 1, page)}); one word of each text is two of neither (${A.leads(mixed, 2, page)}, ${A.leads(mixed, 2, file)})`);
+    ok(/const fileText = \(v\) => \(S\.ownText && S\.ownText\.get\(Number\(v\)\)\) \|\| '';\s*const either = \(f\) => !!f\(verseText\) \|\| \(!!\(S\.ownText && S\.ownText\.size\) && !!f\(fileText\)\);/.test(js)
+      && /json\(`\$\{BASE\}\/v1\/bible\/all\/\$\{w\.book\}\/\$\{w\.ch\}\.json\.gz`\)\.catch\(\(\) => null\)\]\);/.test(js)
+      && /S\.ownText = new Map\(\(\(own && own\.verses\) \|\| \[\]\)\.map\(\(x\) => \[Number\(x\.v\), String\(x\.t \|\| ''\)\]\)\);/.test(js)
+      && (js.match(/either\(\(text\) => /g) || []).length === 7 && !/A\.(?:leads|quotes|harmonyNote)\([^;]*verseText\)/.test(js.replace(/\/\*[\s\S]*?\*\//g, '')),
+    'the pane reads a note against the page\'s text or the chapter file\'s own, each whole, from the file the list\'s loader has read; no lemma test is left on the page\'s text alone');
+  }
   /* (2026-11-11, pane3f) CALVIN'S HARMONIES IN THE FIRST PASS (harmonyNote): a note of theirs is the verse's own only where it is not the
    * passage's printed text, the nearest paragraph before it that names a book and chapter names the verse's, and it leads with the verse
    * by two words that tell, no other verse of the chapter as many */
@@ -1251,7 +1268,7 @@ TRACTATE XI. From that which is written, Now when he was at Jerusalem at the Pas
     ok(!H(l18, 4, 5, lv18, 'leviticus', 18) && !H(e22, 3, 2, ex22, 'exodus', 22) && H(e22, 5, 2, ex22, 'exodus', 22),
       `a lemma another verse of the chapter has as many words of is refused ("5. Ye shall therefore keep my statutes.", Leviticus 18:5 beside 18:4: ${H(l18, 4, 5, lv18, 'leviticus', 18)}); a printed line, the notes after it beginning again, is no note (${H(e22, 3, 2, ex22, 'exodus', 22)}), the note is (${H(e22, 5, 2, ex22, 'exodus', 22)})`);
     ok(/const harmony = HARMONY\.test\(vol\.slug\);\s*if \(!A \|\| !\(A\.leads \|\| A\.quotes\) \|\| vol\.nm \|\| t\.misfit \|\| \(harmony && !\(A\.harmonyNote && HARMONY_IN\.test\(vol\.slug\)\)\)\) return false;/.test(js)
-      && /if \(harmony\) return !!A\.harmonyNote\(m\.all, m\.h, v, verseText, w\.book, w\.ch\);/.test(js),
+      && /if \(harmony\) return either\(\(text\) => A\.harmonyNote\(m\.all, m\.h, v, text, w\.book, w\.ch\)\);/.test(js),
     'the pane takes a Harmony\'s note for the first pass only under the anchor\'s harmonyNote, on the pages its mark was looked for in');
   }
   /* (2026-11-10, pane3c) a place between its notes is a place in hand only where the pages bear it out: each side is looked for as paint
@@ -1273,7 +1290,7 @@ TRACTATE XI. From that which is written, Now when he was at Jerusalem at the Pas
     'a place between its notes says there is no separate note and where its notes either side are');
   // a lone label in a run of margin labels gives way to the numbered note whose first words are the verse's; the status names the mark's page
   ok(/if \(h >= 0 && !foot && labelRun\(all, h, pageOf\)\) \{\s*const k2 = A \? A\.findNote\(part, printed, !!t\.indexed, w\.ch, new Set\(part\.filter\(\(s\) => LABEL\.test\(s\)\)\), texts\)/.test(js)
-    && /A\.quotes && A\.quotes\(part\[k2\], t\.v, verseText\)/.test(js), 'a label in a run of margin labels gives way to the numbered note that quotes the verse');
+    && /A\.quotes && either\(\(text\) => A\.quotes\(part\[k2\], t\.v, text\)\)/.test(js), 'a label in a run of margin labels gives way to the numbered note that quotes the verse');
   ok(/if \(h >= 0\) setWhere\(pages\[pageOf\[h\]\]\.n, false\);/.test(js), "the status line names the page the mark is on");
   // a bare margin number with another after it heads nothing (Cajetan's Deuteronomy 6, p. 490); one over the note's words heads it
   const lab = new Function(`${js.slice(js.indexOf('  const LABEL = '), js.indexOf("  // a verse's note opens its paragraph"))}; return labelRun;`)();
@@ -1371,7 +1388,7 @@ TRACTATE XI. From that which is written, Now when he was at Jerusalem at the Pas
   ok(A.otherCount(migEcc, -1, 18, 'ecclesiastes', 5, ecc5) !== 2,
     `the other count's note does not give way to its paragraph whose lemma is the next verse's (Migne's "THIS IS THE GIFT OF GOD" stays off Ecclesiastes 5:18; got ${A.otherCount(migEcc, -1, 18, 'ecclesiastes', 5, ecc5)})`);
   // the pane: the label run's note by quotes; the first commentary skips a misfit; the other count only where a source lane stands beside the English
-  ok(/if \(t\.misfit\) return 2;/.test(js) && (js.match(/A\.quotes && A\.quotes\(part\[k2\], t\.v, verseText\)/g) || []).length === 2
+  ok(/if \(t\.misfit\) return 2;/.test(js) && (js.match(/A\.quotes && either\(\(text\) => A\.quotes\(part\[k2\], t\.v, text\)\)/g) || []).length === 2
     && (js.match(/const others = \(x\) => \(A && A\.otherNumbers && pages\.some\(\(p\) => p\.la\) \? A\.otherNumbers\(/g) || []).length === 2
     && (js.match(/others\(printed\)\.length\) \{/g) || []).length === 2,
   'the pane takes the label run\'s note by its lemma, takes a misfit key as a place near the verse for the first commentary, and reads the other count only in a work with a source lane');
@@ -1399,7 +1416,7 @@ TRACTATE XI. From that which is written, Now when he was at Jerusalem at the Pas
 {
   ok(/if \(OWN\.has\(t\.how\)\) return \(await ownNote\(vol, t, v, w\)\) \? 1 : 2;/.test(js)
     && /if \(m\.h < 0 \|\| m\.via === 'fallback' \|\| QUESTION\.test\(m\.all\[m\.h\]\)\) return false;/.test(js)
-    && /return !!\(A\.leads \|\| A\.quotes\)\(LABEL\.test\(s\) && m\.h \+ 1 < m\.all\.length \? m\.all\[m\.h \+ 1\] : s, v, verseText\);/.test(js)
+    && /return either\(\(text\) => \(A\.leads \|\| A\.quotes\)\(LABEL\.test\(s\) && m\.h \+ 1 < m\.all\.length \? m\.all\[m\.h \+ 1\] : s, v, text\)\);/.test(js)
     && /const HARMONY = \/harmony-of-the-\(\?:law\|evangelists\)\/;/.test(js),
   'the first pass takes a key only where the mark paint draws quotes the verse; never an indexed fallback, a numbered question, an nm work or Calvin\'s Harmonies');
   const num30b = (n) => ({ 4: 'and her father heareth her vow, and her bond wherewith she hath bound her soul, and her father holdeth his peace at her',

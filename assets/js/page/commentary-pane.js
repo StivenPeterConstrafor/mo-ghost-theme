@@ -1639,6 +1639,16 @@
   }
   // the verse's words as the page prints them: the resolver reads them, and the anchor checks a note's quoted words against them (2026-11-08)
   const verseText = (v) => { const el = SITE.verseEl(v); return el ? el.textContent : ''; };
+  /* THE VERSE IN THE COMMENTARIES' OWN BIBLE (2026-11-11, pane3g; the real pane read on both sites). The page prints a modern translation
+   * (whichever the reader has chosen), and most English commentaries in the library quote the Authorised Version's wording, or one close
+   * to it: Calvin's "1. And the Lord spake unto Moses." could not lead with "And the LORD spoke to Moses, saying" (Leviticus 17:1), nor
+   * his "1. Out of the deep places have I cried to thee, O Jehovah!" with "Out of the depths I cry to you, O LORD!" (Psalm 130:1). The
+   * chapter file the loader has already read for the commentaries' list carries each verse in the American Standard Version (read again
+   * here from the one cache, no request of its own): a note leads with its verse, or quotes it, where it does so within either text,
+   * each read whole (either: every guard, the other verses of the chapter too, within the one text; never a word from each). Where the
+   * reader has chosen that version, or one that words the verse as it does, the second reading says what the first did. */
+  const fileText = (v) => (S.ownText && S.ownText.get(Number(v))) || '';
+  const either = (f) => !!f(verseText) || (!!(S.ownText && S.ownText.size) && !!f(fileText));
   const resolver = A ? A.createResolver(parasOf, { verseText }) : null;
   // the work's own first (collected) or indexed target, with no page to read
   const quickTarget = (v) => quickTargetOf(S.cur, v);
@@ -1932,10 +1942,10 @@
       hit = k >= 0 ? run.lo + k : -1;
       // (2026-11-09, as at paint) a lone label in a run of margin labels gives way to the verse's numbered note on the same pages
       // (2026-11-09, pane3b, as at noteMark) the last label of its page over a next page that opens on the verse's words heads it
-      const foot = hit >= 0 && hit + 1 < all.length && onPage[hit + 1] !== onPage[hit] && A && A.quotes && A.quotes(all[hit + 1], t.v, verseText);
+      const foot = hit >= 0 && hit + 1 < all.length && onPage[hit + 1] !== onPage[hit] && A && A.quotes && either((text) => A.quotes(all[hit + 1], t.v, text));
       if (hit >= 0 && !foot && labelRun(all, hit, onPage)) {
         const k2 = A ? A.findNote(part, printed, !!t.indexed, w.ch, new Set(part.filter((s) => LABEL.test(s))), texts) : -1;
-        hit = k2 >= 0 && A.quotes && A.quotes(part[k2], t.v, verseText) ? run.lo + k2 : -1;
+        hit = k2 >= 0 && A.quotes && either((text) => A.quotes(part[k2], t.v, text)) ? run.lo + k2 : -1;
       }
       // (2026-11-09, as at paint) nor a paragraph whose first words are another verse's
       if (hit >= 0 && A && A.onOther && A.onOther(all[hit], t.v, verseText, [printed, ...others(t.v)])) hit = -1;
@@ -2166,12 +2176,12 @@
        * the note on 2 Chronicles 28:23; so on Zephaniah 2:8 and 1 John 2:4. Calov's "5. MY SIN IS ALWAYS BEFORE ME" under his margin labels
        * on Psalm 51 is the English 51:3, and is not taken for 51:5. (2026-11-09, pane3b) The last label of its page heads the next page's
        * first paragraph where that quotes the verse: Cajetan's "Ver. 9." at the foot of p. 408 over his note on 1 John 5:9 */
-      const foot = h >= 0 && h + 1 < all.length && pageOf[h + 1] !== pageOf[h] && A && A.quotes && A.quotes(all[h + 1], t.v, verseText);
+      const foot = h >= 0 && h + 1 < all.length && pageOf[h + 1] !== pageOf[h] && A && A.quotes && either((text) => A.quotes(all[h + 1], t.v, text));
       if (h >= 0 && !foot && labelRun(all, h, pageOf)) {
         const k2 = A ? A.findNote(part, printed, !!t.indexed, w.ch, new Set(part.filter((s) => LABEL.test(s))), texts) : -1;
         // (2026-11-09, pane3b) where its lemma quotes the verse (the anchor's quotes), not two words of its opening (Lapide's "7. THE TENTH
         // DAY ALSO OF THIS SEVENTH MONTH", Numbers 29:7, on 30:7)
-        h = k2 >= 0 && A.quotes && A.quotes(part[k2], t.v, verseText) ? run.lo + k2 : -1; if (h >= 0) via = 'label';
+        h = k2 >= 0 && A.quotes && either((text) => A.quotes(part[k2], t.v, text)) ? run.lo + k2 : -1; if (h >= 0) via = 'label';
       }
       // (2026-11-09) nor a paragraph whose first words are another verse's own and none of this one's (the anchor's onOther): Augustine's
       // section "6. Through whom we have received, he says, grace and apostleship" is on Romans 1:5, where the library files his 1:6
@@ -2192,7 +2202,7 @@
        * looked for by the other count too (the English Job 40:6 is his "40:1 Then the Lord answered Job out of the whirlwind"), where it
        * leads with the verse */
       const line = (n) => { const lx = new RegExp(`^(?:#{1,6}\\s+)?${Number(w.ch)}\\s*[:,]\\s*${n}(?!\\d)`); return all.findIndex((s, i) => i > k && lx.test(s)); };
-      const j0 = line(printed), leads = (j) => (A && A.leads ? A.leads(all[j], verse, verseText) : !(A && A.misfit && A.misfit(all[j], verse, verseText, true)));
+      const j0 = line(printed), leads = (j) => (A && A.leads ? either((text) => A.leads(all[j], verse, text)) : !(A && A.misfit && A.misfit(all[j], verse, verseText, true)));
       h = j0 >= 0 && (A && A.lineFits ? A.lineFits(all[j0], verse, verseText, w.book, w.ch, printed) : leads(j0)) ? j0 : -1;
       if (h < 0 && A && A.otherNumbers) for (const x of A.otherNumbers(w.book, w.ch, Number(verse))) { const j = line(x); if (j >= 0 && leads(j)) { h = j; break; } }
       if (h >= 0) via = 'range';
@@ -2585,8 +2595,9 @@
     const m = noteMark(pages, lane, t, w, v, vol);
     if (m.h < 0 || m.via === 'fallback' || QUESTION.test(m.all[m.h])) return false;
     const s = m.all[m.h];
-    if (harmony) return !!A.harmonyNote(m.all, m.h, v, verseText, w.book, w.ch);
-    return !!(A.leads || A.quotes)(LABEL.test(s) && m.h + 1 < m.all.length ? m.all[m.h + 1] : s, v, verseText);
+    // (2026-11-11, pane3g) within the page's text or the chapter file's own (either)
+    if (harmony) return either((text) => A.harmonyNote(m.all, m.h, v, text, w.book, w.ch));
+    return either((text) => (A.leads || A.quotes)(LABEL.test(s) && m.h + 1 < m.all.length ? m.all[m.h + 1] : s, v, text));
   }
   /* A PLACE IN HAND THAT THE PAGES BEAR OUT (2026-11-10, pane3c; the three places on the 150 verses: two first commentaries opened where
    * the work has nothing on the verse). A place between a key's notes on the verses either side rests on the library's rows, and counts
@@ -2689,9 +2700,11 @@
     const tok = (S.initTok = (S.initTok || 0) + 1);
     S.seeking = false;
     // a new chapter: the rail follows the reading line again, its list shut (its key commentaries open the first time it opens: seedDir)
-    S.rec = null; S.pin = false; S.hold = false; S.placed = !!w.v; S.dirOpen = new Set(); S.dirSeeded = false; S.plain = null;
+    S.rec = null; S.ownText = null; S.pin = false; S.hold = false; S.placed = !!w.v; S.dirOpen = new Set(); S.dirSeeded = false; S.plain = null;
     setDir(false);
-    const [list, rec, hits, pr] = await Promise.all([commentaries(w.book, w.ch), recOf(w.book, w.ch), hitsOf(w.book, w.ch), preachOf(w.book)]);
+    // (2026-11-11, pane3g) and the chapter file, which the list's loader has read: its own text of each verse (fileText)
+    const [list, rec, hits, pr, own] = await Promise.all([commentaries(w.book, w.ch), recOf(w.book, w.ch), hitsOf(w.book, w.ch), preachOf(w.book),
+      json(`${BASE}/v1/bible/all/${w.book}/${w.ch}.json.gz`).catch(() => null)]);
     // the hits join the list as works the pane can open at their page (wb 2: a list of their own, never a key). (10-22) A work the map
     // files under this book with no page for the chapter is a hit flagged own: where its page is the chapter's own (treats) it is listed
     // as a commentary that treats the chapter there, on the book or the whole Bible as its standing says; the rest with the citations
@@ -2718,6 +2731,7 @@
     layout.querySelectorAll('.cp-tabs [data-tab="h"]').forEach((b) => { b.hidden = !S.hymns.length; });
     if (S.tab === 'h' && !S.hymns.length) setTab('c', true);
     S.list = list; S.rec = rec; S.listKey = key;
+    S.ownText = new Map(((own && own.verses) || []).map((x) => [Number(x.v), String(x.t || '')]));
     fullTitles();
     readYears(rec);
     heat();
